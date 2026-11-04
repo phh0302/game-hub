@@ -26,7 +26,7 @@
 - [ ] Cài Node.js 20+ và Git
 - [x] PostgreSQL: cài local hoặc chạy bằng Docker (`docker-compose.yml` sẽ có sẵn)
 - [ ] Cài extension MetaMask trên trình duyệt, tạo 1–2 ví test
-- [ ] Tạo repo GitHub cho project
+- [x] Tạo repo GitHub cho project (github.com/phh0302/game-hub)
 
 ## Phase 1 – Khởi tạo project
 - [x] Khởi tạo Next.js (TypeScript, Tailwind, App Router) – viết tay, chưa có ESLint
@@ -43,33 +43,34 @@
 - [x] Seed dữ liệu: 1 game mẫu (2048)
 
 ## Phase 3 – Đăng nhập MetaMask (SIWE)
-- [ ] `POST /api/auth/nonce` – tạo nonce dùng 1 lần, hết hạn sau 5 phút
-- [ ] `POST /api/auth/verify` – verify SIWE message (domain, chainId, nonce, chữ ký) → tạo user nếu mới → set JWT cookie
-- [ ] `GET /api/auth/me` – lấy thông tin user đang đăng nhập
-- [ ] `POST /api/auth/logout`
-- [ ] Middleware bảo vệ các route cần đăng nhập + route admin
-- [ ] Frontend: nút Connect Wallet, xử lý chưa cài MetaMask / user từ chối ký / `accountsChanged`
+- [x] `POST /api/auth/nonce` – tạo nonce dùng 1 lần, hết hạn sau 5 phút
+- [x] `POST /api/auth/verify` – verify SIWE message (domain, chainId, nonce, chữ ký) → tạo user nếu mới → set JWT cookie
+- [x] `GET /api/auth/me` – lấy thông tin user đang đăng nhập
+- [x] `POST /api/auth/logout`
+- [x] Middleware bảo vệ các route cần đăng nhập + route admin
+- [x] Frontend: nút Connect Wallet, xử lý chưa cài MetaMask / user từ chối ký / `accountsChanged`
 
 ## Phase 4 – API Game catalog
-- [ ] `GET /api/games` – danh sách game (lọc theo category, chỉ ACTIVE)
-- [ ] `GET /api/games/[slug]` – chi tiết game
-- [ ] Admin: `POST/PATCH/DELETE /api/admin/games` – quản lý game
+- [x] `GET /api/games` – danh sách game (lọc theo category; game bảo trì vẫn hiện nhưng không chơi được)
+- [x] `GET /api/games/[slug]` – chi tiết game
+- [x] Admin: `POST/PATCH/DELETE /api/admin/games` – quản lý game
 
 ## Phase 5 – Điểm số & Leaderboard
-- [ ] `POST /api/games/[slug]/sessions` – bắt đầu lượt chơi, trả sessionId
-- [ ] `POST /api/games/[slug]/scores` – nộp điểm kèm sessionId (mỗi session nộp 1 lần, kiểm tra thời gian chơi hợp lý, giới hạn điểm tối đa)
-- [ ] `GET /api/games/[slug]/leaderboard?period=day|week|all` – top 50 + hạng của user hiện tại
-- [ ] `GET /api/me/scores` – lịch sử điểm của user
-- [ ] Rate limit cho API nộp điểm
+- [x] `POST /api/games/[slug]/sessions` – bắt đầu lượt chơi, trả sessionId
+- [x] `POST /api/games/[slug]/scores` – nộp điểm kèm sessionId (mỗi session nộp 1 lần, kiểm tra thời gian chơi hợp lý, giới hạn điểm tối đa)
+- [x] `GET /api/games/[slug]/leaderboard?period=day|week|all` – top 50 + hạng của user hiện tại
+- [x] `GET /api/me/scores` – lịch sử điểm của user
+- [x] `PATCH /api/me` – đổi username/avatar
+- [x] Rate limit cho API nộp điểm (lưu trong bộ nhớ – khi chạy nhiều server cần chuyển sang Redis)
 
 ## Phase 6 – Giao diện (Frontend)
-- [ ] Layout chung: header (logo, Connect Wallet, avatar/địa chỉ ví rút gọn), footer
+- [x] Layout chung: header (logo, Connect Wallet, avatar/địa chỉ ví rút gọn), footer
 - [ ] Trang chủ: danh sách game dạng card, lọc theo thể loại
 - [ ] Trang chơi game: iframe game + bảng xếp hạng bên cạnh
 - [ ] Trang leaderboard theo game (tab ngày / tuần / tất cả)
 - [ ] Trang profile: đổi username/avatar, lịch sử điểm, best score từng game
 - [ ] Trang admin: CRUD game
-- [ ] Song ngữ Việt/Anh: file dịch `messages/vi.json`, `messages/en.json`, nút đổi ngôn ngữ
+- [x] Song ngữ Việt/Anh: file dịch `messages/vi.json`, `messages/en.json`, nút đổi ngôn ngữ
 - [ ] Responsive mobile + thông báo khi mobile không có MetaMask (gợi ý mở bằng MetaMask app)
 
 ## Phase 7 – Game mẫu & chuẩn tích hợp game
