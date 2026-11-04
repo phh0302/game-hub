@@ -1,0 +1,120 @@
+// Game Hub – database schema
+// Danh tính người dùng = địa chỉ ví (đăng nhập bằng MetaMask/SIWE), không có password.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum GameStatus {
+  ACTIVE // hiển thị và chơi được
+  MAINTENANCE // hiển thị nhưng tạm khóa chơi
+  HIDDEN // ẩn khỏi danh sách
+}
+
+enum GameCategory {
+  PUZZLE
+  ARCADE
+  ACTION
+  CASUAL
+  CARD
+  STRATEGY
+}
+
+model User {
+  id            String    @id @default(cuid())
+  /// Địa chỉ ví, luôn lưu dạng chữ thường (0xabc...)
+  walletAddress String    @unique
+  username      String?   @unique
+  avatarUrl     String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+
+  sessions GameSession[]
+  scores   Score[]
+}
+
+/// Nonce dùng 1 lần cho đăng nhập SIWE (chống replay attack)
+model AuthNonce {
+  id            String    @id @default(cuid())
+  nonce         String    @unique
+  walletAddress String
+  expiresAt     DateTime
+  usedAt        DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([walletAddress])
+  @@index([expiresAt])
+}
+
+model Game {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  nameVi        String
+  nameEn        String
+  descriptionVi String?
+  descriptionEn String?
+  thumbnailUrl  String?
+  category      GameCategory
+  /// Đường dẫn nhúng iframe, vd: /games/2048/index.html
+  embedUrl      String
+  status        GameStatus   @default(ACTIVE)
+  sortOrder     Int          @default(0)
+  /// Điểm tối đa hợp lệ (chống gian lận), null = không giới hạn
+  maxScore      Int?
+  /// Thời gian chơi tối thiểu (giây) để điểm được chấp nhận
+  minPlaySeconds Int         @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  sessions GameSession[]
+  scores   Score[]
+
+  @@index([status, sortOrder])
+}
+
+/// Một lượt chơi. Điểm chỉ được nộp khi gắn với 1 session hợp lệ.
+model GameSession {
+  id        String    @id @default(cuid())
+  userId    String
+  gameId    String
+  startedAt DateTime  @default(now())
+  endedAt   DateTime?
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game  Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  score Score?
+
+  @@index([userId, gameId])
+  @@index([startedAt])
+}
+
+model Score {
+  id              String   @id @default(cuid())
+  userId          String
+  gameId          String
+  /// Mỗi session chỉ nộp điểm 1 lần
+  sessionId       String   @unique
+  value           Int
+  durationSeconds Int
+  createdAt       DateTime @default(now())
+
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game    Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([gameId, value(sort: Desc)])
+  @@index([gameId, createdAt])
+  @@index([userId, gameId])
+}

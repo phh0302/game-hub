@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "Game Hub – Cổng mini game",
+    "description": "Chơi mini game miễn phí, đăng nhập bằng ví MetaMask và leo bảng xếp hạng."
+  },
+  "nav": {
+    "home": "Trang chủ",
+    "leaderboard": "Bảng xếp hạng",
+    "profile": "Hồ sơ",
+    "connectWallet": "Kết nối ví",
+    "language": "Ngôn ngữ"
+  },
+  "home": {
+    "badge": "Đăng nhập bằng MetaMask",
+    "heroTitle": "Chơi game. Leo hạng.",
+    "heroHighlight": "Không cần mật khẩu.",
+    "heroSubtitle": "Kết nối ví MetaMask là vào chơi ngay – điểm số của bạn được lưu và xếp hạng cùng người chơi khác.",
+    "playNow": "Chơi ngay",
+    "gamesTitle": "Danh sách game",
+    "comingSoon": "Sắp ra mắt",
+    "dbError": "Không kết nối được database – kiểm tra Docker đã chạy chưa (npm run db:up)."
+  },
+  "footer": {
+    "rights": "© {year} Game Hub. Mọi quyền được bảo lưu."
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "meta": {
+    "title": "Game Hub – Mini game portal",
+    "description": "Play free mini games, sign in with your MetaMask wallet and climb the leaderboard."
+  },
+  "nav": {
+    "home": "Home",
+    "leaderboard": "Leaderboard",
+    "profile": "Profile",
+    "connectWallet": "Connect wallet",
+    "language": "Language"
+  },
+  "home": {
+    "badge": "Sign in with MetaMask",
+    "heroTitle": "Play games. Climb ranks.",
+    "heroHighlight": "No password needed.",
+    "heroSubtitle": "Connect your MetaMask wallet and start playing – your scores are saved and ranked against other players.",
+    "playNow": "Play now",
+    "gamesTitle": "Games",
+    "comingSoon": "Coming soon",
+    "dbError": "Cannot connect to the database – make sure Docker is running (npm run db:up)."
+  },
+  "footer": {
+    "rights": "© {year} Game Hub. All rights reserved."
+  }
+}

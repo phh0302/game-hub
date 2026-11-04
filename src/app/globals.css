@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/* Bảng màu Game Hub – tối, neon */
+@theme {
+  --color-bg: #07070f;
+  --color-surface: #11111f;
+  --color-surface-2: #1a1a2e;
+  --color-line: #2a2a45;
+  --color-ink: #ecebff;
+  --color-muted: #9a98c3;
+  --color-neon: #22e3ff;
+  --color-neon-pink: #ff3ec8;
+  --color-neon-lime: #b6ff3b;
+}
+
+@theme inline {
+  --font-sans: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-heading), var(--font-body), ui-sans-serif, sans-serif;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  background-image:
+    radial-gradient(60rem 30rem at 10% -10%, rgb(34 227 255 / 0.12), transparent 60%),
+    radial-gradient(50rem 30rem at 110% 10%, rgb(255 62 200 / 0.10), transparent 60%);
+  background-attachment: fixed;
+}
+
+.neon-text {
+  background: linear-gradient(90deg, var(--color-neon), var(--color-neon-pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(rgb(255 255 255 / 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}

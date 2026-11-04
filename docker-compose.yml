@@ -1,0 +1,22 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: gamehub-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gamehub
+      POSTGRES_PASSWORD: gamehub
+      POSTGRES_DB: gamehub
+    ports:
+      # Dùng cổng 5433 trên máy để không đụng PostgreSQL khác (nếu có) ở 5432
+      - "5433:5432"
+    volumes:
+      - gamehub_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gamehub -d gamehub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  gamehub_pgdata:
