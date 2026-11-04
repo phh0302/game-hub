@@ -7,7 +7,6 @@
     "home": "Trang chủ",
     "leaderboard": "Bảng xếp hạng",
     "profile": "Hồ sơ",
-    "connectWallet": "Kết nối ví",
     "language": "Ngôn ngữ"
   },
   "home": {
@@ -22,5 +21,28 @@
   },
   "footer": {
     "rights": "© {year} Game Hub. Mọi quyền được bảo lưu."
+  },
+  "auth": {
+    "connect": "Kết nối ví",
+    "connecting": "Đang kết nối…",
+    "signing": "Hãy ký trong MetaMask…",
+    "profile": "Hồ sơ của tôi",
+    "admin": "Quản trị",
+    "logout": "Đăng xuất",
+    "installMetaMask": "Cài MetaMask",
+    "openInMetaMaskApp": "Mở bằng app MetaMask (điện thoại)",
+    "dismiss": "Đóng",
+    "required": "Bạn cần kết nối ví để vào trang này.",
+    "forbidden": "Bạn không có quyền vào trang quản trị.",
+    "errors": {
+      "NO_WALLET": "Không tìm thấy ví MetaMask trên trình duyệt này.",
+      "USER_REJECTED": "Bạn đã từ chối yêu cầu trong MetaMask.",
+      "REQUEST_PENDING": "MetaMask đang có yêu cầu chờ xử lý – hãy mở extension MetaMask.",
+      "NONCE_INVALID": "Phiên đăng nhập đã hết hạn, hãy thử lại.",
+      "INVALID_SIGNATURE": "Chữ ký không hợp lệ, hãy thử lại.",
+      "INVALID_MESSAGE": "Thông điệp đăng nhập không hợp lệ hoặc đã hết hạn.",
+      "RATE_LIMITED": "Bạn thử quá nhiều lần, đợi một lát rồi thử lại.",
+      "UNKNOWN": "Có lỗi xảy ra, hãy thử lại."
+    }
   }
 }

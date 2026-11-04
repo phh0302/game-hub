@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { ConnectWalletButton } from "@/components/auth/ConnectWalletButton";
 
 export async function Header() {
   const t = await getTranslations("nav");
@@ -25,14 +26,7 @@ export async function Header() {
 
         <div className="ml-auto flex items-center gap-3">
           <LanguageSwitcher label={t("language")} />
-          {/* Nút kết nối ví – sẽ hoạt động ở Phase 3 */}
-          <button
-            type="button"
-            disabled
-            className="rounded-lg border border-neon/60 px-4 py-2 text-sm font-semibold text-neon opacity-60"
-          >
-            {t("connectWallet")}
-          </button>
+          <ConnectWalletButton />
         </div>
       </div>
     </header>

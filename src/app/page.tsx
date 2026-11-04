@@ -18,13 +18,26 @@ async function getGames() {
   }
 }
 
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ auth?: string }>;
+}) {
   const t = await getTranslations("home");
+  const tAuth = await getTranslations("auth");
   const locale = await getLocale();
   const { games, dbError } = await getGames();
+  // Bị middleware chuyển về trang chủ vì chưa đăng nhập / không phải admin
+  const { auth } = await searchParams;
+  const authNotice = auth === "required" || auth === "forbidden" ? tAuth(auth) : null;
 
   return (
     <>
+      {authNotice && (
+        <div role="status" className="border-b border-neon-pink/40 bg-neon-pink/10 px-4 py-3 text-center text-sm text-neon-pink">
+          {authNotice}
+        </div>
+      )}
       <section className="grid-bg border-b border-line/50">
         <div className="mx-auto max-w-6xl px-4 py-20 sm:py-28">
           <span className="inline-flex items-center gap-2 rounded-full border border-neon/40 bg-neon/10 px-3 py-1 text-xs font-semibold text-neon">

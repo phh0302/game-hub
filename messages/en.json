@@ -7,7 +7,6 @@
     "home": "Home",
     "leaderboard": "Leaderboard",
     "profile": "Profile",
-    "connectWallet": "Connect wallet",
     "language": "Language"
   },
   "home": {
@@ -22,5 +21,28 @@
   },
   "footer": {
     "rights": "© {year} Game Hub. All rights reserved."
+  },
+  "auth": {
+    "connect": "Connect wallet",
+    "connecting": "Connecting…",
+    "signing": "Sign in MetaMask…",
+    "profile": "My profile",
+    "admin": "Admin",
+    "logout": "Log out",
+    "installMetaMask": "Install MetaMask",
+    "openInMetaMaskApp": "Open in MetaMask app (mobile)",
+    "dismiss": "Dismiss",
+    "required": "Please connect your wallet to view this page.",
+    "forbidden": "You don't have access to the admin area.",
+    "errors": {
+      "NO_WALLET": "MetaMask was not found in this browser.",
+      "USER_REJECTED": "You rejected the request in MetaMask.",
+      "REQUEST_PENDING": "MetaMask already has a pending request – open the MetaMask extension.",
+      "NONCE_INVALID": "Your sign-in session expired, please try again.",
+      "INVALID_SIGNATURE": "Invalid signature, please try again.",
+      "INVALID_MESSAGE": "The sign-in message is invalid or expired.",
+      "RATE_LIMITED": "Too many attempts, please wait a moment.",
+      "UNKNOWN": "Something went wrong, please try again."
+    }
   }
 }

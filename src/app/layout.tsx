@@ -4,6 +4,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { AuthProvider } from "@/components/auth/AuthProvider";
+import { getCurrentUser, toPublicUser } from "@/lib/auth/session";
 import "./globals.css";
 
 // Cả 2 font đều hỗ trợ tiếng Việt
@@ -32,14 +34,18 @@ export async function generateMetadata(): Promise<Metadata> {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const locale = await getLocale();
   const messages = await getMessages();
+  // Lỗi DB (vd: Docker chưa chạy) không được làm sập toàn bộ trang
+  const user = await getCurrentUser().catch(() => null);
 
   return (
     <html lang={locale} className={`${body.variable} ${display.variable}`}>
       <body className="min-h-dvh flex flex-col font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
+          <AuthProvider initialUser={user ? toPublicUser(user) : null}>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </AuthProvider>
         </NextIntlClientProvider>
       </body>
     </html>
