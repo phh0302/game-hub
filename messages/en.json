@@ -7,7 +7,8 @@
     "home": "Home",
     "leaderboard": "Leaderboard",
     "profile": "Profile",
-    "language": "Language"
+    "language": "Language",
+    "games": "Games"
   },
   "home": {
     "badge": "Sign in with MetaMask",
@@ -17,7 +18,11 @@
     "playNow": "Play now",
     "gamesTitle": "Games",
     "comingSoon": "Coming soon",
-    "dbError": "Cannot connect to the database – make sure Docker is running (npm run db:up)."
+    "dbError": "Cannot connect to the database – make sure Docker is running (npm run db:up).",
+    "allCategories": "All",
+    "play": "Play now",
+    "maintenance": "Maintenance",
+    "noGames": "No games in this category yet."
   },
   "footer": {
     "rights": "© {year} Game Hub. All rights reserved."
@@ -44,5 +49,136 @@
       "RATE_LIMITED": "Too many attempts, please wait a moment.",
       "UNKNOWN": "Something went wrong, please try again."
     }
+  },
+  "game": {
+    "back": "← All games",
+    "connect": "Connect wallet",
+    "fullscreen": "Fullscreen",
+    "loginToSave": "You're playing as a guest – connect your wallet to save scores and join the leaderboard.",
+    "unavailable": "This game is under maintenance, please come back later.",
+    "notSaved": "You scored {score}. Connect your wallet to save it next time!",
+    "saved": "Saved {score} points. Your best: {best} · rank #{rank}",
+    "newBest": "New record: {score} points! You're rank #{rank}",
+    "errors": {
+      "PLAY_TOO_SHORT": "That round was too short, so the score doesn't count.",
+      "SCORE_INVALID": "Invalid score – it was not saved.",
+      "SESSION_EXPIRED": "This round took too long, the score was not saved.",
+      "SESSION_ENDED": "This round's score was already submitted.",
+      "SESSION_NOT_FOUND": "Round not found, please start a new game.",
+      "LEADERBOARD_CLOSED": "This leaderboard is closed.",
+      "LEADERBOARD_NOT_FOUND": "The game sent a score to a leaderboard that doesn't exist.",
+      "GAME_UNAVAILABLE": "The game is under maintenance, the score was not saved.",
+      "RATE_LIMITED": "You're submitting too fast, try again in a few minutes.",
+      "UNAUTHORIZED": "Your session expired, please connect your wallet again.",
+      "GUEST_NOT_ALLOWED": "Connect your wallet to save scores.",
+      "UNKNOWN": "Couldn't save your score, please try again."
+    }
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "periods": {
+      "day": "Today",
+      "week": "Week",
+      "all": "All time"
+    },
+    "empty": "No scores yet – be the first!",
+    "loading": "Loading…",
+    "error": "Couldn't load the leaderboard.",
+    "you": "You",
+    "loginHint": "Connect your wallet to appear on the leaderboard.",
+    "viewAll": "View full leaderboard",
+    "playToRank": "Play to climb the ranks"
+  },
+  "profile": {
+    "title": "My profile",
+    "loginRequired": "Connect your wallet to view your profile.",
+    "wallet": "Wallet",
+    "username": "Display name",
+    "usernameHint": "3–20 characters: letters, numbers, underscore. Empty = use wallet address.",
+    "avatarUrl": "Avatar (URL)",
+    "avatarHint": "Paste an image link starting with https://",
+    "save": "Save changes",
+    "saving": "Saving…",
+    "saved": "Saved!",
+    "bests": "Achievements",
+    "recent": "Recent plays",
+    "noScores": "You have no scores yet.",
+    "playNow": "Play now",
+    "plays": "{count} plays",
+    "game": "Game",
+    "score": "Score",
+    "duration": "Duration",
+    "time": "When",
+    "loading": "Loading…",
+    "errors": {
+      "usernameTaken": "That name is already taken.",
+      "invalid": "Invalid details (avatar must be an https:// link).",
+      "unknown": "Something went wrong, please try again."
+    }
+  },
+  "admin": {
+    "title": "Admin",
+    "subtitle": "Manage games, review versions and set the live version.",
+    "loading": "Loading…",
+    "noGames": "No games yet.",
+    "status": "Status",
+    "versions": "Versions",
+    "noVersions": "No versions yet.",
+    "current": "live",
+    "approve": "Approve",
+    "reject": "Reject",
+    "activate": "Make live",
+    "rejectPrompt": "Reason for rejection (optional):",
+    "versionName": "Version",
+    "storageKey": "Build folder",
+    "addVersion": "Add version",
+    "storageHint": "Copy the build into public/uploads/<build folder>/ (with index.html) first, then add and approve the version. Direct upload comes in Phase 10.",
+    "stats": "{sessions} plays · {scores} scores",
+    "createGame": "Add game",
+    "create": "Create game",
+    "cancel": "Cancel",
+    "name": "Name",
+    "description": "Description",
+    "thumbnailKey": "Cover image (file key)",
+    "categories": "Categories",
+    "createHint": "New games start as Draft. Add a version → approve → make live → set status to Published.",
+    "gameStatus": {
+      "DRAFT": "Draft",
+      "PENDING_REVIEW": "Pending review",
+      "PUBLISHED": "Published",
+      "MAINTENANCE": "Maintenance",
+      "SUSPENDED": "Suspended",
+      "ARCHIVED": "Archived"
+    },
+    "versionStatus": {
+      "DRAFT": "Draft",
+      "PENDING_REVIEW": "Pending review",
+      "APPROVED": "Approved",
+      "REJECTED": "Rejected"
+    },
+    "ok": {
+      "statusChanged": "Status updated.",
+      "approved": "Version approved.",
+      "rejected": "Version rejected.",
+      "activated": "Live version changed.",
+      "versionAdded": "Version added (pending review).",
+      "gameCreated": "Game created."
+    },
+    "errors": {
+      "load": "Couldn't load data ({code}).",
+      "generic": "Action failed ({code}).",
+      "NO_APPROVED_VERSION": "Approve a version and make it live before publishing.",
+      "VERSION_NOT_APPROVED": "This version is not approved.",
+      "VERSION_IN_USE": "You can't reject the live version.",
+      "CONFLICT": "Duplicate data (slug or version name already exists).",
+      "VALIDATION_ERROR": "Some fields are invalid.",
+      "CATEGORY_NOT_FOUND": "Category does not exist.",
+      "FORBIDDEN": "You are not an admin."
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "text": "The page or game you're looking for doesn't exist or was removed.",
+    "home": "Back to home"
   }
 }

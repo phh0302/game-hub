@@ -36,7 +36,7 @@
 ## Phase 0 – Chuẩn bị môi trường
 - [x] Cài Node.js 20+
 - [x] PostgreSQL chạy bằng Docker (`docker-compose.yml`)
-- [ ] Cài extension MetaMask trên trình duyệt, tạo 1–2 ví test
+- [x] Cài extension MetaMask, tạo ví (đã đặt làm admin trong `.env`)
 - [x] Tạo repo GitHub cho project (github.com/phh0302/game-hub)
 
 ## Phase 1 – Khởi tạo project
@@ -88,21 +88,22 @@
 ## Phase 6 – Giao diện (Frontend)
 - [x] Layout chung: header (logo, nút kết nối ví, tên/địa chỉ ví rút gọn), footer
 - [x] Song ngữ Việt/Anh: `messages/vi.json`, `messages/en.json`, nút đổi ngôn ngữ
-- [ ] Trang chủ: danh sách game dạng card, lọc theo thể loại
-- [ ] Trang chơi game: iframe sandbox + bảng xếp hạng bên cạnh
-- [ ] Trang leaderboard theo game (tab ngày / tuần / tất cả)
-- [ ] Trang profile: đổi username/avatar, lịch sử điểm, điểm cao nhất từng game
-- [ ] Trang admin: quản lý game, duyệt phiên bản
-- [ ] Responsive mobile + thông báo khi mobile không có MetaMask
+- [x] Trang chủ: danh sách game dạng card, lọc theo thể loại
+- [x] Trang chơi game `/games/[slug]`: iframe sandbox + bảng xếp hạng bên cạnh, thông báo kết quả nộp điểm, toàn màn hình
+- [x] Trang bảng xếp hạng `/games/[slug]/leaderboard` (tab hôm nay / tuần / tất cả, top 100, hạng của mình)
+- [x] Trang hồ sơ `/profile`: đổi tên hiển thị/ảnh đại diện, thành tích, lượt chơi gần đây
+- [x] Trang quản trị `/admin`: tạo game, đổi trạng thái, thêm/duyệt/từ chối phiên bản, đặt bản đang chạy
+- [x] Responsive mobile + thông báo khi mobile không có MetaMask (nút mở bằng app MetaMask)
+- [x] Trang 404
 
 ## Phase 7 – Game SDK & game mẫu
-- [ ] Game SDK `gamehub-sdk.js` (giao thức `postMessage` có số phiên bản):
+- [x] Game SDK `public/sdk/gamehub-sdk.js` (giao thức `postMessage` có số phiên bản):
   - hub → game: `INIT` (ngôn ngữ, người chơi)
   - game → hub: `READY`, `GAME_START`, `GAME_OVER { score, leaderboard? }`
   - Chỗ cắm quảng cáo: `showRewardedAd()`, `showInterstitialAd()` (chưa bật quảng cáo thật)
-- [ ] Hub chạy game trong `iframe sandbox`, chỉ nhận tin nhắn từ đúng nguồn game
-- [ ] Viết game 2048 dùng SDK, đặt tại `public/uploads/games/2048/1.0.0/`
-- [ ] Tài liệu "Cách tích hợp game vào Game Hub" cho developer
+- [x] Hub chạy game trong `iframe sandbox`, chỉ nhận tin nhắn từ đúng iframe game
+- [x] Game 2048 dùng SDK (song ngữ, bàn phím + vuốt), tại `public/uploads/games/2048/1.0.0/` – đã chạy thử trong sandbox
+- [x] Tài liệu tích hợp cho developer: `docs/GAME_SDK.md`
 
 ## Phase 8 – Kiểm thử & bảo mật
 - [ ] Test luồng: kết nối ví → ký → chơi → nộp điểm → lên bảng xếp hạng
@@ -146,7 +147,7 @@
 | 0–2 | Môi trường, khởi tạo, database | 0.5 ngày | Xong |
 | 2.5 | Thiết kế lại để mở rộng | 1 ngày | Xong |
 | 3–5 | Đăng nhập ví, API game, điểm, bảng xếp hạng | 1.5–2 ngày | Xong |
-| 6–7 | Giao diện + SDK + game 2048 | 2.5–3 ngày | |
+| 6–7 | Giao diện + SDK + game 2048 | 2.5–3 ngày | Xong (chờ chạy thử trên máy) |
 | 8–9 | Kiểm thử + deploy | 0.5–1 ngày | |
 | 10 | Nền tảng developer | 3–4 ngày | |
 | 11 | Kiếm tiền | tùy hướng chọn | |

@@ -7,7 +7,8 @@
     "home": "Trang chủ",
     "leaderboard": "Bảng xếp hạng",
     "profile": "Hồ sơ",
-    "language": "Ngôn ngữ"
+    "language": "Ngôn ngữ",
+    "games": "Trò chơi"
   },
   "home": {
     "badge": "Đăng nhập bằng MetaMask",
@@ -17,7 +18,11 @@
     "playNow": "Chơi ngay",
     "gamesTitle": "Danh sách game",
     "comingSoon": "Sắp ra mắt",
-    "dbError": "Không kết nối được database – kiểm tra Docker đã chạy chưa (npm run db:up)."
+    "dbError": "Không kết nối được database – kiểm tra Docker đã chạy chưa (npm run db:up).",
+    "allCategories": "Tất cả",
+    "play": "Chơi ngay",
+    "maintenance": "Bảo trì",
+    "noGames": "Chưa có game nào trong mục này."
   },
   "footer": {
     "rights": "© {year} Game Hub. Mọi quyền được bảo lưu."
@@ -44,5 +49,136 @@
       "RATE_LIMITED": "Bạn thử quá nhiều lần, đợi một lát rồi thử lại.",
       "UNKNOWN": "Có lỗi xảy ra, hãy thử lại."
     }
+  },
+  "game": {
+    "back": "← Tất cả game",
+    "connect": "Kết nối ví",
+    "fullscreen": "Toàn màn hình",
+    "loginToSave": "Bạn đang chơi thử – kết nối ví để lưu điểm và lên bảng xếp hạng.",
+    "unavailable": "Game đang bảo trì, bạn quay lại sau nhé.",
+    "notSaved": "Bạn đạt {score} điểm. Kết nối ví để lưu điểm lần sau!",
+    "saved": "Đã lưu {score} điểm. Kỷ lục của bạn: {best} · hạng #{rank}",
+    "newBest": "Kỷ lục mới: {score} điểm! Bạn đang hạng #{rank}",
+    "errors": {
+      "PLAY_TOO_SHORT": "Ván chơi quá ngắn nên điểm không được tính.",
+      "SCORE_INVALID": "Điểm không hợp lệ nên không được lưu.",
+      "SESSION_EXPIRED": "Lượt chơi đã quá lâu, điểm không được lưu.",
+      "SESSION_ENDED": "Lượt chơi này đã nộp điểm rồi.",
+      "SESSION_NOT_FOUND": "Không tìm thấy lượt chơi, hãy bắt đầu ván mới.",
+      "LEADERBOARD_CLOSED": "Bảng xếp hạng này đã đóng.",
+      "LEADERBOARD_NOT_FOUND": "Game gửi điểm vào bảng xếp hạng không tồn tại.",
+      "GAME_UNAVAILABLE": "Game đang bảo trì, điểm không được lưu.",
+      "RATE_LIMITED": "Bạn gửi điểm quá nhanh, thử lại sau ít phút.",
+      "UNAUTHORIZED": "Phiên đăng nhập đã hết, hãy kết nối ví lại.",
+      "GUEST_NOT_ALLOWED": "Hãy kết nối ví để lưu điểm.",
+      "UNKNOWN": "Không lưu được điểm, hãy thử lại."
+    }
+  },
+  "leaderboard": {
+    "title": "Bảng xếp hạng",
+    "periods": {
+      "day": "Hôm nay",
+      "week": "Tuần",
+      "all": "Tất cả"
+    },
+    "empty": "Chưa có ai – hãy là người đầu tiên!",
+    "loading": "Đang tải…",
+    "error": "Không tải được bảng xếp hạng.",
+    "you": "Bạn",
+    "loginHint": "Kết nối ví để xuất hiện trên bảng xếp hạng.",
+    "viewAll": "Xem bảng xếp hạng đầy đủ",
+    "playToRank": "Chơi để leo hạng"
+  },
+  "profile": {
+    "title": "Hồ sơ của tôi",
+    "loginRequired": "Bạn cần kết nối ví để xem hồ sơ.",
+    "wallet": "Ví",
+    "username": "Tên hiển thị",
+    "usernameHint": "3–20 ký tự: chữ, số, dấu gạch dưới. Để trống = dùng địa chỉ ví.",
+    "avatarUrl": "Ảnh đại diện (URL)",
+    "avatarHint": "Dán link ảnh bắt đầu bằng https://",
+    "save": "Lưu thay đổi",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu!",
+    "bests": "Thành tích",
+    "recent": "Lượt chơi gần đây",
+    "noScores": "Bạn chưa có điểm nào.",
+    "playNow": "Chơi ngay",
+    "plays": "{count} lượt chơi",
+    "game": "Game",
+    "score": "Điểm",
+    "duration": "Thời gian",
+    "time": "Lúc",
+    "loading": "Đang tải…",
+    "errors": {
+      "usernameTaken": "Tên này đã có người dùng.",
+      "invalid": "Thông tin không hợp lệ (ảnh phải là link https://).",
+      "unknown": "Có lỗi xảy ra, hãy thử lại."
+    }
+  },
+  "admin": {
+    "title": "Quản trị",
+    "subtitle": "Quản lý game, duyệt phiên bản và đặt bản đang chạy.",
+    "loading": "Đang tải…",
+    "noGames": "Chưa có game nào.",
+    "status": "Trạng thái",
+    "versions": "Phiên bản",
+    "noVersions": "Chưa có phiên bản nào.",
+    "current": "đang chạy",
+    "approve": "Duyệt",
+    "reject": "Từ chối",
+    "activate": "Đặt làm bản chạy",
+    "rejectPrompt": "Lý do từ chối (không bắt buộc):",
+    "versionName": "Phiên bản",
+    "storageKey": "Thư mục build",
+    "addVersion": "Thêm phiên bản",
+    "storageHint": "Chép bản build vào public/uploads/<thư mục build>/ (có index.html) trước, rồi thêm phiên bản và duyệt. Upload file trực tiếp sẽ có ở Phase 10.",
+    "stats": "{sessions} lượt chơi · {scores} điểm",
+    "createGame": "Thêm game",
+    "create": "Tạo game",
+    "cancel": "Hủy",
+    "name": "Tên",
+    "description": "Mô tả",
+    "thumbnailKey": "Ảnh bìa (key file)",
+    "categories": "Thể loại",
+    "createHint": "Game mới ở trạng thái Nháp. Thêm phiên bản → duyệt → đặt làm bản chạy → chuyển trạng thái sang Đã phát hành.",
+    "gameStatus": {
+      "DRAFT": "Nháp",
+      "PENDING_REVIEW": "Chờ duyệt",
+      "PUBLISHED": "Đã phát hành",
+      "MAINTENANCE": "Bảo trì",
+      "SUSPENDED": "Bị khóa",
+      "ARCHIVED": "Lưu trữ"
+    },
+    "versionStatus": {
+      "DRAFT": "Nháp",
+      "PENDING_REVIEW": "Chờ duyệt",
+      "APPROVED": "Đã duyệt",
+      "REJECTED": "Bị từ chối"
+    },
+    "ok": {
+      "statusChanged": "Đã đổi trạng thái.",
+      "approved": "Đã duyệt phiên bản.",
+      "rejected": "Đã từ chối phiên bản.",
+      "activated": "Đã đổi phiên bản đang chạy.",
+      "versionAdded": "Đã thêm phiên bản (chờ duyệt).",
+      "gameCreated": "Đã tạo game."
+    },
+    "errors": {
+      "load": "Không tải được dữ liệu ({code}).",
+      "generic": "Thao tác thất bại ({code}).",
+      "NO_APPROVED_VERSION": "Cần có phiên bản đã duyệt và đặt làm bản chạy trước khi phát hành.",
+      "VERSION_NOT_APPROVED": "Phiên bản chưa được duyệt.",
+      "VERSION_IN_USE": "Không thể từ chối phiên bản đang chạy.",
+      "CONFLICT": "Dữ liệu bị trùng (slug hoặc tên phiên bản đã tồn tại).",
+      "VALIDATION_ERROR": "Dữ liệu nhập chưa hợp lệ.",
+      "CATEGORY_NOT_FOUND": "Thể loại không tồn tại.",
+      "FORBIDDEN": "Bạn không có quyền admin."
+    }
+  },
+  "notFound": {
+    "title": "Không tìm thấy trang",
+    "text": "Trang hoặc game bạn tìm không tồn tại hoặc đã bị gỡ.",
+    "home": "Về trang chủ"
   }
 }

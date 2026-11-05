@@ -8,12 +8,12 @@ export async function Header() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/80 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
-        <Link href="/" className="flex items-center gap-2 font-display text-lg font-bold tracking-wide">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
+        <Link href="/" className="flex shrink-0 items-center gap-2 font-display text-lg font-bold tracking-wide">
           <span className="grid size-8 place-items-center rounded-lg bg-linear-to-br from-neon to-neon-pink text-bg">
             G
           </span>
-          <span>
+          <span className="hidden min-[400px]:inline">
             GAME<span className="neon-text">HUB</span>
           </span>
         </Link>
@@ -22,9 +22,12 @@ export async function Header() {
           <Link href="/" className="hover:text-ink">
             {t("home")}
           </Link>
+          <Link href="/#games" className="hover:text-ink">
+            {t("games")}
+          </Link>
         </nav>
 
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex items-center gap-2 sm:gap-3">
           <LanguageSwitcher label={t("language")} />
           <ConnectWalletButton />
         </div>

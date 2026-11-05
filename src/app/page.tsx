@@ -1,29 +1,34 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { listGames } from "@/modules/games/service";
+import { listCategories, listGames } from "@/modules/games/service";
+import { GameCard } from "@/components/games/GameCard";
+import { CategoryFilter } from "@/components/games/CategoryFilter";
 
 // Luôn đọc dữ liệu mới từ database
 export const dynamic = "force-dynamic";
 
-async function getGames(locale: string) {
+async function loadCatalog(locale: string, category?: string) {
   try {
-    return { games: await listGames(locale), dbError: false };
+    const [games, categories] = await Promise.all([listGames(locale, { category }), listCategories(locale)]);
+    return { games, categories, dbError: false };
   } catch (error) {
     console.error("[home] Không kết nối được database:", error);
-    return { games: [], dbError: true };
+    return { games: [], categories: [], dbError: true };
   }
 }
 
 export default async function HomePage({
   searchParams,
 }: {
-  searchParams: Promise<{ auth?: string }>;
+  searchParams: Promise<{ auth?: string; category?: string }>;
 }) {
   const t = await getTranslations("home");
   const tAuth = await getTranslations("auth");
   const locale = await getLocale();
-  const { games, dbError } = await getGames(locale);
+  const { auth, category } = await searchParams;
+  const activeCategory = category && /^[a-z0-9-]{1,50}$/.test(category) ? category : undefined;
+  const { games, categories, dbError } = await loadCatalog(locale, activeCategory);
+
   // Bị middleware chuyển về trang chủ vì chưa đăng nhập / không phải admin
-  const { auth } = await searchParams;
   const authNotice = auth === "required" || auth === "forbidden" ? tAuth(auth) : null;
 
   return (
@@ -34,7 +39,7 @@ export default async function HomePage({
         </div>
       )}
       <section className="grid-bg border-b border-line/50">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:py-28">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:py-24">
           <span className="inline-flex items-center gap-2 rounded-full border border-neon/40 bg-neon/10 px-3 py-1 text-xs font-semibold text-neon">
             <span className="size-1.5 rounded-full bg-neon" />
             {t("badge")}
@@ -52,8 +57,13 @@ export default async function HomePage({
         </div>
       </section>
 
-      <section id="games" className="mx-auto max-w-6xl px-4 py-14">
-        <h2 className="font-display text-2xl font-bold">{t("gamesTitle")}</h2>
+      <section id="games" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-12">
+        <div className="flex flex-col gap-4">
+          <h2 className="font-display text-2xl font-bold">{t("gamesTitle")}</h2>
+          {categories.length > 0 && (
+            <CategoryFilter categories={categories} active={activeCategory} allLabel={t("allCategories")} />
+          )}
+        </div>
 
         {dbError && (
           <p className="mt-6 rounded-lg border border-neon-pink/40 bg-neon-pink/10 p-4 text-sm text-neon-pink">
@@ -61,39 +71,14 @@ export default async function HomePage({
           </p>
         )}
 
+        {!dbError && games.length === 0 && (
+          <p className="mt-8 rounded-xl border border-dashed border-line p-8 text-center text-muted">{t("noGames")}</p>
+        )}
+
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {games.map((game) => {
-            const { name, description } = game;
-            return (
-              <article
-                key={game.id}
-                className="group overflow-hidden rounded-2xl border border-line bg-surface transition hover:border-neon/60"
-              >
-                <div className="aspect-video bg-surface-2">
-                  {game.thumbnailUrl && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={game.thumbnailUrl} alt={name} className="size-full object-cover" />
-                  )}
-                </div>
-                <div className="p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-display text-lg font-semibold">{name}</h3>
-                    <div className="flex flex-wrap justify-end gap-1">
-                      {game.categories.map((c) => (
-                        <span key={c.slug} className="rounded-md bg-surface-2 px-2 py-0.5 text-xs text-muted">
-                          {c.name}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  {description && <p className="mt-2 text-sm text-muted">{description}</p>}
-                  <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-neon-lime">
-                    {t("comingSoon")}
-                  </p>
-                </div>
-              </article>
-            );
-          })}
+          {games.map((game) => (
+            <GameCard key={game.id} game={game} labels={{ play: t("play"), maintenance: t("maintenance") }} />
+          ))}
         </div>
       </section>
     </>

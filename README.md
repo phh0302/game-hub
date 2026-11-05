@@ -4,7 +4,7 @@ Cổng mini game: đăng nhập bằng ví MetaMask (SIWE), bảng xếp hạng,
 
 **Stack:** Next.js 15 (App Router) · TypeScript · PostgreSQL + Prisma · Tailwind CSS 4 · next-intl · viem
 
-Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md)
+Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md) · Tích hợp game cho developer: [docs/GAME_SDK.md](./docs/GAME_SDK.md)
 
 ## Yêu cầu
 - Node.js 20.9 trở lên
@@ -57,7 +57,9 @@ Mở http://localhost:3000
 ```
 prisma/              schema.prisma, seed.ts, migrations/
 messages/            vi.json, en.json (bản dịch giao diện)
+public/sdk/          Game Hub SDK cho game (gamehub-sdk.js)
 public/uploads/      file tĩnh khi chạy local: ảnh, bản build game (games/<slug>/<version>/)
+docs/                tài liệu cho developer
 src/app/             trang (Next.js App Router)
 src/app/api/v1/      API – chỉ đọc request, gọi service, trả JSON
 src/modules/         nghiệp vụ theo từng phần: auth, users, games, scores, events

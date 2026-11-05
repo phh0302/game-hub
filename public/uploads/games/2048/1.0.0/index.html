@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>2048</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="top">
+        <h1 class="title">2048</h1>
+        <div class="scores">
+          <div class="box">
+            <span class="label" data-i18n="score">Điểm</span>
+            <span id="score" class="value">0</span>
+          </div>
+          <div class="box">
+            <span class="label" data-i18n="best">Cao nhất</span>
+            <span id="best" class="value">0</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="bar">
+        <p id="hint" class="hint" data-i18n="hint">Dùng phím mũi tên hoặc vuốt để ghép ô.</p>
+        <button id="new-game" class="btn" type="button" data-i18n="newGame">Ván mới</button>
+      </div>
+
+      <div id="board" class="board" aria-label="2048 board">
+        <div id="grid" class="grid"></div>
+        <div id="overlay" class="overlay hidden" role="dialog" aria-live="polite">
+          <p id="overlay-title" class="overlay-title"></p>
+          <p id="overlay-text" class="overlay-text"></p>
+          <div class="overlay-actions">
+            <button id="keep-going" class="btn ghost hidden" type="button" data-i18n="keepGoing">Chơi tiếp</button>
+            <button id="try-again" class="btn" type="button" data-i18n="tryAgain">Chơi lại</button>
+          </div>
+        </div>
+      </div>
+
+      <p id="save-note" class="note hidden" data-i18n="saveNote">Kết nối ví trên Game Hub để lưu điểm và lên bảng xếp hạng.</p>
+    </main>
+
+    <!-- SDK của Game Hub: giao tiếp với hub (bắt đầu ván, nộp điểm, quảng cáo) -->
+    <script src="/sdk/gamehub-sdk.js"></script>
+    <script src="game.js"></script>
+  </body>
+</html>
