@@ -4,13 +4,17 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { useRouter } from "next/navigation";
 import { stringToHex } from "viem";
 
+/** Khớp với PublicUser ở server (src/modules/users/dto.ts) */
 export type AuthUser = {
   id: string;
-  walletAddress: string;
   username: string | null;
   avatarUrl: string | null;
   role: "USER" | "ADMIN";
+  isGuest: boolean;
+  walletAddress: string | null;
 };
+
+const API = "/api/v1";
 
 /** Mã lỗi đăng nhập – dịch trong messages/*.json mục auth.errors */
 export type AuthErrorCode =
@@ -81,7 +85,7 @@ export function AuthProvider({
   const [error, setError] = useState<AuthErrorCode | null>(null);
 
   const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => undefined);
+    await fetch(`${API}/auth/logout`, { method: "POST" }).catch(() => undefined);
     setUser(null);
     router.refresh();
   }, [router]);
@@ -104,7 +108,7 @@ export function AuthProvider({
       const chainId = Number.parseInt(chainIdHex, 16) || 1;
 
       // 1. Lấy thông điệp SIWE từ server
-      const { message } = await postJson<{ message: string }>("/api/auth/nonce", { address, chainId });
+      const { message } = await postJson<{ message: string }>(`${API}/auth/nonce`, { address, chainId });
 
       // 2. Ký thông điệp bằng MetaMask (miễn phí, không tốn gas)
       setStatus("signing");
@@ -114,7 +118,7 @@ export function AuthProvider({
       })) as string;
 
       // 3. Server xác minh chữ ký → set cookie phiên
-      const { user: loggedIn } = await postJson<{ user: AuthUser }>("/api/auth/verify", { message, signature });
+      const { user: loggedIn } = await postJson<{ user: AuthUser }>(`${API}/auth/verify`, { message, signature });
       setUser(loggedIn);
       router.refresh();
     } catch (err) {
@@ -127,10 +131,11 @@ export function AuthProvider({
   // Đổi ví trong MetaMask khi đang đăng nhập → đăng xuất để tránh dùng nhầm tài khoản
   useEffect(() => {
     const eth = window.ethereum;
-    if (!eth || !user) return;
+    const wallet = user?.walletAddress;
+    if (!eth || !wallet) return;
 
     const onAccountsChanged = (accounts: string[]) => {
-      if (accounts[0]?.toLowerCase() !== user.walletAddress) void logout();
+      if (accounts[0]?.toLowerCase() !== wallet) void logout();
     };
     eth.on("accountsChanged", onAccountsChanged);
     return () => eth.removeListener("accountsChanged", onAccountsChanged);

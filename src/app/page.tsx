@@ -1,17 +1,12 @@
 import { getLocale, getTranslations } from "next-intl/server";
-import { GameStatus } from "@prisma/client";
-import { prisma } from "@/lib/prisma";
+import { listGames } from "@/modules/games/service";
 
 // Luôn đọc dữ liệu mới từ database
 export const dynamic = "force-dynamic";
 
-async function getGames() {
+async function getGames(locale: string) {
   try {
-    const games = await prisma.game.findMany({
-      where: { status: { in: [GameStatus.ACTIVE, GameStatus.MAINTENANCE] } },
-      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
-    });
-    return { games, dbError: false };
+    return { games: await listGames(locale), dbError: false };
   } catch (error) {
     console.error("[home] Không kết nối được database:", error);
     return { games: [], dbError: true };
@@ -26,7 +21,7 @@ export default async function HomePage({
   const t = await getTranslations("home");
   const tAuth = await getTranslations("auth");
   const locale = await getLocale();
-  const { games, dbError } = await getGames();
+  const { games, dbError } = await getGames(locale);
   // Bị middleware chuyển về trang chủ vì chưa đăng nhập / không phải admin
   const { auth } = await searchParams;
   const authNotice = auth === "required" || auth === "forbidden" ? tAuth(auth) : null;
@@ -68,8 +63,7 @@ export default async function HomePage({
 
         <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {games.map((game) => {
-            const name = locale === "en" ? game.nameEn : game.nameVi;
-            const description = locale === "en" ? game.descriptionEn : game.descriptionVi;
+            const { name, description } = game;
             return (
               <article
                 key={game.id}
@@ -82,11 +76,15 @@ export default async function HomePage({
                   )}
                 </div>
                 <div className="p-4">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-start justify-between gap-2">
                     <h3 className="font-display text-lg font-semibold">{name}</h3>
-                    <span className="rounded-md bg-surface-2 px-2 py-0.5 text-xs text-muted">
-                      {game.category}
-                    </span>
+                    <div className="flex flex-wrap justify-end gap-1">
+                      {game.categories.map((c) => (
+                        <span key={c.slug} className="rounded-md bg-surface-2 px-2 py-0.5 text-xs text-muted">
+                          {c.name}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                   {description && <p className="mt-2 text-sm text-muted">{description}</p>}
                   <p className="mt-4 text-xs font-semibold uppercase tracking-wider text-neon-lime">

@@ -38,6 +38,7 @@ export async function handle(fn: () => Promise<Response>): Promise<Response> {
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
       if (err.code === "P2002") return errorResponse(409, "CONFLICT", "Dữ liệu đã tồn tại");
       if (err.code === "P2025") return errorResponse(404, "NOT_FOUND", "Không tìm thấy dữ liệu");
+      if (err.code === "P2003") return errorResponse(400, "INVALID_REFERENCE", "Dữ liệu liên kết không tồn tại");
     }
     console.error("[api] Lỗi không mong muốn:", err);
     return errorResponse(500, "INTERNAL_ERROR", "Lỗi máy chủ");

@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_COOKIE, verifySession } from "@/lib/auth/jwt";
+import { SESSION_COOKIE, verifySession } from "@/modules/auth/jwt";
 
 /**
  * Chặn trang cần đăng nhập (/profile) và trang admin (/admin).

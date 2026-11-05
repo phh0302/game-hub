@@ -5,7 +5,8 @@ import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { AuthProvider } from "@/components/auth/AuthProvider";
-import { getCurrentUser, toPublicUser } from "@/lib/auth/session";
+import { getCurrentUser } from "@/modules/auth/session";
+import { toPublicUser } from "@/modules/users/dto";
 import "./globals.css";
 
 // Cả 2 font đều hỗ trợ tiếng Việt

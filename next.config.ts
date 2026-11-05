@@ -9,7 +9,7 @@ const nextConfig: NextConfig = {
     return [
       {
         // Game HTML5 chỉ được nhúng trong chính Game Hub
-        source: "/games/:path*",
+        source: "/uploads/games/:path*",
         headers: [{ key: "X-Frame-Options", value: "SAMEORIGIN" }],
       },
     ];

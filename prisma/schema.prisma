@@ -1,5 +1,11 @@
-// Game Hub – database schema
-// Danh tính người dùng = địa chỉ ví (đăng nhập bằng MetaMask/SIWE), không có password.
+// Game Hub – database schema (Phase 2.5: thiết kế để mở rộng)
+//
+// Nguyên tắc: tính năng mới = THÊM bảng / THÊM dòng, không sửa cột cũ.
+// - Cách đăng nhập tách khỏi User (AuthIdentity) → thêm Google/email/khách không đổi bảng User
+// - Bản dịch, thể loại, phiên bản game, bảng xếp hạng đều là bảng riêng
+// - Cấu hình riêng từng game/bảng xếp hạng lưu JSON (settings) → thêm luật không cần migration
+// - Không xóa cứng dữ liệu quan trọng: dùng deletedAt / trạng thái ARCHIVED
+// - File (ảnh, game) lưu "key" tương đối, URL đầy đủ ghép từ cấu hình
 
 generator client {
   provider = "prisma-client-js"
@@ -10,91 +16,278 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ───────────────────────────── Người dùng & đăng nhập ─────────────────────────────
+
 enum Role {
   USER
   ADMIN
 }
 
-enum GameStatus {
-  ACTIVE // hiển thị và chơi được
-  MAINTENANCE // hiển thị nhưng tạm khóa chơi
-  HIDDEN // ẩn khỏi danh sách
-}
-
-enum GameCategory {
-  PUZZLE
-  ARCADE
-  ACTION
-  CASUAL
-  CARD
-  STRATEGY
+enum AuthProvider {
+  WALLET // ví Ethereum (MetaMask) – providerUserId = địa chỉ ví chữ thường
+  GOOGLE // dự phòng cho sau này
+  EMAIL // dự phòng cho sau này
+  GUEST // người chơi khách – providerUserId = mã khách lưu trong cookie
 }
 
 model User {
-  id            String    @id @default(cuid())
-  /// Địa chỉ ví, luôn lưu dạng chữ thường (0xabc...)
-  walletAddress String    @unique
-  username      String?   @unique
-  avatarUrl     String?
-  role          Role      @default(USER)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  lastLoginAt   DateTime?
+  id          String    @id @default(cuid())
+  username    String?   @unique
+  avatarKey   String?
+  role        Role      @default(USER)
+  /// Tài khoản khách: chơi không cần đăng nhập, sau này gắn ví vào là giữ nguyên dữ liệu
+  isGuest     Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  lastLoginAt DateTime?
+  deletedAt   DateTime?
 
-  sessions GameSession[]
-  scores   Score[]
+  identities    AuthIdentity[]
+  studioMembers StudioMember[]
+  sessions      GameSession[]
+  scores        Score[]
+  events        Event[]
 }
 
-/// Nonce dùng 1 lần cho đăng nhập SIWE (chống replay attack)
-model AuthNonce {
-  id            String    @id @default(cuid())
-  nonce         String    @unique
-  walletAddress String
-  expiresAt     DateTime
-  usedAt        DateTime?
-  createdAt     DateTime  @default(now())
+/// Một cách đăng nhập của user. 1 user có thể có nhiều ví / nhiều cách đăng nhập.
+model AuthIdentity {
+  id             String       @id @default(cuid())
+  userId         String
+  provider       AuthProvider
+  providerUserId String
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+  lastUsedAt     DateTime?
 
-  @@index([walletAddress])
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerUserId])
+  @@index([userId])
+}
+
+/// Nonce dùng 1 lần cho đăng nhập (chống replay attack)
+model AuthNonce {
+  id         String       @id @default(cuid())
+  nonce      String       @unique
+  provider   AuthProvider @default(WALLET)
+  /// Địa chỉ ví (chữ thường) hoặc định danh tương ứng provider
+  identifier String
+  expiresAt  DateTime
+  usedAt     DateTime?
+  createdAt  DateTime     @default(now())
+
+  @@index([identifier])
   @@index([expiresAt])
 }
 
-model Game {
-  id            String       @id @default(cuid())
-  slug          String       @unique
-  nameVi        String
-  nameEn        String
-  descriptionVi String?
-  descriptionEn String?
-  thumbnailUrl  String?
-  category      GameCategory
-  /// Đường dẫn nhúng iframe, vd: /games/2048/index.html
-  embedUrl      String
-  status        GameStatus   @default(ACTIVE)
-  sortOrder     Int          @default(0)
-  /// Điểm tối đa hợp lệ (chống gian lận), null = không giới hạn
-  maxScore      Int?
-  /// Thời gian chơi tối thiểu (giây) để điểm được chấp nhận
-  minPlaySeconds Int         @default(0)
-  createdAt     DateTime     @default(now())
-  updatedAt     DateTime     @updatedAt
+// ───────────────────────────── Nhà phát triển ─────────────────────────────
 
-  sessions GameSession[]
-  scores   Score[]
-
-  @@index([status, sortOrder])
+enum StudioRole {
+  OWNER
+  MEMBER
 }
 
-/// Một lượt chơi. Điểm chỉ được nộp khi gắn với 1 session hợp lệ.
-model GameSession {
-  id        String    @id @default(cuid())
-  userId    String
-  gameId    String
-  startedAt DateTime  @default(now())
-  endedAt   DateTime?
+/// Studio sở hữu game: developer cá nhân = studio 1 thành viên
+model Studio {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  description String?
+  logoKey     String?
+  /// Studio chính thức của Game Hub (game do hub tự làm)
+  isOfficial  Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game  Game   @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  score Score?
+  members StudioMember[]
+  games   Game[]
+}
+
+model StudioMember {
+  studioId  String
+  userId    String
+  role      StudioRole @default(MEMBER)
+  createdAt DateTime   @default(now())
+
+  studio Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([studioId, userId])
+  @@index([userId])
+}
+
+// ───────────────────────────── Game ─────────────────────────────
+
+enum GameStatus {
+  DRAFT // developer đang chuẩn bị
+  PENDING_REVIEW // chờ admin duyệt lần đầu
+  PUBLISHED // hiển thị và chơi được
+  MAINTENANCE // hiển thị nhưng tạm khóa chơi
+  SUSPENDED // bị khóa do vi phạm
+  ARCHIVED // ngừng hoạt động, giữ lại dữ liệu
+}
+
+model Category {
+  id        String   @id @default(cuid())
+  slug      String   @unique
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+
+  translations CategoryTranslation[]
+  games        GameCategory[]
+}
+
+model CategoryTranslation {
+  categoryId String
+  locale     String
+  name       String
+
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([categoryId, locale])
+}
+
+model Game {
+  id               String     @id @default(cuid())
+  slug             String     @unique
+  studioId         String
+  status           GameStatus @default(DRAFT)
+  thumbnailKey     String?
+  sortOrder        Int        @default(0)
+  /// Cấu hình riêng (vd: { "minPlaySeconds": 5, "maxSessionHours": 6 })
+  settings         Json       @default("{}")
+  /// Phiên bản đang chạy cho người chơi
+  currentVersionId String?    @unique
+  publishedAt      DateTime?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  deletedAt        DateTime?
+
+  studio         Studio            @relation(fields: [studioId], references: [id])
+  currentVersion GameVersion?      @relation("CurrentVersion", fields: [currentVersionId], references: [id], onDelete: SetNull)
+  versions       GameVersion[]     @relation("GameVersions")
+  translations   GameTranslation[]
+  categories     GameCategory[]
+  leaderboards   Leaderboard[]
+  sessions       GameSession[]
+  scores         Score[]
+  events         Event[]
+
+  @@index([status, sortOrder])
+  @@index([studioId])
+}
+
+model GameTranslation {
+  gameId      String
+  locale      String
+  name        String
+  description String?
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, locale])
+}
+
+model GameCategory {
+  gameId     String
+  categoryId String
+
+  game     Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, categoryId])
+  @@index([categoryId])
+}
+
+enum VersionStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+}
+
+/// Mỗi lần upload bản build = 1 phiên bản. Có thể quay lại bản cũ.
+model GameVersion {
+  id           String        @id @default(cuid())
+  gameId       String
+  /// Tên phiên bản do developer đặt, vd "1.0.0"
+  version      String
+  /// Thư mục chứa bản build trong kho lưu trữ, vd "games/2048/1.0.0"
+  storageKey   String
+  entryFile    String        @default("index.html")
+  sizeBytes    Int?
+  /// Phiên bản giao thức SDK game dùng (để hub tương thích ngược)
+  sdkVersion   Int           @default(1)
+  status       VersionStatus @default(DRAFT)
+  releaseNotes String?
+  reviewNote   String?
+  reviewedById String?
+  reviewedAt   DateTime?
+  createdById  String?
+  createdAt    DateTime      @default(now())
+
+  game      Game          @relation("GameVersions", fields: [gameId], references: [id], onDelete: Cascade)
+  currentOf Game?         @relation("CurrentVersion")
+  sessions  GameSession[]
+
+  @@unique([gameId, version])
+  @@index([status])
+}
+
+// ───────────────────────────── Bảng xếp hạng & điểm ─────────────────────────────
+
+enum ScoreOrder {
+  DESC // điểm càng cao càng tốt
+  ASC // càng thấp càng tốt (vd: thời gian hoàn thành)
+}
+
+/// Mỗi game có ≥1 bảng xếp hạng. Giải đấu = bảng xếp hạng có startsAt/endsAt.
+model Leaderboard {
+  id        String     @id @default(cuid())
+  gameId    String
+  /// Định danh trong game, vd "default", "hard-mode", "tet-2027"
+  key       String
+  order     ScoreOrder @default(DESC)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  /// Cấu hình (vd: { "maxScore": 4000000 })
+  settings  Json       @default("{}")
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+
+  game         Game                     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  translations LeaderboardTranslation[]
+  scores       Score[]
+
+  @@unique([gameId, key])
+}
+
+model LeaderboardTranslation {
+  leaderboardId String
+  locale        String
+  name          String
+
+  leaderboard Leaderboard @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
+
+  @@id([leaderboardId, locale])
+}
+
+/// Một lượt chơi. Điểm chỉ được nộp khi gắn với 1 lượt chơi hợp lệ.
+model GameSession {
+  id            String    @id @default(cuid())
+  userId        String
+  gameId        String
+  gameVersionId String?
+  startedAt     DateTime  @default(now())
+  endedAt       DateTime?
+  metadata      Json?
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game         @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  gameVersion GameVersion? @relation(fields: [gameVersionId], references: [id], onDelete: SetNull)
+  scores      Score[]
 
   @@index([userId, gameId])
   @@index([startedAt])
@@ -103,18 +296,44 @@ model GameSession {
 model Score {
   id              String   @id @default(cuid())
   userId          String
+  /// Lưu thêm gameId để thống kê theo game không cần join
   gameId          String
-  /// Mỗi session chỉ nộp điểm 1 lần
-  sessionId       String   @unique
-  value           Int
+  leaderboardId   String
+  sessionId       String
+  /// BigInt để chứa điểm rất lớn (game idle, clicker)
+  value           BigInt
   durationSeconds Int
   createdAt       DateTime @default(now())
 
-  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  game    Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
-  session GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game        @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  leaderboard Leaderboard @relation(fields: [leaderboardId], references: [id], onDelete: Cascade)
+  session     GameSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
-  @@index([gameId, value(sort: Desc)])
+  /// Mỗi lượt chơi nộp tối đa 1 điểm cho mỗi bảng xếp hạng
+  @@unique([sessionId, leaderboardId])
+  @@index([leaderboardId, value])
+  @@index([leaderboardId, createdAt])
+  @@index([userId, leaderboardId])
   @@index([gameId, createdAt])
-  @@index([userId, gameId])
+}
+
+// ───────────────────────────── Nhật ký sự kiện ─────────────────────────────
+
+/// Nhật ký chỉ ghi thêm: lượt chơi, nộp điểm, (sau này) lượt xem quảng cáo…
+/// Dùng cho thống kê và chia doanh thu với developer.
+model Event {
+  id        String   @id @default(cuid())
+  /// vd "session.start", "score.submit", "ad.rewarded"
+  type      String
+  userId    String?
+  gameId    String?
+  data      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  game Game? @relation(fields: [gameId], references: [id], onDelete: SetNull)
+
+  @@index([type, createdAt])
+  @@index([gameId, createdAt])
 }
