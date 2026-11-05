@@ -94,7 +94,7 @@
     "loginRequired": "Connect your wallet to view your profile.",
     "wallet": "Wallet",
     "username": "Display name",
-    "usernameHint": "3–20 characters: letters, numbers, underscore. Empty = use wallet address.",
+    "usernameHint": "3–20 characters: lowercase letters, numbers, underscore (uppercase is converted). Empty = use wallet address.",
     "avatarUrl": "Avatar (URL)",
     "avatarHint": "Paste an image link starting with https://",
     "save": "Save changes",
@@ -112,7 +112,7 @@
     "loading": "Loading…",
     "errors": {
       "usernameTaken": "That name is already taken.",
-      "invalid": "Invalid details (avatar must be an https:// link).",
+      "invalid": "Invalid details: the name may be reserved (admin, system…) or the avatar is not an https:// link.",
       "unknown": "Something went wrong, please try again."
     }
   },

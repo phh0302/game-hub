@@ -94,7 +94,7 @@
     "loginRequired": "Bạn cần kết nối ví để xem hồ sơ.",
     "wallet": "Ví",
     "username": "Tên hiển thị",
-    "usernameHint": "3–20 ký tự: chữ, số, dấu gạch dưới. Để trống = dùng địa chỉ ví.",
+    "usernameHint": "3–20 ký tự: chữ thường, số, dấu gạch dưới (chữ hoa tự chuyển thành chữ thường). Để trống = dùng địa chỉ ví.",
     "avatarUrl": "Ảnh đại diện (URL)",
     "avatarHint": "Dán link ảnh bắt đầu bằng https://",
     "save": "Lưu thay đổi",
@@ -112,7 +112,7 @@
     "loading": "Đang tải…",
     "errors": {
       "usernameTaken": "Tên này đã có người dùng.",
-      "invalid": "Thông tin không hợp lệ (ảnh phải là link https://).",
+      "invalid": "Thông tin không hợp lệ: tên có thể đã bị cấm (admin, system…) hoặc ảnh không phải link https://.",
       "unknown": "Có lỗi xảy ra, hãy thử lại."
     }
   },

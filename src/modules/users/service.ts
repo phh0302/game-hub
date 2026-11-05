@@ -5,14 +5,10 @@ import { assetUrl } from "@/lib/assets";
 import { toNumber } from "@/lib/format";
 import { pickTranslation } from "@/lib/locale";
 import { userWithIdentities } from "./dto";
+import { usernameSchema } from "./username";
 
 export const updateProfileSchema = z.object({
-  username: z
-    .string()
-    .trim()
-    .regex(/^[a-zA-Z0-9_]{3,20}$/, "Username 3–20 ký tự: chữ, số, dấu _")
-    .nullable()
-    .optional(),
+  username: usernameSchema.nullable().optional(),
   /** Tạm thời nhận URL ảnh https; sau này thay bằng upload ảnh (lưu key) */
   avatarUrl: z.string().trim().url().startsWith("https://").max(500).nullable().optional(),
 });

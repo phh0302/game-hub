@@ -45,16 +45,37 @@ export async function handle(fn: () => Promise<Response>): Promise<Response> {
   }
 }
 
-/** Đọc body JSON an toàn (body rỗng/sai định dạng → lỗi 400) */
+/** API của hub chỉ nhận JSON nhỏ – chặn body lớn để tránh tốn bộ nhớ */
+const MAX_JSON_BYTES = 64 * 1024;
+
+/** Đọc body JSON an toàn (rỗng / sai định dạng → 400, quá lớn → 413) */
 export async function readJson(req: Request): Promise<unknown> {
+  const declared = Number(req.headers.get("content-length") ?? 0);
+  if (declared > MAX_JSON_BYTES) {
+    throw new ApiError(413, "PAYLOAD_TOO_LARGE", "Dữ liệu gửi lên quá lớn");
+  }
+  let text: string;
   try {
-    return await req.json();
+    text = await req.text();
+  } catch {
+    throw new ApiError(400, "INVALID_JSON", "Body phải là JSON hợp lệ");
+  }
+  // Content-length có thể bị bỏ qua (chunked) → kiểm tra lại độ dài thật
+  if (new TextEncoder().encode(text).byteLength > MAX_JSON_BYTES) {
+    throw new ApiError(413, "PAYLOAD_TOO_LARGE", "Dữ liệu gửi lên quá lớn");
+  }
+  try {
+    return JSON.parse(text);
   } catch {
     throw new ApiError(400, "INVALID_JSON", "Body phải là JSON hợp lệ");
   }
 }
 
-/** Lấy IP client (phục vụ rate limit) */
+/**
+ * Lấy IP client (phục vụ rate limit).
+ * Lưu ý: x-forwarded-for chỉ đáng tin khi chạy sau proxy/CDN tự ghi header này (Vercel, Nginx…).
+ * Tự host mà để Node lộ trực tiếp ra Internet thì người dùng có thể giả header → nên đặt sau Nginx.
+ */
 export function clientIp(req: Request): string {
   const fwd = req.headers.get("x-forwarded-for");
   return fwd?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";

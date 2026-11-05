@@ -6,9 +6,12 @@ import { ApiError } from "@/lib/api";
 import { assetUrl } from "@/lib/assets";
 import { displayName, toNumber } from "@/lib/format";
 import { pickTranslation } from "@/lib/locale";
+import { isBoardOpen, periodStart, type Period } from "./period";
+
+export { isBoardOpen, periodStart };
 
 export const periodSchema = z.enum(["day", "week", "all"]).default("all");
-export type Period = z.infer<typeof periodSchema>;
+export type { Period };
 
 export const boardKeySchema = z
   .string()
@@ -16,19 +19,6 @@ export const boardKeySchema = z
   .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
   .max(50)
   .default("default");
-
-// Kỳ ngày/tuần tính theo giờ Việt Nam (UTC+7)
-const VN_OFFSET_MS = 7 * 60 * 60 * 1000;
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** Thời điểm bắt đầu kỳ: 0h hôm nay / 0h thứ Hai tuần này (giờ VN) */
-export function periodStart(period: Period, now = new Date()): Date {
-  if (period === "all") return new Date(0);
-  const vn = new Date(now.getTime() + VN_OFFSET_MS);
-  let start = Date.UTC(vn.getUTCFullYear(), vn.getUTCMonth(), vn.getUTCDate());
-  if (period === "week") start -= ((vn.getUTCDay() + 6) % 7) * DAY_MS;
-  return new Date(start - VN_OFFSET_MS);
-}
 
 export async function getLeaderboardByKey(gameId: string, key: string) {
   const board = await prisma.leaderboard.findUnique({
@@ -39,11 +29,6 @@ export async function getLeaderboardByKey(gameId: string, key: string) {
     throw new ApiError(404, "LEADERBOARD_NOT_FOUND", "Không tìm thấy bảng xếp hạng");
   }
   return board;
-}
-
-/** Bảng xếp hạng có đang nhận điểm không (giải đấu có thời gian bắt đầu/kết thúc) */
-export function isBoardOpen(board: Pick<Leaderboard, "startsAt" | "endsAt">, now = new Date()) {
-  return (!board.startsAt || board.startsAt <= now) && (!board.endsAt || now < board.endsAt);
 }
 
 /** Khoảng thời gian tính điểm = giao của kỳ (ngày/tuần) với thời gian của bảng xếp hạng */

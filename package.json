@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"tests/unit/*.test.ts\"",
+    "audit": "npm audit --omit=dev",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:migrate": "prisma migrate dev",
@@ -21,10 +23,10 @@
   "dependencies": {
     "@prisma/client": "^6.16.0",
     "jose": "^6.0.11",
-    "next": "15.5.4",
+    "next": "15.5.29",
     "next-intl": "^4.3.0",
-    "react": "19.1.0",
-    "react-dom": "19.1.0",
+    "react": "^19.1.7",
+    "react-dom": "^19.1.7",
     "server-only": "^0.0.1",
     "viem": "^2.30.0",
     "zod": "^3.25.0"
@@ -40,6 +42,6 @@
     "typescript": "^5.8.0"
   },
   "engines": {
-    "node": ">=20.9.0"
+    "node": ">=22.12.0"
   }
 }

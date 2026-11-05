@@ -4,10 +4,10 @@ Cổng mini game: đăng nhập bằng ví MetaMask (SIWE), bảng xếp hạng,
 
 **Stack:** Next.js 15 (App Router) · TypeScript · PostgreSQL + Prisma · Tailwind CSS 4 · next-intl · viem
 
-Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md) · Tích hợp game cho developer: [docs/GAME_SDK.md](./docs/GAME_SDK.md)
+Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md) · Tích hợp game cho developer: [docs/GAME_SDK.md](./docs/GAME_SDK.md) · Kiểm thử thủ công: [docs/TEST_CHECKLIST.md](./docs/TEST_CHECKLIST.md)
 
 ## Yêu cầu
-- Node.js 20.9 trở lên
+- Node.js 22.12 trở lên (Node 20 đã hết hỗ trợ)
 - Docker Desktop (để chạy PostgreSQL)
 - Trình duyệt có extension MetaMask
 
@@ -46,6 +46,8 @@ Mở http://localhost:3000
 | `npm run dev` | Chạy web ở chế độ dev |
 | `npm run build` | Build production |
 | `npm run typecheck` | Kiểm tra lỗi TypeScript |
+| `npm test` | Chạy unit test (`tests/unit/`) |
+| `npm run audit` | Kiểm tra lỗ hổng thư viện |
 | `npm run db:up` / `db:down` | Bật / tắt PostgreSQL |
 | `npm run db:migrate` | Tạo migration khi sửa `prisma/schema.prisma` |
 | `npm run db:seed` | Thêm dữ liệu mẫu |

@@ -106,10 +106,17 @@
 - [x] Tài liệu tích hợp cho developer: `docs/GAME_SDK.md`
 
 ## Phase 8 – Kiểm thử & bảo mật
-- [ ] Test luồng: kết nối ví → ký → chơi → nộp điểm → lên bảng xếp hạng
-- [ ] Test lỗi: nonce hết hạn, ký lại nonce cũ, đổi ví giữa chừng, nộp điểm 2 lần
-- [ ] Kiểm tra cookie httpOnly/secure/sameSite, validate input bằng zod
-- [ ] Kiểm tra trên Chrome + MetaMask desktop, MetaMask mobile browser
+- [x] Vá lỗ hổng đã công bố: Next.js 15.5.4 → **15.5.29**, React 19.1.0 → **19.1.7+** (CVE-2025-66478 RCE, DoS Server Actions, các bản vá 2026)
+- [x] Header bảo mật: `nosniff`, `Referrer-Policy`, `Permissions-Policy`, chặn nhúng trang hub (`X-Frame-Options: DENY`), tắt `X-Powered-By`
+- [x] File game luôn bị ép sandbox (`Content-Security-Policy: sandbox`) kể cả khi mở trực tiếp – đã chạy thử: game vẫn chơi được, không đọc được cookie
+- [x] Chặn CSRF: API ghi dữ liệu từ web khác → 403 `CROSS_SITE_REQUEST`
+- [x] Giới hạn body JSON 64KB · username chữ thường, cấm tên giả mạo (admin, system, 0x…)
+- [x] Rà soát code: cookie httpOnly/secure/sameSite, validate input bằng zod, quyền admin kiểm tra ở cả middleware và API
+- [x] Unit test (`npm test`, 23 test): kỳ xếp hạng giờ VN, giải đấu, CSRF, định dạng, URL file, username, settings
+- [x] Checklist kiểm thử thủ công: `docs/TEST_CHECKLIST.md`
+- [ ] Chạy checklist thủ công với MetaMask (đăng nhập, chơi, nộp điểm, admin, bảo mật)
+- [ ] Kiểm tra trên điện thoại (trình duyệt trong app MetaMask)
+- Hạn chế đã biết (làm sau): đăng xuất chưa thu hồi JWT ngay (hết hạn sau 7 ngày) · rate limit lưu trong bộ nhớ (nhiều server cần Redis) · ảnh đại diện là link ngoài (Phase 10 chuyển sang upload)
 
 ## Phase 9 – Deploy
 - [ ] Database Postgres online (Neon/Supabase)
@@ -148,6 +155,6 @@
 | 2.5 | Thiết kế lại để mở rộng | 1 ngày | Xong |
 | 3–5 | Đăng nhập ví, API game, điểm, bảng xếp hạng | 1.5–2 ngày | Xong |
 | 6–7 | Giao diện + SDK + game 2048 | 2.5–3 ngày | Xong (chờ chạy thử trên máy) |
-| 8–9 | Kiểm thử + deploy | 0.5–1 ngày | |
+| 8–9 | Kiểm thử + deploy | 0.5–1 ngày | Phase 8: xong phần code, chờ chạy checklist |
 | 10 | Nền tảng developer | 3–4 ngày | |
 | 11 | Kiếm tiền | tùy hướng chọn | |
