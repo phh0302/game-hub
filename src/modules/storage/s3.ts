@@ -45,7 +45,8 @@ export const s3StorageDriver: StorageDriver = {
   async put(key, body, contentType) {
     const res = await s3().client.fetch(objectUrl(key), {
       method: "PUT",
-      body,
+      // Sao chép sang Uint8Array<ArrayBuffer> – kiểu body mà fetch chấp nhận
+      body: new Uint8Array(body),
       headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=31536000, immutable" },
     });
     await ensureOk(res, `PUT ${key}`);
