@@ -132,13 +132,21 @@
 
 ---
 
-## Phase 10 – Nền tảng cho developer (sau MVP)
-- [ ] Đăng ký làm developer → tạo Studio
-- [ ] Trang quản lý game của developer: tạo game, upload `.zip` bản build, gửi duyệt
-- [ ] Kiểm tra file upload (có `index.html`, giới hạn dung lượng, chỉ loại file cho phép) → lưu lên Cloudflare R2 / S3
-- [ ] Admin duyệt game & phiên bản, ghi lý do từ chối
-- [ ] Thống kê cho developer: lượt chơi, số người chơi (từ bảng `Event`)
+## Phase 10 – Nền tảng cho developer
+- [x] Đăng ký làm developer → tạo Studio (trang `/developer`)
+- [x] Developer tạo game (Nháp), sửa tên/mô tả/thể loại, upload ảnh bìa
+- [x] Upload `.zip` thẳng lên kho lưu trữ bằng link ký sẵn (không qua Vercel – giới hạn 4,5MB/request), có thanh tiến độ
+- [x] Kiểm tra bản build: tối đa 50MB / 150MB giải nén / 2000 file, chặn zip bomb, `../`, đuôi file lạ; tự bỏ thư mục bao ngoài; cần `index.html`
+- [x] Kho lưu trữ: `local` (máy dev) / `s3` (Cloudflare R2 ở production); file người dùng có key `u/…`, phục vụ từ domain riêng
+- [x] Phiên bản mới → Chờ duyệt; game Nháp → Chờ duyệt; developer thấy lý do bị từ chối
+- [x] Trang **Chơi thử** `/preview/[id]` cho developer + admin: chạy như hub, không lưu điểm, nhật ký SDK + checklist tích hợp
+- [x] Admin: nút Chơi thử từng phiên bản, hiện studio của game
+- [x] Thống kê cho developer: lượt chơi, người chơi, điểm đã lưu
+- [x] Tài liệu: quy trình đăng game + yêu cầu `.zip` (`docs/GAME_SDK.md`), cấu hình R2 (`docs/DEPLOY.md` mục 3b)
+- [ ] Tạo bucket R2 + biến môi trường trên Vercel, thử upload trên production
 - [ ] Báo cáo vi phạm game (`GameReport`), điều khoản cho người đăng game
+- [ ] Mời thêm thành viên vào studio; chuyển quyền sở hữu
+- [ ] Hỗ trợ bản build nén `.br` / `.gz` (Unity WebGL nén)
 
 ## Phase 11 – Kiếm tiền (sau MVP)
 - [ ] Quảng cáo có thưởng / xen giữa màn qua SDK (Google H5 Games Ads)
@@ -162,5 +170,5 @@
 | 3–5 | Đăng nhập ví, API game, điểm, bảng xếp hạng | 1.5–2 ngày | Xong |
 | 6–7 | Giao diện + SDK + game 2048 | 2.5–3 ngày | Xong (chờ chạy thử trên máy) |
 | 8–9 | Kiểm thử + deploy | 0.5–1 ngày | Xong phần code + CI; chờ chạy checklist & tạo Neon/Vercel |
-| 10 | Nền tảng developer | 3–4 ngày | |
+| 10 | Nền tảng developer | 3–4 ngày | Xong phần lõi; chờ cấu hình R2 |
 | 11 | Kiếm tiền | tùy hướng chọn | |

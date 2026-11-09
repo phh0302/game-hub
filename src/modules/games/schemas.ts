@@ -3,7 +3,7 @@ import { GameStatus, ScoreOrder } from "@prisma/client";
 import { locales } from "@/i18n/config";
 import { gameSettingsInputSchema, leaderboardSettingsSchema } from "./settings";
 
-const slugSchema = z
+export const slugSchema = z
   .string()
   .trim()
   .min(2)
@@ -24,7 +24,7 @@ const translationSchema = z.object({
   description: z.string().trim().max(2000).nullable().optional(),
 });
 
-const translationsSchema = z
+export const translationsSchema = z
   .array(translationSchema)
   .min(1)
   .max(10)
@@ -51,11 +51,15 @@ export const gameCreateSchema = z.object({
 
 export const gameUpdateSchema = gameCreateSchema.omit({ defaultLeaderboard: true }).partial();
 
+/** Tên phiên bản dùng làm tên thư mục → cấm "..", không bắt đầu bằng dấu chấm */
+export const versionNameSchema = z
+  .string()
+  .trim()
+  .regex(/^[0-9A-Za-z][0-9A-Za-z._-]{0,29}$/, "Tên phiên bản chỉ gồm chữ, số, dấu chấm, gạch ngang")
+  .refine((v) => !v.includes(".."), "Tên phiên bản không hợp lệ");
+
 export const versionCreateSchema = z.object({
-  version: z
-    .string()
-    .trim()
-    .regex(/^[0-9A-Za-z._-]{1,30}$/, "Tên phiên bản chỉ gồm chữ, số, dấu chấm, gạch ngang"),
+  version: versionNameSchema,
   storageKey: storageKeySchema,
   entryFile: storageKeySchema.default("index.html"),
   sizeBytes: z.number().int().nonnegative().optional(),

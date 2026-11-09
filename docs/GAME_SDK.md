@@ -2,11 +2,25 @@
 
 Tài liệu cho developer muốn đưa game HTML5 lên Game Hub.
 
-## 1. Yêu cầu bản build
+## 1. Đăng game lên hub
 
-- Game HTML5 tĩnh (HTML/CSS/JS, ảnh, âm thanh…), file chạy chính là `index.html`
+1. Kết nối ví → menu góc phải → **Developer** → tạo studio
+2. **Tạo game mới**: tên (Việt/Anh), mô tả, thể loại → vào trang game, upload **ảnh bìa** (PNG/JPG/WEBP ≤ 1MB, tỉ lệ 16:9)
+3. **Upload phiên bản**: đặt tên phiên bản (vd `1.0.0`), chọn file `.zip` → hub kiểm tra + giải nén → phiên bản **Chờ duyệt**
+4. Bấm **Chơi thử** để chạy bản build y như trên hub (điểm không lưu) và xem **nhật ký SDK** – kiểm tra đủ 3 dấu ✓
+5. Admin chơi thử → **Duyệt** → game lên hub. Bị từ chối thì lý do hiện ngay dưới phiên bản – sửa rồi upload phiên bản mới
+
+### Yêu cầu file `.zip`
+
+- Tối đa **50MB**, sau khi giải nén tối đa **150MB** và **2000 file**
+- Có `index.html` ở gốc – hoặc trong **đúng 1 thư mục** bao ngoài (hub tự bỏ thư mục đó)
 - Mọi đường dẫn tài nguyên trong game là **đường dẫn tương đối** (`./img/a.png`, không dùng `/img/a.png`)
+- Chỉ file web: `html js mjs css json map txt xml csv`, ảnh `png jpg gif webp avif svg ico bmp`,
+  âm thanh/video `mp3 ogg wav m4a aac mp4 webm`, font `woff woff2 ttf otf`,
+  engine `wasm data bin unityweb pck atlas fnt plist tmx tsx glb gltf`. File khác (`exe`, `php`, `sh`…) bị từ chối
+- **Unity WebGL**: Build Settings → Compression Format = **Disabled** (hoặc bật *Decompression Fallback*) – hub chưa hỗ trợ file `.br` / `.gz`
 - Không cần server riêng: game chạy hoàn toàn trên trình duyệt
+- File rác (`__MACOSX/`, `.DS_Store`, `Thumbs.db`) được tự bỏ qua
 
 ## 2. Môi trường chạy
 
@@ -20,8 +34,9 @@ Hub nhúng game trong `iframe` có `sandbox="allow-scripts allow-pointer-lock"`:
 ## 3. Nhúng SDK
 
 ```html
+<!-- Dùng ĐƯỜNG DẪN ĐẦY ĐỦ tới hub: bản build được phục vụ từ kho lưu trữ (domain khác hub) -->
 <script src="https://<domain-cua-hub>/sdk/gamehub-sdk.js"></script>
-<!-- Khi chạy trên hub ở máy local: <script src="/sdk/gamehub-sdk.js"></script> -->
+<!-- Hub chạy trên máy (localhost): <script src="http://localhost:3000/sdk/gamehub-sdk.js"></script> -->
 ```
 
 SDK tạo biến toàn cục `window.GameHub`.

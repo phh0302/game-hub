@@ -19,6 +19,7 @@ type AdminVersion = {
 
 type AdminGame = {
   id: string;
+  studio: { name: string; isOfficial: boolean };
   slug: string;
   status: GameStatus;
   currentVersionId: string | null;
@@ -121,6 +122,7 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
             {name} <span className="text-sm font-normal text-muted">/{game.slug}</span>
           </h2>
           <p className="mt-0.5 text-xs text-muted">
+            {game.studio.isOfficial ? "Game Hub" : `Studio: ${game.studio.name}`} ·{" "}
             {t("stats", { sessions: game._count.sessions, scores: game._count.scores })} ·{" "}
             {game.categories.map((c) => c.category.slug).join(", ") || "—"}
           </p>
@@ -174,6 +176,14 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
                       <td className="py-2 pr-3 text-xs text-muted">{date.format(new Date(v.createdAt))}</td>
                       <td className="py-2 text-right">
                         <div className="flex justify-end gap-2">
+                          <a
+                            href={`/preview/${v.id}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="rounded-md border border-line px-2.5 py-1 text-xs font-semibold text-muted hover:text-ink"
+                          >
+                            {t("preview")}
+                          </a>
                           {v.status !== "APPROVED" && (
                             <ActionButton
                               onClick={() =>
