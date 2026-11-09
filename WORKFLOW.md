@@ -143,6 +143,7 @@
 - [x] Admin: nút Chơi thử từng phiên bản, hiện studio của game
 - [x] Thống kê cho developer: lượt chơi, người chơi, điểm đã lưu
 - [x] Tài liệu: quy trình đăng game + yêu cầu `.zip` (`docs/GAME_SDK.md`), cấu hình R2 (`docs/DEPLOY.md` mục 3b)
+- [x] Thử toàn bộ luồng trên máy: tạo studio → tạo game → upload `.zip` → chơi thử → admin duyệt → phát hành (09/11/2026)
 - [ ] Tạo bucket R2 + biến môi trường trên Vercel, thử upload trên production
 - [ ] Báo cáo vi phạm game (`GameReport`), điều khoản cho người đăng game
 - [ ] Mời thêm thành viên vào studio; chuyển quyền sở hữu
