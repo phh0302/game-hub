@@ -8,7 +8,8 @@
   --neon: #22e3ff;
   --pink: #ff3ec8;
   --gap: clamp(6px, 2.2vmin, 12px);
-  --size: min(92vw, 70vh, 460px);
+  /* Chừa chỗ cho tiêu đề, thanh nút và dòng kết quả dưới bàn chơi để khung game không phải cuộn */
+  --size: min(92vw, calc(100vh - 215px), 460px);
 }
 
 * {
@@ -25,6 +26,10 @@ body {
   -webkit-user-select: none;
   user-select: none;
   overscroll-behavior: none;
+  /* Nếu màn quá thấp vẫn phải cuộn thì dùng thanh cuộn tối, không hiện thanh trắng mặc định */
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) var(--bg);
+  color-scheme: dark;
 }
 
 .app {
