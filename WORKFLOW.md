@@ -119,10 +119,16 @@
 - Hạn chế đã biết (làm sau): đăng xuất chưa thu hồi JWT ngay (hết hạn sau 7 ngày) · rate limit lưu trong bộ nhớ (nhiều server cần Redis) · ảnh đại diện là link ngoài (Phase 10 chuyển sang upload)
 
 ## Phase 9 – Deploy
-- [ ] Database Postgres online (Neon/Supabase)
-- [ ] Deploy lên Vercel, cấu hình biến môi trường
-- [ ] `prisma migrate deploy` + seed trên production
-- [ ] Gắn domain (domain phải khớp với `domain` trong SIWE); domain riêng cho game (vd `games.<domain>`)
+- [x] CI GitHub Actions: cài thư viện → kiểm tra schema → TypeScript → unit test → build production → npm audit (xanh)
+- [x] Prisma `directUrl` (Neon/Supabase dùng pooler), script `vercel-build` tự chạy `prisma migrate deploy`
+- [x] Endpoint kiểm tra sống `GET /api/v1/health`
+- [x] Xử lý lỗ hổng thư viện: zod 4.6.7, tắt bộ tối ưu ảnh; đánh giá phần còn lại trong `docs/SECURITY.md`
+- [x] Hướng dẫn từng bước: `docs/DEPLOY.md`
+- [ ] Tạo database Neon (region Singapore), chạy `migrate deploy` + seed production
+- [ ] Tạo project Vercel, nhập biến môi trường, deploy, chuyển Function Region sang Singapore
+- [ ] Kiểm tra sau deploy (health, đăng nhập ví, chơi, admin, cookie Secure, sandbox game)
+- [ ] Gắn domain riêng (domain phải khớp `NEXT_PUBLIC_APP_URL` / SIWE); domain riêng cho game (vd `games.<domain>`)
+- Lưu ý: Vercel Hobby chỉ cho phi thương mại → lên Pro khi bật quảng cáo / thu tiền
 
 ---
 
@@ -155,6 +161,6 @@
 | 2.5 | Thiết kế lại để mở rộng | 1 ngày | Xong |
 | 3–5 | Đăng nhập ví, API game, điểm, bảng xếp hạng | 1.5–2 ngày | Xong |
 | 6–7 | Giao diện + SDK + game 2048 | 2.5–3 ngày | Xong (chờ chạy thử trên máy) |
-| 8–9 | Kiểm thử + deploy | 0.5–1 ngày | Phase 8: xong phần code, chờ chạy checklist |
+| 8–9 | Kiểm thử + deploy | 0.5–1 ngày | Xong phần code + CI; chờ chạy checklist & tạo Neon/Vercel |
 | 10 | Nền tảng developer | 3–4 ngày | |
 | 11 | Kiếm tiền | tùy hướng chọn | |

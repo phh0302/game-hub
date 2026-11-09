@@ -1,10 +1,12 @@
 # Game Hub
 
+[![CI](https://github.com/phh0302/game-hub/actions/workflows/ci.yml/badge.svg)](https://github.com/phh0302/game-hub/actions/workflows/ci.yml)
+
 Cổng mini game: đăng nhập bằng ví MetaMask (SIWE), bảng xếp hạng, giao diện song ngữ Việt/Anh.
 
 **Stack:** Next.js 15 (App Router) · TypeScript · PostgreSQL + Prisma · Tailwind CSS 4 · next-intl · viem
 
-Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md) · Tích hợp game cho developer: [docs/GAME_SDK.md](./docs/GAME_SDK.md) · Kiểm thử thủ công: [docs/TEST_CHECKLIST.md](./docs/TEST_CHECKLIST.md)
+Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md) · Tích hợp game cho developer: [docs/GAME_SDK.md](./docs/GAME_SDK.md) · Kiểm thử thủ công: [docs/TEST_CHECKLIST.md](./docs/TEST_CHECKLIST.md) · Deploy: [docs/DEPLOY.md](./docs/DEPLOY.md) · Bảo mật: [docs/SECURITY.md](./docs/SECURITY.md)
 
 ## Yêu cầu
 - Node.js 22.12 trở lên (Node 20 đã hết hỗ trợ)
@@ -15,6 +17,7 @@ Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md) · Tích hợp gam
 
 ```bash
 # 1. Tạo file .env từ mẫu, rồi mở .env và thay JWT_SECRET bằng chuỗi ngẫu nhiên
+#    (DIRECT_URL để giống hệt DATABASE_URL khi chạy trên máy)
 copy .env.example .env
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 
@@ -37,7 +40,7 @@ npm run dev
 Mở http://localhost:3000
 
 > Thêm địa chỉ ví admin vào `ADMIN_WALLETS` trong `.env`. Khi deploy, dùng `JWT_SECRET` khác với máy dev.
-> Ở production dùng `npx prisma migrate deploy` (không dùng `migrate dev`).
+> Deploy lên mạng: xem [docs/DEPLOY.md](./docs/DEPLOY.md). Ở production dùng `npm run db:deploy` (không dùng `migrate dev`).
 
 ## Lệnh hay dùng
 
