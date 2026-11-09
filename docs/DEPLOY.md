@@ -54,6 +54,47 @@ và `prisma db seed` (thể loại, studio, game 2048 – chạy lại nhiều l
 
 > Biến `NEXT_PUBLIC_*` được "đóng gói" lúc build → đổi giá trị thì phải **Redeploy** mới có tác dụng.
 
+## 3b. Kho lưu file cho developer upload (Cloudflare R2)
+
+Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản build và ảnh bìa lưu ở R2
+(miễn phí 10GB, **không tính phí băng thông** – hợp với game nhiều lượt tải).
+
+1. <https://dash.cloudflare.com> → **R2 Object Storage** → **Create bucket** → tên `gamehub-uploads`, location **Asia-Pacific**
+2. Bucket → **Settings → Public Development URL** → **Allow** → copy URL dạng `https://pub-xxxx.r2.dev`
+   (hoặc **Custom Domains** → gắn `cdn.<domain-của-bạn>`; khuyên dùng khi có domain riêng)
+3. Bucket → **Settings → CORS Policy** → **Add** → tab JSON, dán (thay domain hub của bạn):
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://gamehub-vn.vercel.app", "http://localhost:3000"],
+    "AllowedMethods": ["PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+4. Bucket → **Settings → Object lifecycle rules** → **Add rule**: prefix `u/incoming/`, xóa object sau **1 ngày**
+   (file .zip đã xử lý tự xóa, rule này dọn các lần upload bị bỏ dở)
+5. R2 → **Manage R2 API Tokens** → **Create API token** → quyền **Object Read & Write**, chỉ bucket `gamehub-uploads`
+   → lưu **Access Key ID**, **Secret Access Key** và **endpoint** `https://<account-id>.r2.cloudflarestorage.com`
+6. Vercel → **Settings → Environment Variables** → thêm:
+
+| Tên | Giá trị |
+|---|---|
+| `STORAGE_DRIVER` | `s3` |
+| `NEXT_PUBLIC_UPLOAD_BASE_URL` | URL công khai ở bước 2 (`https://pub-xxxx.r2.dev`) |
+| `S3_ENDPOINT` | `https://<account-id>.r2.cloudflarestorage.com` |
+| `S3_BUCKET` | `gamehub-uploads` |
+| `S3_ACCESS_KEY_ID` / `S3_SECRET_ACCESS_KEY` | khóa ở bước 5 |
+| `S3_REGION` | `auto` |
+
+7. **Redeploy**. Kiểm tra: tạo studio → tạo game → upload `.zip` → **Chơi thử** chạy được
+
+> Bản build chạy ở domain R2 (khác hub) nên tự cô lập với cookie đăng nhập của hub – đây là lý do không phục vụ game của developer từ chính domain hub.
+> Nhắc developer nhúng SDK bằng đường dẫn đầy đủ `https://<domain-hub>/sdk/gamehub-sdk.js`.
+
 ## 4. Kiểm tra sau khi deploy
 
 | Kiểm tra | Mong đợi |

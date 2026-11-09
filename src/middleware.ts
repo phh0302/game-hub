@@ -4,7 +4,7 @@ import { isCrossSiteWrite } from "@/modules/auth/csrf";
 
 /**
  * 1. API: chặn request ghi dữ liệu đến từ web khác (CSRF).
- * 2. Trang: chặn /profile khi chưa đăng nhập, /admin khi không phải admin.
+ * 2. Trang: chặn /profile, /developer, /preview khi chưa đăng nhập; /admin khi không phải admin.
  * API tự kiểm tra quyền bên trong handler (requireUser / requireAdmin).
  */
 export async function middleware(req: NextRequest) {
@@ -42,5 +42,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/profile/:path*", "/admin/:path*"],
+  matcher: ["/api/:path*", "/profile/:path*", "/admin/:path*", "/developer/:path*", "/preview/:path*"],
 };

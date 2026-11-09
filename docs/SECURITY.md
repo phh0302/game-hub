@@ -13,6 +13,8 @@
 | Spam API | Rate limit theo IP / user; body JSON tối đa 64KB | `src/lib/rate-limit.ts`, `src/lib/api.ts` |
 | Dữ liệu sai định dạng | Kiểm tra mọi input bằng zod | `src/modules/*/schemas.ts` |
 | Mạo danh bằng tên | Username chữ thường, cấm `admin`, `system`, `0x…` | `src/modules/users/username.ts` |
+| Bản build độc hại của developer | Kiểm tra zip (zip bomb, `../`, đuôi file cho phép), file phục vụ từ domain kho lưu trữ khác hub + iframe sandbox, admin chơi thử trước khi duyệt | `src/modules/uploads/zip.ts`, `src/modules/storage` |
+| Upload file thay người khác | Link upload ký sẵn hết hạn 15 phút, key gắn userId; server kiểm tra key thuộc đúng user trước khi xử lý | `src/modules/storage/keys.ts` |
 | Leo quyền admin | Middleware chặn `/admin` + mọi API admin tự kiểm tra role từ database | `requireAdmin()` |
 
 ## Lỗ hổng thư viện đã đánh giá (chấp nhận tạm thời)
@@ -32,7 +34,8 @@ CI chặn lỗ hổng mức **critical**; mức **high** được in báo cáo �
 - Đăng xuất chỉ xóa cookie; JWT bị lộ vẫn dùng được đến khi hết hạn (7 ngày) → thêm `tokenVersion` cho User để thu hồi ngay
 - Rate limit lưu trong bộ nhớ từng server → chuyển sang Redis (Upstash) khi chạy nhiều instance
 - Ảnh đại diện là link ngoài (người xem tải ảnh từ server lạ) → Phase 10 chuyển sang upload ảnh
-- Game của developer nên chạy ở **domain riêng** (vd `games.gamehub.vn`) trước khi mở Phase 10
+- Link upload ký sẵn không giới hạn dung lượng phía R2 → server kiểm tra lại kích thước trước khi xử lý; lifecycle rule xóa `u/incoming/` sau 1 ngày
+- Developer sửa tên/mô tả game đã phát hành không cần duyệt lại → cần tính năng báo cáo vi phạm
 - Điểm do game gửi lên vẫn có thể bị sửa nếu người chơi đọc được code game – chỉ hạn chế được bằng giới hạn hợp lý; game cần chống gian lận mạnh phải tự xác minh phía server
 
 ## Kiểm tra định kỳ

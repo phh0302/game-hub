@@ -48,7 +48,8 @@
       "INVALID_MESSAGE": "Thông điệp đăng nhập không hợp lệ hoặc đã hết hạn.",
       "RATE_LIMITED": "Bạn thử quá nhiều lần, đợi một lát rồi thử lại.",
       "UNKNOWN": "Có lỗi xảy ra, hãy thử lại."
-    }
+    },
+    "developer": "Developer"
   },
   "game": {
     "back": "← Tất cả game",
@@ -136,7 +137,7 @@
     "versionName": "Phiên bản",
     "storageKey": "Thư mục build",
     "addVersion": "Thêm phiên bản",
-    "storageHint": "Chép bản build vào public/uploads/<thư mục build>/ (có index.html) trước, rồi thêm phiên bản và duyệt. Upload file trực tiếp sẽ có ở Phase 10.",
+    "storageHint": "Game của developer: họ tự upload bản build ở trang Developer, bạn chỉ cần Chơi thử → Duyệt → Đặt làm bản chạy. Game chính thức của hub: chép bản build vào public/uploads/games/ten-game/phien-ban/ (có index.html), rồi thêm phiên bản ở đây.",
     "stats": "{sessions} lượt chơi · {scores} điểm",
     "createGame": "Thêm game",
     "create": "Tạo game",
@@ -178,11 +179,113 @@
       "VALIDATION_ERROR": "Dữ liệu nhập chưa hợp lệ.",
       "CATEGORY_NOT_FOUND": "Thể loại không tồn tại.",
       "FORBIDDEN": "Bạn không có quyền admin."
-    }
+    },
+    "preview": "Chơi thử"
   },
   "notFound": {
     "title": "Không tìm thấy trang",
     "text": "Trang hoặc game bạn tìm không tồn tại hoặc đã bị gỡ.",
     "home": "Về trang chủ"
+  },
+  "developer": {
+    "title": "Developer",
+    "loading": "Đang tải…",
+    "studio": "Studio của bạn",
+    "sdkDocs": "Tài liệu tích hợp SDK",
+    "myGames": "Game của studio",
+    "noGames": "Chưa có game nào – bấm \"Tạo game mới\" để bắt đầu.",
+    "statsLine": "{sessions} lượt chơi · {players} người chơi",
+    "becomeTitle": "Đăng game của bạn lên Game Hub",
+    "becomeIntro": "Tạo studio để đăng game HTML5 của bạn. Game được admin duyệt trước khi xuất hiện trên hub.",
+    "steps": {
+      "step1": "Tạo studio (tên nhà phát triển hiển thị cho người chơi).",
+      "step2": "Tạo game: tên, mô tả, thể loại, ảnh bìa.",
+      "step3": "Tích hợp Game Hub SDK vào game, nén bản build thành .zip (có index.html) rồi upload.",
+      "step4": "Admin chơi thử và duyệt → game lên hub, người chơi leo bảng xếp hạng."
+    },
+    "studioName": "Tên studio",
+    "studioSlug": "Mã studio (slug)",
+    "slugHint": "Chữ thường, số, dấu gạch ngang – dùng trong đường dẫn, không đổi được sau này.",
+    "studioDescription": "Giới thiệu ngắn (không bắt buộc)",
+    "createStudio": "Tạo studio",
+    "creating": "Đang tạo…",
+    "newGame": "Tạo game mới",
+    "createGame": "Tạo game",
+    "gameSlugHint": "Dùng trong đường dẫn /games/ten-game, không đổi được sau này.",
+    "backToStudio": "Studio của tôi",
+    "viewOnHub": "Xem trên hub",
+    "statusHelp": {
+      "DRAFT": "Game đang ở trạng thái nháp. Upload bản build đầu tiên để gửi admin duyệt.",
+      "PENDING_REVIEW": "Đang chờ admin chơi thử và duyệt. Bạn vẫn có thể upload phiên bản mới.",
+      "PUBLISHED": "Game đang hiển thị trên hub. Phiên bản mới cần được duyệt trước khi thay bản đang chạy.",
+      "MAINTENANCE": "Game đang tạm khóa chơi (bảo trì).",
+      "SUSPENDED": "Game bị khóa do vi phạm – liên hệ admin.",
+      "ARCHIVED": "Game đã ngừng hoạt động."
+    },
+    "stats": {
+      "sessions": "Lượt chơi",
+      "players": "Người chơi",
+      "scores": "Điểm đã lưu"
+    },
+    "uploadTitle": "Upload phiên bản mới",
+    "versionName": "Phiên bản",
+    "buildFile": "Bản build (.zip)",
+    "buildHint": "Tối đa 50MB, có index.html ở gốc (hoặc trong 1 thư mục). Chỉ file web: html, js, css, ảnh, âm thanh, font, wasm…",
+    "releaseNotes": "Ghi chú phiên bản (không bắt buộc)",
+    "submitVersion": "Upload & gửi duyệt",
+    "uploading": "Đang upload {percent}%",
+    "processing": "Đang kiểm tra và giải nén bản build…",
+    "uploadDone": "Đã gửi duyệt ({files} file).",
+    "versions": "Các phiên bản",
+    "noVersions": "Chưa có phiên bản nào.",
+    "live": "đang chạy",
+    "rejectReason": "Lý do từ chối",
+    "preview": "Chơi thử",
+    "gameInfo": "Thông tin game",
+    "thumbnail": "Ảnh bìa",
+    "thumbnailHint": "PNG, JPG hoặc WEBP, tối đa 1MB, tỉ lệ 16:9 (vd 1280×720).",
+    "save": "Lưu thông tin",
+    "saving": "Đang lưu…",
+    "saved": "Đã lưu!",
+    "errors": {
+      "generic": "Có lỗi xảy ra ({code}).",
+      "NOT_DEVELOPER": "Bạn cần tạo studio trước.",
+      "ALREADY_DEVELOPER": "Bạn đã có studio.",
+      "CONFLICT": "Mã (slug) này đã có người dùng, hãy chọn mã khác.",
+      "VALIDATION_ERROR": "Thông tin nhập chưa hợp lệ.",
+      "UNAUTHORIZED": "Phiên đăng nhập đã hết, hãy kết nối ví lại.",
+      "GUEST_NOT_ALLOWED": "Hãy kết nối ví để dùng tính năng này.",
+      "RATE_LIMITED": "Bạn thao tác quá nhiều, thử lại sau ít phút.",
+      "GAME_NOT_FOUND": "Không tìm thấy game.",
+      "CATEGORY_NOT_FOUND": "Thể loại không tồn tại.",
+      "IMAGE_KEY_INVALID": "Ảnh bìa không hợp lệ – hãy upload lại.",
+      "FILE_TOO_LARGE": "File quá lớn (bản build tối đa 50MB, ảnh tối đa 1MB).",
+      "UPLOAD_TYPE_NOT_ALLOWED": "Loại file không được hỗ trợ.",
+      "UPLOAD_FAILED": "Upload thất bại – kiểm tra mạng rồi thử lại.",
+      "UPLOAD_KEY_INVALID": "File upload không hợp lệ – hãy upload lại.",
+      "UPLOAD_NOT_FOUND": "Không tìm thấy file vừa upload – hãy upload lại.",
+      "VERSION_EXISTS": "Tên phiên bản này đã có, hãy đặt tên khác.",
+      "ZIP_INVALID": "File không phải .zip hợp lệ hoặc bị hỏng.",
+      "ZIP_EMPTY": "File .zip rỗng.",
+      "ZIP_TOO_MANY_FILES": "Bản build có quá nhiều file (tối đa 2000).",
+      "ZIP_TOO_LARGE_UNZIPPED": "Bản build sau khi giải nén vượt 150MB.",
+      "ZIP_UNSAFE_PATH": "Đường dẫn file không hợp lệ trong .zip: {detail}",
+      "ZIP_FILE_TYPE_NOT_ALLOWED": "Loại file không được phép trong bản build: {detail}",
+      "ZIP_NO_INDEX_HTML": "Không tìm thấy index.html ở gốc bản build (hoặc trong 1 thư mục bao ngoài)."
+    }
+  },
+  "preview": {
+    "title": "Chơi thử",
+    "banner": "Chạy giống hệt trên hub nhưng điểm KHÔNG được lưu. Bên phải là nhật ký tin nhắn SDK để kiểm tra tích hợp.",
+    "notSaved": "Chơi thử: {score} điểm (không lưu).",
+    "badScore": "điểm phải là số nguyên ≥ 0",
+    "checklist": "Kiểm tra tích hợp SDK",
+    "check": {
+      "READY": "Game gọi GameHub.init()",
+      "GAME_START": "Game gọi gameStart() khi bắt đầu ván",
+      "GAME_OVER": "Game gọi gameOver(score) khi hết ván"
+    },
+    "log": "Nhật ký SDK",
+    "logEmpty": "Chưa có tin nhắn nào – game chưa tải SDK hoặc chưa gọi GameHub.init()."
   }
 }

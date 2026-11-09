@@ -20,3 +20,6 @@ yarn-debug.log*
 .DS_Store
 Thumbs.db
 .vercel
+
+# File người dùng upload khi chạy local (STORAGE_DRIVER=local)
+public/uploads/u/

@@ -24,6 +24,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.16.0",
+    "aws4fetch": "^1.0.20",
+    "fflate": "^0.8.2",
     "jose": "^6.0.11",
     "next": "15.5.29",
     "next-intl": "^4.3.0",

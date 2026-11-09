@@ -29,12 +29,13 @@ const nextConfig: NextConfig = {
       },
       {
         // Trang của hub không được nhúng vào web khác (chống clickjacking khi ký ví)
-        source: "/((?!uploads/games/).*)",
+        source: "/((?!uploads/).*)",
         headers: [{ key: "X-Frame-Options", value: "DENY" }],
       },
       {
-        // File game: chỉ hub được nhúng + luôn chạy trong sandbox
-        source: "/uploads/games/:path*",
+        // Mọi file trong /uploads (game chính thức + file developer upload khi chạy local):
+        // chỉ hub được nhúng + luôn chạy trong sandbox → file HTML/SVG lạ không chạm được cookie của hub
+        source: "/uploads/:path*",
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Content-Security-Policy", value: GAME_CSP },

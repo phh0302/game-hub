@@ -48,7 +48,8 @@
       "INVALID_MESSAGE": "The sign-in message is invalid or expired.",
       "RATE_LIMITED": "Too many attempts, please wait a moment.",
       "UNKNOWN": "Something went wrong, please try again."
-    }
+    },
+    "developer": "Developer"
   },
   "game": {
     "back": "← All games",
@@ -136,7 +137,7 @@
     "versionName": "Version",
     "storageKey": "Build folder",
     "addVersion": "Add version",
-    "storageHint": "Copy the build into public/uploads/<build folder>/ (with index.html) first, then add and approve the version. Direct upload comes in Phase 10.",
+    "storageHint": "Developer games: developers upload builds from the Developer page; you just Playtest → Approve → Make live. Official hub games: copy the build into public/uploads/games/game-name/version/ (with index.html), then add the version here.",
     "stats": "{sessions} plays · {scores} scores",
     "createGame": "Add game",
     "create": "Create game",
@@ -178,11 +179,113 @@
       "VALIDATION_ERROR": "Some fields are invalid.",
       "CATEGORY_NOT_FOUND": "Category does not exist.",
       "FORBIDDEN": "You are not an admin."
-    }
+    },
+    "preview": "Playtest"
   },
   "notFound": {
     "title": "Page not found",
     "text": "The page or game you're looking for doesn't exist or was removed.",
     "home": "Back to home"
+  },
+  "developer": {
+    "title": "Developer",
+    "loading": "Loading…",
+    "studio": "Your studio",
+    "sdkDocs": "SDK integration docs",
+    "myGames": "Studio games",
+    "noGames": "No games yet – click \"New game\" to get started.",
+    "statsLine": "{sessions} plays · {players} players",
+    "becomeTitle": "Publish your games on Game Hub",
+    "becomeIntro": "Create a studio to publish your HTML5 games. Games are reviewed by an admin before they appear on the hub.",
+    "steps": {
+      "step1": "Create a studio (the developer name players will see).",
+      "step2": "Create a game: name, description, categories, cover image.",
+      "step3": "Integrate the Game Hub SDK, zip your build (with index.html) and upload it.",
+      "step4": "An admin playtests and approves → your game goes live and players climb the leaderboard."
+    },
+    "studioName": "Studio name",
+    "studioSlug": "Studio ID (slug)",
+    "slugHint": "Lowercase letters, numbers, hyphens – used in URLs, can't be changed later.",
+    "studioDescription": "Short description (optional)",
+    "createStudio": "Create studio",
+    "creating": "Creating…",
+    "newGame": "New game",
+    "createGame": "Create game",
+    "gameSlugHint": "Used in the /games/your-game URL, can't be changed later.",
+    "backToStudio": "My studio",
+    "viewOnHub": "View on hub",
+    "statusHelp": {
+      "DRAFT": "This game is a draft. Upload your first build to submit it for review.",
+      "PENDING_REVIEW": "Waiting for an admin to playtest and approve. You can still upload new versions.",
+      "PUBLISHED": "The game is live on the hub. New versions must be approved before replacing the live one.",
+      "MAINTENANCE": "The game is temporarily closed (maintenance).",
+      "SUSPENDED": "The game was suspended – contact an admin.",
+      "ARCHIVED": "The game has been archived."
+    },
+    "stats": {
+      "sessions": "Plays",
+      "players": "Players",
+      "scores": "Scores saved"
+    },
+    "uploadTitle": "Upload a new version",
+    "versionName": "Version",
+    "buildFile": "Build (.zip)",
+    "buildHint": "Up to 50MB, with index.html at the root (or inside one folder). Web files only: html, js, css, images, audio, fonts, wasm…",
+    "releaseNotes": "Release notes (optional)",
+    "submitVersion": "Upload & submit",
+    "uploading": "Uploading {percent}%",
+    "processing": "Checking and extracting the build…",
+    "uploadDone": "Submitted for review ({files} files).",
+    "versions": "Versions",
+    "noVersions": "No versions yet.",
+    "live": "live",
+    "rejectReason": "Rejection reason",
+    "preview": "Playtest",
+    "gameInfo": "Game details",
+    "thumbnail": "Cover image",
+    "thumbnailHint": "PNG, JPG or WEBP, up to 1MB, 16:9 ratio (e.g. 1280×720).",
+    "save": "Save details",
+    "saving": "Saving…",
+    "saved": "Saved!",
+    "errors": {
+      "generic": "Something went wrong ({code}).",
+      "NOT_DEVELOPER": "Please create a studio first.",
+      "ALREADY_DEVELOPER": "You already have a studio.",
+      "CONFLICT": "That ID (slug) is taken, please choose another.",
+      "VALIDATION_ERROR": "Some fields are invalid.",
+      "UNAUTHORIZED": "Your session expired, please connect your wallet again.",
+      "GUEST_NOT_ALLOWED": "Connect your wallet to use this feature.",
+      "RATE_LIMITED": "Too many actions, please try again in a few minutes.",
+      "GAME_NOT_FOUND": "Game not found.",
+      "CATEGORY_NOT_FOUND": "Category does not exist.",
+      "IMAGE_KEY_INVALID": "Invalid cover image – please upload it again.",
+      "FILE_TOO_LARGE": "File too large (builds up to 50MB, images up to 1MB).",
+      "UPLOAD_TYPE_NOT_ALLOWED": "This file type is not supported.",
+      "UPLOAD_FAILED": "Upload failed – check your connection and try again.",
+      "UPLOAD_KEY_INVALID": "Invalid upload – please upload again.",
+      "UPLOAD_NOT_FOUND": "The uploaded file was not found – please upload again.",
+      "VERSION_EXISTS": "That version name already exists, choose another.",
+      "ZIP_INVALID": "Not a valid .zip file, or the file is corrupted.",
+      "ZIP_EMPTY": "The .zip file is empty.",
+      "ZIP_TOO_MANY_FILES": "The build has too many files (max 2000).",
+      "ZIP_TOO_LARGE_UNZIPPED": "The build exceeds 150MB when extracted.",
+      "ZIP_UNSAFE_PATH": "Invalid file path in the .zip: {detail}",
+      "ZIP_FILE_TYPE_NOT_ALLOWED": "File type not allowed in the build: {detail}",
+      "ZIP_NO_INDEX_HTML": "index.html not found at the root of the build (or inside a single wrapping folder)."
+    }
+  },
+  "preview": {
+    "title": "Playtest",
+    "banner": "Runs exactly like on the hub, but scores are NOT saved. The SDK message log on the right helps you check the integration.",
+    "notSaved": "Playtest: {score} points (not saved).",
+    "badScore": "score must be an integer ≥ 0",
+    "checklist": "SDK integration check",
+    "check": {
+      "READY": "Game calls GameHub.init()",
+      "GAME_START": "Game calls gameStart() when a round starts",
+      "GAME_OVER": "Game calls gameOver(score) when a round ends"
+    },
+    "log": "SDK log",
+    "logEmpty": "No messages yet – the game hasn't loaded the SDK or called GameHub.init()."
   }
 }
