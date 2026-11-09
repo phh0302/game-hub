@@ -1,0 +1,50 @@
+# Kiểm tra tự động mỗi lần push / mở pull request vào main:
+# cài thư viện → kiểm tra TypeScript → unit test → build production
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Giá trị giả chỉ để build – CI không kết nối database thật
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      JWT_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cài thư viện
+        run: npm ci
+
+      - name: Kiểm tra schema Prisma
+        run: npx prisma validate
+
+      - name: Kiểm tra TypeScript
+        run: npm run typecheck
+
+      - name: Unit test
+        run: npm test
+
+      - name: Build production
+        run: npm run build
+
+      - name: Kiểm tra lỗ hổng thư viện (production)
+        run: npm audit --omit=dev --audit-level=high

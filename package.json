@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --disable-warning=ExperimentalWarning --test \"tests/unit/*.test.ts\"",
@@ -12,6 +13,7 @@
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
     "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
     "db:seed": "prisma db seed",
     "db:studio": "prisma studio",
     "db:reset": "prisma migrate reset",

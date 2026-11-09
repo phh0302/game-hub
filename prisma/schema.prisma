@@ -12,8 +12,11 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  /// Kết nối khi chạy web (production: URL qua pooler của Neon/Supabase)
+  url       = env("DATABASE_URL")
+  /// Kết nối trực tiếp để chạy migration (máy dev: giống DATABASE_URL)
+  directUrl = env("DIRECT_URL")
 }
 
 // ───────────────────────────── Người dùng & đăng nhập ─────────────────────────────
