@@ -11,27 +11,21 @@ Thời gian: khoảng 30 phút. Cần: tài khoản GitHub `phh0302` (đã có r
 - CI trên GitHub đang **xanh** (tab *Actions* của repo): đã qua TypeScript, unit test, build
 - Trên máy, file `.env` có thêm dòng `DIRECT_URL` giống hệt `DATABASE_URL` (xem `.env.example`)
 
-## 1. Tạo database trên Neon
+## 1. Tạo database Neon ngay trong Vercel
 
-1. Vào <https://neon.com> → **Sign up with GitHub**
-2. **Create project**: tên `game-hub`, Postgres bản mới nhất, **Region: AWS Asia Pacific (Singapore)** – gần Việt Nam nhất
-3. Ở trang project → **Connect** → lấy 2 chuỗi kết nối:
-   - Bật **Connection pooling** → copy → đây là `DATABASE_URL` (host có chữ `-pooler`)
-   - Tắt **Connection pooling** → copy → đây là `DIRECT_URL`
-4. Lưu 2 chuỗi này ở chỗ an toàn (có mật khẩu database bên trong – **không** dán lên chat / commit lên GitHub)
+1. Vercel → tab **Storage** → **Create Database** → chọn **Neon** (Serverless Postgres) → **Continue**
+2. **Region: Singapore** (gần Việt Nam nhất) · **Plan: Free** · đặt tên `game-hub-db` → **Create**
+3. Mở database vừa tạo → tab **.env.local** → **Show secret** → copy 2 giá trị:
+   - `DATABASE_URL` (kết nối qua pooler)
+   - `DATABASE_URL_UNPOOLED` (kết nối trực tiếp) → dùng làm `DIRECT_URL` ở bước 3
+4. **Không** dán 2 chuỗi này lên chat / commit lên GitHub (có mật khẩu database bên trong)
 
-## 2. Tạo bảng + dữ liệu mẫu trên database production
+> Thích tạo ở trang Neon riêng (<https://neon.com>) cũng được: bật/tắt **Connection pooling** để lấy 2 chuỗi tương ứng.
 
-Chạy trên máy, trong `D:\game hub`, bằng **PowerShell** (biến đặt ở đây chỉ có tác dụng trong cửa sổ này, không sửa `.env`):
+## 2. Tạo bảng + dữ liệu mẫu
 
-```powershell
-$env:DATABASE_URL="<chuỗi pooled ở bước 1>"
-$env:DIRECT_URL="<chuỗi direct ở bước 1>"
-npx prisma migrate deploy
-npx prisma db seed
-```
-
-Thấy `Seed xong: 6 thể loại, studio Game Hub, game 2048` là được. Đóng cửa sổ PowerShell này sau khi xong.
+Không cần làm tay: lệnh build `npm run vercel-build` tự chạy `prisma migrate deploy` (tạo/cập nhật bảng)
+và `prisma db seed` (thể loại, studio, game 2048 – chạy lại nhiều lần vẫn an toàn, không ghi đè dữ liệu admin đã sửa).
 
 ## 3. Tạo project trên Vercel
 
@@ -39,13 +33,13 @@ Thấy `Seed xong: 6 thể loại, studio Game Hub, game 2048` là được. Đ�
 2. **Add New… → Project** → chọn `game-hub` → **Import**
 3. **Project Name**: đặt tên, vd `gamehub-vn` → web sẽ có địa chỉ `https://gamehub-vn.vercel.app`
 4. **Build and Output Settings** → bật override **Build Command**: `npm run vercel-build`
-   (tự chạy `prisma migrate deploy` trước khi build → mỗi lần deploy database luôn đúng cấu trúc mới)
+   (tự chạy migration + seed trước khi build → mỗi lần deploy database luôn đúng cấu trúc mới)
 5. **Environment Variables** – thêm từng dòng:
 
 | Tên | Giá trị |
 |---|---|
-| `DATABASE_URL` | chuỗi **pooled** của Neon |
-| `DIRECT_URL` | chuỗi **direct** của Neon |
+| `DATABASE_URL` | `DATABASE_URL` của Neon (pooled) |
+| `DIRECT_URL` | `DATABASE_URL_UNPOOLED` của Neon (direct) |
 | `JWT_SECRET` | chuỗi ngẫu nhiên MỚI (khác máy dev): `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `ADMIN_WALLETS` | `0xa4014A8721bbC61c1e0b8871284C4D19c7D0F4FA` |
 | `NEXT_PUBLIC_APP_URL` | `https://gamehub-vn.vercel.app` (đúng tên project ở bước 3) |

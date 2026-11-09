@@ -21,7 +21,8 @@ async function seedCategories() {
     for (const [locale, name] of [["vi", c.vi], ["en", c.en]] as const) {
       await prisma.categoryTranslation.upsert({
         where: { categoryId_locale: { categoryId: category.id, locale } },
-        update: { name },
+        // Không ghi đè tên admin đã sửa – seed chạy lại mỗi lần deploy vẫn an toàn
+        update: {},
         create: { categoryId: category.id, locale, name },
       });
     }
