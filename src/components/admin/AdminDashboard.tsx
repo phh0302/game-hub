@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { apiFetch, errorCode } from "@/lib/client-api";
+import { AdminReports } from "./AdminReports";
 
 const GAME_STATUSES = ["DRAFT", "PENDING_REVIEW", "PUBLISHED", "MAINTENANCE", "SUSPENDED", "ARCHIVED"] as const;
 type GameStatus = (typeof GAME_STATUSES)[number];
@@ -91,6 +92,8 @@ export function AdminDashboard() {
           {message.text}
         </p>
       )}
+
+      <AdminReports />
 
       <CreateGameForm categories={categories} run={run} />
 

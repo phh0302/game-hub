@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LeaderboardPanel } from "@/components/leaderboard/LeaderboardPanel";
+import { ReportGameButton } from "@/components/reports/ReportGameButton";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { displayName } from "@/lib/format";
 
@@ -261,7 +262,8 @@ function GamePlayer({
         )}
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <ReportGameButton slug={slug} />
         <button
           type="button"
           onClick={() => void wrapRef.current?.requestFullscreen?.()}

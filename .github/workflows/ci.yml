@@ -57,3 +57,42 @@ jobs:
         if: always()
         continue-on-error: true
         run: npm audit --omit=dev --audit-level=high
+
+  # Chạy migration trên PostgreSQL thật và kiểm tra database sau migration khớp hoàn toàn
+  # với schema.prisma – bắt lỗi migration viết thiếu/sai trước khi lên production
+  migrations:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL_UNPOOLED: postgresql://ci:ci@localhost:5432/ci
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cài thư viện
+        run: npm install --no-audit --no-fund
+
+      - name: Chạy toàn bộ migration
+        run: npx prisma migrate deploy
+
+      - name: Database sau migration phải khớp schema.prisma
+        run: npx prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --script --exit-code
+
+      - name: Seed chạy được (2 lần – phải an toàn khi chạy lại)
+        run: npx prisma db seed && npx prisma db seed
