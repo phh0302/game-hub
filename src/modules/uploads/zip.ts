@@ -21,11 +21,14 @@ export type ZipErrorCode =
   | "ZIP_NO_INDEX_HTML";
 
 export class ZipValidationError extends Error {
-  constructor(
-    public code: ZipErrorCode,
-    public detail?: string,
-  ) {
+  // Khai báo field tường minh (không dùng "public" trong constructor) để Node chạy test được bằng type stripping
+  code: ZipErrorCode;
+  detail?: string;
+
+  constructor(code: ZipErrorCode, detail?: string) {
     super(detail ? `${code}: ${detail}` : code);
+    this.code = code;
+    this.detail = detail;
   }
 }
 
