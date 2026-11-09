@@ -17,7 +17,7 @@ Kế hoạch & tiến độ: xem [WORKFLOW.md](./WORKFLOW.md) · Tích hợp gam
 
 ```bash
 # 1. Tạo file .env từ mẫu, rồi mở .env và thay JWT_SECRET bằng chuỗi ngẫu nhiên
-#    (DIRECT_URL để giống hệt DATABASE_URL khi chạy trên máy)
+#    (DATABASE_URL_UNPOOLED để giống hệt DATABASE_URL khi chạy trên máy)
 copy .env.example .env
 node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 

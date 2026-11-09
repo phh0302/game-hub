@@ -19,7 +19,7 @@ jobs:
     env:
       # Giá trị giả chỉ để build – CI không kết nối database thật
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
-      DIRECT_URL: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL_UNPOOLED: postgresql://ci:ci@localhost:5432/ci
       JWT_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"

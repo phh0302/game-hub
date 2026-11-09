@@ -9,18 +9,20 @@ Thời gian: khoảng 30 phút. Cần: tài khoản GitHub `phh0302` (đã có r
 ## 0. Trước khi deploy
 
 - CI trên GitHub đang **xanh** (tab *Actions* của repo): đã qua TypeScript, unit test, build
-- Trên máy, file `.env` có thêm dòng `DIRECT_URL` giống hệt `DATABASE_URL` (xem `.env.example`)
+- Trên máy, file `.env` có thêm dòng `DATABASE_URL_UNPOOLED` giống hệt `DATABASE_URL` (xem `.env.example`)
 
 ## 1. Tạo database Neon ngay trong Vercel
 
 1. Vercel → tab **Storage** → **Create Database** → chọn **Neon** (Serverless Postgres) → **Continue**
 2. **Region: Singapore** (gần Việt Nam nhất) · **Plan: Free** · đặt tên `game-hub-db` → **Create**
-3. Mở database vừa tạo → tab **.env.local** → **Show secret** → copy 2 giá trị:
-   - `DATABASE_URL` (kết nối qua pooler)
-   - `DATABASE_URL_UNPOOLED` (kết nối trực tiếp) → dùng làm `DIRECT_URL` ở bước 3
-4. **Không** dán 2 chuỗi này lên chat / commit lên GitHub (có mật khẩu database bên trong)
+3. Database sẽ được **kết nối vào project ở bước 3** → Vercel tự tạo 2 biến môi trường:
+   - `DATABASE_URL` (kết nối qua pooler – web dùng khi chạy)
+   - `DATABASE_URL_UNPOOLED` (kết nối trực tiếp – Prisma dùng để chạy migration)
+4. **Không** chụp màn hình / dán chuỗi kết nối lên chat hay GitHub (có mật khẩu database). Lỡ lộ thì vào
+   **Open in Neon → Roles → `neondb_owner` → Reset password**, rồi kết nối lại database vào project
 
-> Thích tạo ở trang Neon riêng (<https://neon.com>) cũng được: bật/tắt **Connection pooling** để lấy 2 chuỗi tương ứng.
+> Tạo ở trang Neon riêng (<https://neon.com>) cũng được: bật/tắt **Connection pooling** để lấy 2 chuỗi,
+> rồi tự nhập vào Vercel với đúng 2 tên biến trên.
 
 ## 2. Tạo bảng + dữ liệu mẫu
 
@@ -34,20 +36,21 @@ và `prisma db seed` (thể loại, studio, game 2048 – chạy lại nhiều l
 3. **Project Name**: đặt tên, vd `gamehub-vn` → web sẽ có địa chỉ `https://gamehub-vn.vercel.app`
 4. **Build and Output Settings** → bật override **Build Command**: `npm run vercel-build`
    (tự chạy migration + seed trước khi build → mỗi lần deploy database luôn đúng cấu trúc mới)
-5. **Environment Variables** – thêm từng dòng:
+5. **Environment Variables** – thêm từng dòng (2 biến database KHÔNG cần nhập, xem bước 6):
 
 | Tên | Giá trị |
 |---|---|
-| `DATABASE_URL` | `DATABASE_URL` của Neon (pooled) |
-| `DIRECT_URL` | `DATABASE_URL_UNPOOLED` của Neon (direct) |
 | `JWT_SECRET` | chuỗi ngẫu nhiên MỚI (khác máy dev): `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 | `ADMIN_WALLETS` | `0xa4014A8721bbC61c1e0b8871284C4D19c7D0F4FA` |
 | `NEXT_PUBLIC_APP_URL` | `https://gamehub-vn.vercel.app` (đúng tên project ở bước 3) |
 | `NEXT_PUBLIC_ASSET_BASE_URL` | `/uploads` |
 | `NEXT_PUBLIC_GAME_BASE_URL` | `/uploads` |
 
-6. **Deploy** → chờ 2–3 phút
-7. Sau khi deploy xong: **Settings → Functions → Function Region** → chọn **Singapore (sin1)** (cùng nơi với database, giảm độ trễ) → **Deployments → Redeploy**
+6. Kết nối database: **Storage → `game-hub-db` → Connect Project** → chọn project này, tick đủ
+   Production / Preview / Development → **Connect** (tạo `DATABASE_URL` + `DATABASE_URL_UNPOOLED`).
+   Nếu bước Import đã deploy trước khi có database thì bản đó lỗi – không sao, sang bước 8 Redeploy
+7. **Deploy** → chờ 2–3 phút
+8. Sau khi deploy xong: **Settings → Functions → Function Region** → chọn **Singapore (sin1)** (cùng nơi với database, giảm độ trễ) → **Deployments → Redeploy**
 
 > Biến `NEXT_PUBLIC_*` được "đóng gói" lúc build → đổi giá trị thì phải **Redeploy** mới có tác dụng.
 
