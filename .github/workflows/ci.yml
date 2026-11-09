@@ -31,8 +31,10 @@ jobs:
           node-version: 22
           cache: npm
 
+      # Dùng npm install (giống Vercel) thay vì npm ci: package-lock tạo trên Windows
+      # đôi khi lệch vài gói phụ so với Linux, npm ci sẽ báo lỗi dù thư viện vẫn đúng
       - name: Cài thư viện
-        run: npm ci
+        run: npm install --no-audit --no-fund
 
       - name: Kiểm tra schema Prisma
         run: npx prisma validate
