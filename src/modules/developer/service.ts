@@ -178,6 +178,10 @@ export async function updateStudioGame(
 
 /** Cấp link upload thẳng lên kho lưu trữ (file không đi qua server web) */
 export async function createUploadTicket(userId: string, input: UploadRequestInput) {
+  // Production (Vercel) không ghi được đĩa → bắt buộc cấu hình kho S3/R2 (docs/DEPLOY.md mục 3b)
+  if (process.env.NODE_ENV === "production" && storage().name === "local" && process.env.ALLOW_LOCAL_STORAGE !== "1") {
+    throw new ApiError(503, "UPLOADS_NOT_CONFIGURED", "Chức năng upload chưa được cấu hình kho lưu trữ");
+  }
   const id = randomUUID();
   if (input.kind === "build") {
     if (!ZIP_TYPES.has(input.contentType)) throw new ApiError(400, "UPLOAD_TYPE_NOT_ALLOWED", "Chỉ nhận file .zip");

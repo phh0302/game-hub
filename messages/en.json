@@ -271,7 +271,8 @@
       "ZIP_TOO_LARGE_UNZIPPED": "The build exceeds 150MB when extracted.",
       "ZIP_UNSAFE_PATH": "Invalid file path in the .zip: {detail}",
       "ZIP_FILE_TYPE_NOT_ALLOWED": "File type not allowed in the build: {detail}",
-      "ZIP_NO_INDEX_HTML": "index.html not found at the root of the build (or inside a single wrapping folder)."
+      "ZIP_NO_INDEX_HTML": "index.html not found at the root of the build (or inside a single wrapping folder).",
+      "UPLOADS_NOT_CONFIGURED": "Uploads aren't enabled on this server yet (storage not configured). Please contact an admin."
     }
   },
   "preview": {

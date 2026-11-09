@@ -271,7 +271,8 @@
       "ZIP_TOO_LARGE_UNZIPPED": "Bản build sau khi giải nén vượt 150MB.",
       "ZIP_UNSAFE_PATH": "Đường dẫn file không hợp lệ trong .zip: {detail}",
       "ZIP_FILE_TYPE_NOT_ALLOWED": "Loại file không được phép trong bản build: {detail}",
-      "ZIP_NO_INDEX_HTML": "Không tìm thấy index.html ở gốc bản build (hoặc trong 1 thư mục bao ngoài)."
+      "ZIP_NO_INDEX_HTML": "Không tìm thấy index.html ở gốc bản build (hoặc trong 1 thư mục bao ngoài).",
+      "UPLOADS_NOT_CONFIGURED": "Chức năng upload chưa được bật trên máy chủ này (chưa cấu hình kho lưu trữ). Hãy báo admin."
     }
   },
   "preview": {
