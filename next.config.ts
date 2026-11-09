@@ -14,6 +14,8 @@ const GAME_CSP = ["sandbox allow-scripts allow-pointer-lock", "frame-ancestors '
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  // Hub không dùng next/image → tắt bộ tối ưu ảnh (không gọi tới sharp/libvips)
+  images: { unoptimized: true },
   async headers() {
     return [
       {

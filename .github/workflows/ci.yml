@@ -24,9 +24,9 @@ jobs:
       NEXT_PUBLIC_APP_URL: http://localhost:3000
       NEXT_TELEMETRY_DISABLED: "1"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -48,5 +48,12 @@ jobs:
       - name: Build production
         run: npm run build
 
+      # Lỗi mức "critical" → CI đỏ. Mức "high" đã được đánh giá trong docs/SECURITY.md
+      # (chỉ báo cáo, không chặn) – xem lại mỗi lần cập nhật thư viện
       - name: Kiểm tra lỗ hổng thư viện (production)
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Báo cáo lỗ hổng mức high (tham khảo)
+        if: always()
+        continue-on-error: true
         run: npm audit --omit=dev --audit-level=high

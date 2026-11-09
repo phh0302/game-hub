@@ -24,6 +24,17 @@ export const leaderboardSettingsSchema = z
   })
   .passthrough();
 
+/**
+ * Dữ liệu admin gửi lên để SỬA settings: mọi field tùy chọn, KHÔNG có mặc định
+ * (nếu có mặc định, sửa 1 luật sẽ vô tình ghi đè các luật khác về giá trị mặc định).
+ */
+export const gameSettingsInputSchema = z
+  .object({
+    minPlaySeconds: z.number().int().min(0).max(3600).optional(),
+    maxSessionHours: z.number().positive().max(72).optional(),
+  })
+  .passthrough();
+
 export type GameSettings = z.infer<typeof gameSettingsSchema>;
 export type LeaderboardSettings = z.infer<typeof leaderboardSettingsSchema>;
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { GameStatus, ScoreOrder } from "@prisma/client";
 import { locales } from "@/i18n/config";
-import { gameSettingsSchema, leaderboardSettingsSchema } from "./settings";
+import { gameSettingsInputSchema, leaderboardSettingsSchema } from "./settings";
 
 const slugSchema = z
   .string()
@@ -27,6 +27,7 @@ const translationSchema = z.object({
 const translationsSchema = z
   .array(translationSchema)
   .min(1)
+  .max(10)
   .refine((items) => new Set(items.map((i) => i.locale)).size === items.length, "Mỗi ngôn ngữ chỉ 1 bản dịch");
 
 export const gameCreateSchema = z.object({
@@ -36,7 +37,7 @@ export const gameCreateSchema = z.object({
   status: z.nativeEnum(GameStatus).optional(),
   thumbnailKey: storageKeySchema.nullable().optional(),
   sortOrder: z.number().int().min(0).max(100_000).optional(),
-  settings: gameSettingsSchema.partial().passthrough().optional(),
+  settings: gameSettingsInputSchema.optional(),
   translations: translationsSchema,
   categorySlugs: z.array(slugSchema).max(5).optional(),
   /** Bảng xếp hạng mặc định tạo kèm game */

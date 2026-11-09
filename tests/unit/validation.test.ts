@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { usernameSchema } from "../../src/modules/users/username.ts";
-import { readGameSettings, readLeaderboardSettings } from "../../src/modules/games/settings.ts";
+import { gameSettingsInputSchema, readGameSettings, readLeaderboardSettings } from "../../src/modules/games/settings.ts";
 
 test("username chuyển về chữ thường", () => {
   assert.equal(usernameSchema.parse("  Ha_Pham "), "ha_pham");
@@ -29,4 +29,11 @@ test("settings game hỏng → mặc định thay vì lỗi", () => {
 test("settings bảng xếp hạng", () => {
   assert.equal(readLeaderboardSettings({ maxScore: 4_000_000 }).maxScore, 4_000_000);
   assert.deepEqual(readLeaderboardSettings({ maxScore: -1 }), {});
+});
+
+test("sửa 1 luật không tự điền mặc định cho luật khác (tránh ghi đè khi gộp)", () => {
+  const input = gameSettingsInputSchema.parse({ minPlaySeconds: 10 });
+  assert.deepEqual(input, { minPlaySeconds: 10 });
+  const merged = { ...{ minPlaySeconds: 5, maxSessionHours: 12 }, ...input };
+  assert.equal(merged.maxSessionHours, 12);
 });
