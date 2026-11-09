@@ -272,8 +272,21 @@
       "ZIP_UNSAFE_PATH": "Đường dẫn file không hợp lệ trong .zip: {detail}",
       "ZIP_FILE_TYPE_NOT_ALLOWED": "Loại file không được phép trong bản build: {detail}",
       "ZIP_NO_INDEX_HTML": "Không tìm thấy index.html ở gốc bản build (hoặc trong 1 thư mục bao ngoài).",
-      "UPLOADS_NOT_CONFIGURED": "Chức năng upload chưa được bật trên máy chủ này (chưa cấu hình kho lưu trữ). Hãy báo admin."
-    }
+      "UPLOADS_NOT_CONFIGURED": "Chức năng upload chưa được bật trên máy chủ này (chưa cấu hình kho lưu trữ). Hãy báo admin.",
+      "TERMS_NOT_ACCEPTED": "Studio chưa đồng ý điều khoản mới nhất.",
+      "OWNER_ONLY": "Chỉ chủ studio làm được việc này.",
+      "USER_NOT_FOUND": "Ví này chưa từng đăng nhập Game Hub.",
+      "ALREADY_IN_STUDIO": "Người này đã thuộc một studio.",
+      "STUDIO_FULL": "Studio đã đủ 20 thành viên.",
+      "OWNER_CANNOT_LEAVE": "Chủ studio không thể rời – hãy chuyển quyền chủ cho người khác trước.",
+      "FORBIDDEN": "Bạn không có quyền làm việc này."
+    },
+    "agreePrefix": "Tôi đã đọc và đồng ý với",
+    "termsLink": "Điều khoản dành cho người đăng game",
+    "termsOutdatedOwner": "Điều khoản người đăng game đã cập nhật. Bạn cần đồng ý lại để tiếp tục tạo game và upload phiên bản.",
+    "termsOutdatedMember": "Điều khoản người đăng game đã cập nhật. Chủ studio cần đồng ý lại để studio tiếp tục tạo game và upload.",
+    "readTerms": "Đọc điều khoản",
+    "acceptTerms": "Tôi đồng ý"
   },
   "preview": {
     "title": "Chơi thử",
@@ -288,5 +301,73 @@
     },
     "log": "Nhật ký SDK",
     "logEmpty": "Chưa có tin nhắn nào – game chưa tải SDK hoặc chưa gọi GameHub.init()."
+  },
+  "report": {
+    "button": "⚑ Báo cáo",
+    "title": "Báo cáo game này",
+    "thanks": "Cảm ơn bạn! Admin sẽ xem xét báo cáo sớm.",
+    "close": "Đóng",
+    "loginRequired": "Kết nối ví để gửi báo cáo.",
+    "connect": "Kết nối ví",
+    "submit": "Gửi báo cáo",
+    "cancel": "Hủy",
+    "messagePlaceholder": "Mô tả thêm (không bắt buộc, tối đa 1000 ký tự)",
+    "reasons": {
+      "BROKEN": "Game lỗi / không chạy",
+      "INAPPROPRIATE": "Nội dung không phù hợp",
+      "COPYRIGHT": "Vi phạm bản quyền",
+      "CHEATING": "Gian lận điểm",
+      "OTHER": "Lý do khác"
+    },
+    "errors": {
+      "REPORT_EXISTS": "Bạn đã báo cáo game này và admin đang xử lý.",
+      "RATE_LIMITED": "Bạn gửi quá nhiều báo cáo, thử lại sau.",
+      "UNAUTHORIZED": "Kết nối ví để gửi báo cáo.",
+      "GUEST_NOT_ALLOWED": "Kết nối ví để gửi báo cáo.",
+      "GAME_NOT_FOUND": "Không tìm thấy game.",
+      "VALIDATION_ERROR": "Thông tin không hợp lệ.",
+      "UNKNOWN": "Gửi báo cáo thất bại, thử lại sau."
+    }
+  },
+  "adminReports": {
+    "title": "Báo cáo vi phạm",
+    "status": {
+      "OPEN": "Chờ xử lý",
+      "RESOLVED": "Đã xử lý",
+      "DISMISSED": "Bỏ qua"
+    },
+    "empty": "Không có báo cáo nào.",
+    "loadError": "Không tải được báo cáo ({code})",
+    "notePrompt": "Ghi chú xử lý (không bắt buộc):",
+    "note": "Ghi chú",
+    "resolve": "Đã xử lý",
+    "dismiss": "Bỏ qua",
+    "hint": "Xử lý xong (vd: đổi game sang Bảo trì / Tạm khóa ở bảng bên dưới) rồi đánh dấu Đã xử lý."
+  },
+  "members": {
+    "title": "Thành viên studio ({count})",
+    "you": "bạn",
+    "role": {
+      "OWNER": "Chủ studio",
+      "MEMBER": "Thành viên"
+    },
+    "joined": "tham gia {date}",
+    "makeOwner": "Chuyển quyền chủ",
+    "remove": "Xóa",
+    "leave": "Rời studio",
+    "confirmTransfer": "Chuyển quyền chủ studio cho {name}? Bạn sẽ trở thành thành viên thường.",
+    "confirmRemove": "Xóa {name} khỏi studio?",
+    "confirmLeave": "Rời studio này? Bạn sẽ không quản lý game của studio nữa.",
+    "transferred": "Đã chuyển quyền chủ studio.",
+    "removed": "Đã xóa thành viên.",
+    "left": "Bạn đã rời studio.",
+    "added": "Đã thêm thành viên.",
+    "addLabel": "Thêm thành viên bằng địa chỉ ví",
+    "add": "Thêm",
+    "addHint": "Người được thêm phải đăng nhập Game Hub bằng ví đó ít nhất 1 lần và chưa thuộc studio nào. Tối đa 20 thành viên."
+  },
+  "terms": {
+    "version": "Phiên bản",
+    "back": "← Về trang Developer"
   }
 }

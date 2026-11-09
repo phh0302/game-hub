@@ -124,8 +124,8 @@
 - [x] Endpoint kiểm tra sống `GET /api/v1/health`
 - [x] Xử lý lỗ hổng thư viện: zod 4.6.7, tắt bộ tối ưu ảnh; đánh giá phần còn lại trong `docs/SECURITY.md`
 - [x] Hướng dẫn từng bước: `docs/DEPLOY.md`
-- [ ] Tạo database Neon (region Singapore), chạy `migrate deploy` + seed production
-- [ ] Tạo project Vercel, nhập biến môi trường, deploy, chuyển Function Region sang Singapore
+- [x] Tạo database Neon (region Singapore), chạy `migrate deploy` + seed production
+- [x] Tạo project Vercel, nhập biến môi trường, deploy, chuyển Function Region sang Singapore
 - [ ] Kiểm tra sau deploy (health, đăng nhập ví, chơi, admin, cookie Secure, sandbox game)
 - [ ] Gắn domain riêng (domain phải khớp `NEXT_PUBLIC_APP_URL` / SIWE); domain riêng cho game (vd `games.<domain>`)
 - Lưu ý: Vercel Hobby chỉ cho phi thương mại → lên Pro khi bật quảng cáo / thu tiền
@@ -145,8 +145,10 @@
 - [x] Tài liệu: quy trình đăng game + yêu cầu `.zip` (`docs/GAME_SDK.md`), cấu hình R2 (`docs/DEPLOY.md` mục 3b)
 - [x] Thử toàn bộ luồng trên máy: tạo studio → tạo game → upload `.zip` → chơi thử → admin duyệt → phát hành (09/11/2026)
 - [ ] Tạo bucket R2 + biến môi trường trên Vercel, thử upload trên production
-- [ ] Báo cáo vi phạm game (`GameReport`), điều khoản cho người đăng game
-- [ ] Mời thêm thành viên vào studio; chuyển quyền sở hữu
+- [x] Báo cáo vi phạm game (`GameReport`): nút ⚑ Báo cáo dưới game (5 lý do, mỗi người 1 báo cáo đang mở/game), mục **Báo cáo vi phạm** ở trang Quản trị (Chờ xử lý / Đã xử lý / Bỏ qua + ghi chú)
+- [x] Điều khoản người đăng game `/terms/developer` (có phiên bản): bắt buộc tick khi tạo studio; đổi phiên bản → chủ studio phải đồng ý lại mới tạo game / upload được *(bản nháp – nên nhờ luật sư xem lại)*
+- [x] Thành viên studio: chủ studio thêm bằng địa chỉ ví (tối đa 20), xóa thành viên, chuyển quyền chủ; thành viên tự rời studio
+- [x] CI có thêm job `migrations`: chạy migration trên Postgres thật + kiểm tra schema khớp migration + seed 2 lần
 - [ ] Hỗ trợ bản build nén `.br` / `.gz` (Unity WebGL nén)
 
 ## Phase 11 – Kiếm tiền (sau MVP)

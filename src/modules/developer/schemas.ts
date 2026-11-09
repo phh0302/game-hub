@@ -5,6 +5,15 @@ export const studioCreateSchema = z.object({
   name: z.string().trim().min(2, "Tên studio tối thiểu 2 ký tự").max(60),
   slug: slugSchema,
   description: z.string().trim().max(500).nullable().optional(),
+  /** Phải tick đồng ý Điều khoản người đăng game */
+  acceptTerms: z.literal(true),
+});
+
+export const memberAddSchema = z.object({
+  walletAddress: z
+    .string()
+    .trim()
+    .regex(/^0x[0-9a-fA-F]{40}$/, "Địa chỉ ví không hợp lệ"),
 });
 
 /** Developer chỉ được sửa thông tin hiển thị – trạng thái, luật chống gian lận… do admin quyết */
@@ -32,6 +41,7 @@ export const devVersionCreateSchema = z.object({
 });
 
 export type StudioCreateInput = z.infer<typeof studioCreateSchema>;
+export type MemberAddInput = z.infer<typeof memberAddSchema>;
 export type DevGameCreateInput = z.infer<typeof devGameCreateSchema>;
 export type DevGameUpdateInput = z.infer<typeof devGameUpdateSchema>;
 export type UploadRequestInput = z.infer<typeof uploadRequestSchema>;

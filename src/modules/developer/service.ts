@@ -11,7 +11,11 @@ import { storage } from "@/modules/storage";
 import { buildDir, imageKey, incomingZipKey, isImageKeyOf, isIncomingKeyOf } from "@/modules/storage/keys";
 import { IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_UPLOAD_BYTES } from "@/modules/uploads/limits";
 import { extractBuild, ZipValidationError, type BuildFile } from "@/modules/uploads/zip";
+import { displayName } from "@/lib/format";
+import { primaryWallet } from "@/modules/users/dto";
+import { DEVELOPER_TERMS_VERSION, isTermsUpToDate } from "./terms";
 import type {
+  MemberAddInput,
   DevGameCreateInput,
   DevGameUpdateInput,
   DevVersionCreateInput,
@@ -32,7 +36,113 @@ export async function getMyStudio(userId: string) {
     include: { studio: true },
     orderBy: { createdAt: "asc" },
   });
-  return member ? { ...member.studio, myRole: member.role } : null;
+  return member ? { ...member.studio, myRole: member.role, termsUpToDate: isTermsUpToDate(member.studio) } : null;
+}
+
+type MyStudio = NonNullable<Awaited<ReturnType<typeof getMyStudio>>>;
+
+/** Chặn tạo game / upload khi studio chưa đồng ý điều khoản phiên bản hiện tại */
+export function assertTermsAccepted(studio: { termsVersion: string | null }) {
+  if (!isTermsUpToDate(studio)) {
+    throw new ApiError(403, "TERMS_NOT_ACCEPTED", "Studio cần đồng ý điều khoản người đăng game phiên bản mới");
+  }
+}
+
+function assertOwner(studio: MyStudio) {
+  if (studio.myRole !== "OWNER") throw new ApiError(403, "OWNER_ONLY", "Chỉ chủ studio được làm việc này");
+}
+
+/** Chủ studio đồng ý điều khoản phiên bản hiện tại */
+export async function acceptTerms(userId: string) {
+  const studio = await requireMyStudio(userId);
+  assertOwner(studio);
+  await prisma.studio.update({
+    where: { id: studio.id },
+    data: { termsVersion: DEVELOPER_TERMS_VERSION, termsAcceptedAt: new Date(), termsAcceptedById: userId },
+  });
+  await logEvent({ type: "studio.terms", userId, data: { studioId: studio.id, version: DEVELOPER_TERMS_VERSION } });
+  return getMyStudio(userId);
+}
+
+// ───────────── Thành viên studio ─────────────
+
+const MAX_MEMBERS = 20;
+
+export async function listMembers(studioId: string) {
+  const members = await prisma.studioMember.findMany({
+    where: { studioId },
+    include: { user: { include: { identities: true } } },
+    orderBy: [{ role: "asc" }, { createdAt: "asc" }],
+  });
+  return members.map((m) => {
+    const wallet = primaryWallet(m.user);
+    return {
+      userId: m.userId,
+      role: m.role,
+      joinedAt: m.createdAt,
+      walletAddress: wallet,
+      displayName: displayName({ id: m.user.id, username: m.user.username, walletAddress: wallet }),
+    };
+  });
+}
+
+/** Chủ studio thêm thành viên bằng địa chỉ ví (người đó phải từng đăng nhập Game Hub) */
+export async function addMember(userId: string, input: MemberAddInput) {
+  const studio = await requireMyStudio(userId);
+  assertOwner(studio);
+
+  const identity = await prisma.authIdentity.findUnique({
+    where: { provider_providerUserId: { provider: "WALLET", providerUserId: input.walletAddress.toLowerCase() } },
+    include: { user: true },
+  });
+  if (!identity || identity.user.deletedAt) {
+    throw new ApiError(404, "USER_NOT_FOUND", "Ví này chưa từng đăng nhập Game Hub");
+  }
+  if (await getMyStudio(identity.userId)) {
+    throw new ApiError(409, "ALREADY_IN_STUDIO", "Người này đã thuộc một studio");
+  }
+  if ((await prisma.studioMember.count({ where: { studioId: studio.id } })) >= MAX_MEMBERS) {
+    throw new ApiError(409, "STUDIO_FULL", `Studio tối đa ${MAX_MEMBERS} thành viên`);
+  }
+
+  await prisma.studioMember.create({ data: { studioId: studio.id, userId: identity.userId, role: "MEMBER" } });
+  await logEvent({ type: "studio.member.add", userId, data: { studioId: studio.id, memberId: identity.userId } });
+  return listMembers(studio.id);
+}
+
+/** Chủ studio bỏ thành viên, hoặc thành viên tự rời studio */
+export async function removeMember(userId: string, targetUserId: string) {
+  const studio = await requireMyStudio(userId);
+  const target = await prisma.studioMember.findUnique({
+    where: { studioId_userId: { studioId: studio.id, userId: targetUserId } },
+  });
+  if (!target) throw new ApiError(404, "NOT_FOUND", "Không tìm thấy thành viên");
+  if (target.role === "OWNER") {
+    throw new ApiError(400, "OWNER_CANNOT_LEAVE", "Chủ studio cần chuyển quyền cho người khác trước khi rời");
+  }
+  if (targetUserId !== userId) assertOwner(studio);
+
+  await prisma.studioMember.delete({ where: { studioId_userId: { studioId: studio.id, userId: targetUserId } } });
+  await logEvent({ type: "studio.member.remove", userId, data: { studioId: studio.id, memberId: targetUserId } });
+  return listMembers(studio.id);
+}
+
+/** Chủ studio chuyển quyền chủ sở hữu cho 1 thành viên (mình thành thành viên thường) */
+export async function transferOwnership(userId: string, targetUserId: string) {
+  const studio = await requireMyStudio(userId);
+  assertOwner(studio);
+  if (targetUserId === userId) throw new ApiError(400, "VALIDATION_ERROR", "Bạn đã là chủ studio");
+  const target = await prisma.studioMember.findUnique({
+    where: { studioId_userId: { studioId: studio.id, userId: targetUserId } },
+  });
+  if (!target) throw new ApiError(404, "NOT_FOUND", "Không tìm thấy thành viên");
+
+  await prisma.$transaction([
+    prisma.studioMember.update({ where: { studioId_userId: { studioId: studio.id, userId: targetUserId } }, data: { role: "OWNER" } }),
+    prisma.studioMember.update({ where: { studioId_userId: { studioId: studio.id, userId } }, data: { role: "MEMBER" } }),
+  ]);
+  await logEvent({ type: "studio.owner.transfer", userId, data: { studioId: studio.id, newOwnerId: targetUserId } });
+  return listMembers(studio.id);
 }
 
 export async function requireMyStudio(userId: string) {
@@ -50,6 +160,9 @@ export async function createStudio(userId: string, input: StudioCreateInput) {
       name: input.name,
       slug: input.slug,
       description: input.description ?? null,
+      termsVersion: DEVELOPER_TERMS_VERSION,
+      termsAcceptedAt: new Date(),
+      termsAcceptedById: userId,
       members: { create: { userId, role: "OWNER" } },
     },
   });
@@ -143,6 +256,7 @@ function assertOwnImage(thumbnailKey: string | null | undefined, userId: string)
 }
 
 export async function createStudioGame(studio: Studio, userId: string, input: DevGameCreateInput, locale: string) {
+  assertTermsAccepted(studio);
   assertOwnImage(input.thumbnailKey, userId);
   const created = await adminCreateGame({
     slug: input.slug,
@@ -206,6 +320,7 @@ async function inBatches<T>(items: T[], limit: number, task: (item: T) => Promis
  * Nhận bản build: tải .zip từ kho → kiểm tra + giải nén → lưu từng file → tạo phiên bản chờ duyệt.
  */
 export async function submitVersion(studio: Studio, userId: string, gameId: string, input: DevVersionCreateInput) {
+  assertTermsAccepted(studio);
   const game = await findStudioGame(studio.id, gameId);
 
   if (!isIncomingKeyOf(input.uploadKey, userId)) {

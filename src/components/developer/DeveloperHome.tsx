@@ -6,8 +6,16 @@ import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { Field, inputCls, primaryBtn, ghostBtn, Section, slugify, StatusBadge, useErrorText, type GameStatus, type VersionStatus } from "./shared";
+import { StudioMembers } from "./StudioMembers";
 
-type Studio = { id: string; name: string; slug: string; description: string | null; myRole: "OWNER" | "MEMBER" };
+type Studio = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  myRole: "OWNER" | "MEMBER";
+  termsUpToDate: boolean;
+};
 type DevGame = {
   id: string;
   slug: string;
@@ -59,7 +67,9 @@ export function DeveloperHome() {
         </a>
       </header>
 
-      <CreateGameForm />
+      {!studio.termsUpToDate && <TermsBanner isOwner={studio.myRole === "OWNER"} onAccepted={load} />}
+
+      {studio.termsUpToDate && <CreateGameForm />}
 
       <Section title={t("myGames")}>
         {games.length === 0 ? (
@@ -93,6 +103,44 @@ export function DeveloperHome() {
           </div>
         )}
       </Section>
+
+      <StudioMembers myRole={studio.myRole} onLeft={load} />
+    </div>
+  );
+}
+
+/** Điều khoản có phiên bản mới → chủ studio phải đồng ý lại mới tạo game / upload được */
+function TermsBanner({ isOwner, onAccepted }: { isOwner: boolean; onAccepted: () => void }) {
+  const t = useTranslations("developer");
+  const errorText = useErrorText();
+  const [state, setState] = useState<{ busy: boolean; error?: string }>({ busy: false });
+  return (
+    <div role="alert" className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-neon-pink/50 bg-neon-pink/10 px-4 py-3 text-sm">
+      <p>
+        {t(isOwner ? "termsOutdatedOwner" : "termsOutdatedMember")}{" "}
+        <a href="/terms/developer" target="_blank" rel="noreferrer" className="font-semibold text-neon underline">
+          {t("readTerms")} ↗
+        </a>
+      </p>
+      {isOwner && (
+        <button
+          type="button"
+          disabled={state.busy}
+          onClick={async () => {
+            setState({ busy: true });
+            try {
+              await apiFetch("/developer/studio/terms", { method: "POST" });
+              onAccepted();
+            } catch (err) {
+              setState({ busy: false, error: errorText(errorCode(err)) });
+            }
+          }}
+          className={primaryBtn}
+        >
+          {t("acceptTerms")}
+        </button>
+      )}
+      {state.error && <p className="w-full text-neon-pink">{state.error}</p>}
     </div>
   );
 }
@@ -104,6 +152,7 @@ function Onboarding({ onCreated }: { onCreated: () => void }) {
   const [slug, setSlug] = useState("");
   const [slugTouched, setSlugTouched] = useState(false);
   const [description, setDescription] = useState("");
+  const [agreed, setAgreed] = useState(false);
   const [state, setState] = useState<{ busy: boolean; error?: string }>({ busy: false });
 
   return (
@@ -130,7 +179,7 @@ function Onboarding({ onCreated }: { onCreated: () => void }) {
           try {
             await apiFetch("/developer/studio", {
               method: "POST",
-              json: { name: name.trim(), slug, description: description.trim() || null },
+              json: { name: name.trim(), slug, description: description.trim() || null, acceptTerms: agreed },
             });
             onCreated();
           } catch (err) {
@@ -167,8 +216,17 @@ function Onboarding({ onCreated }: { onCreated: () => void }) {
         <Field label={t("studioDescription")}>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} maxLength={500} className={inputCls} />
         </Field>
+        <label className="flex items-start gap-2 text-sm">
+          <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} required className="mt-0.5 accent-neon" />
+          <span>
+            {t("agreePrefix")}{" "}
+            <a href="/terms/developer" target="_blank" rel="noreferrer" className="font-semibold text-neon underline">
+              {t("termsLink")} ↗
+            </a>
+          </span>
+        </label>
         {state.error && <p className="text-sm text-neon-pink">{state.error}</p>}
-        <button type="submit" disabled={state.busy} className={`${primaryBtn} self-start`}>
+        <button type="submit" disabled={state.busy || !agreed} className={`${primaryBtn} self-start`}>
           {state.busy ? t("creating") : t("createStudio")}
         </button>
       </form>

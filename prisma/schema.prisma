@@ -50,6 +50,7 @@ model User {
   sessions      GameSession[]
   scores        Score[]
   events        Event[]
+  reports       GameReport[]
 }
 
 /// Một cách đăng nhập của user. 1 user có thể có nhiều ví / nhiều cách đăng nhập.
@@ -99,6 +100,10 @@ model Studio {
   logoKey     String?
   /// Studio chính thức của Game Hub (game do hub tự làm)
   isOfficial  Boolean   @default(false)
+  /// Phiên bản điều khoản người đăng game mà studio đã đồng ý (vd "2026-11-09")
+  termsVersion      String?
+  termsAcceptedAt   DateTime?
+  termsAcceptedById String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
@@ -176,6 +181,7 @@ model Game {
   sessions       GameSession[]
   scores         Score[]
   events         Event[]
+  reports        GameReport[]
 
   @@index([status, sortOrder])
   @@index([studioId])
@@ -339,4 +345,42 @@ model Event {
 
   @@index([type, createdAt])
   @@index([gameId, createdAt])
+}
+
+// ───────────────────────────── Báo cáo vi phạm ─────────────────────────────
+
+enum ReportReason {
+  BROKEN // game lỗi, không chơi được
+  INAPPROPRIATE // nội dung phản cảm / không phù hợp
+  COPYRIGHT // vi phạm bản quyền
+  CHEATING // bảng xếp hạng có dấu hiệu gian lận
+  OTHER
+}
+
+enum ReportStatus {
+  OPEN
+  RESOLVED // đã xử lý (vd: khóa game, xóa điểm)
+  DISMISSED // không vi phạm
+}
+
+/// Người chơi báo cáo game; admin xử lý trong trang Quản trị
+model GameReport {
+  id           String       @id @default(cuid())
+  gameId       String
+  reporterId   String
+  reason       ReportReason
+  message      String?
+  status       ReportStatus @default(OPEN)
+  /// Ghi chú xử lý của admin
+  resolution   String?
+  resolvedById String?
+  resolvedAt   DateTime?
+  createdAt    DateTime     @default(now())
+
+  game     Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  reporter User @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([status, createdAt])
+  @@index([gameId, status])
+  @@index([reporterId, gameId])
 }

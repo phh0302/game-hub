@@ -1,7 +1,7 @@
 import { handle, ok, readJson } from "@/lib/api";
 import { rateLimit } from "@/lib/rate-limit";
 import { requireRegisteredUser } from "@/modules/auth/session";
-import { createUploadTicket, requireMyStudio } from "@/modules/developer/service";
+import { assertTermsAccepted, createUploadTicket, requireMyStudio } from "@/modules/developer/service";
 import { uploadRequestSchema } from "@/modules/developer/schemas";
 
 /**
@@ -11,7 +11,7 @@ import { uploadRequestSchema } from "@/modules/developer/schemas";
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireRegisteredUser();
-    await requireMyStudio(user.id);
+    assertTermsAccepted(await requireMyStudio(user.id));
     rateLimit(`upload:${user.id}`, 30, 60 * 60_000);
     const input = uploadRequestSchema.parse(await readJson(req));
     return ok({ upload: await createUploadTicket(user.id, input) });

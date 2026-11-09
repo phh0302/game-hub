@@ -272,8 +272,21 @@
       "ZIP_UNSAFE_PATH": "Invalid file path in the .zip: {detail}",
       "ZIP_FILE_TYPE_NOT_ALLOWED": "File type not allowed in the build: {detail}",
       "ZIP_NO_INDEX_HTML": "index.html not found at the root of the build (or inside a single wrapping folder).",
-      "UPLOADS_NOT_CONFIGURED": "Uploads aren't enabled on this server yet (storage not configured). Please contact an admin."
-    }
+      "UPLOADS_NOT_CONFIGURED": "Uploads aren't enabled on this server yet (storage not configured). Please contact an admin.",
+      "TERMS_NOT_ACCEPTED": "The studio has not accepted the latest Developer Terms.",
+      "OWNER_ONLY": "Only the studio owner can do this.",
+      "USER_NOT_FOUND": "This wallet has never signed in to Game Hub.",
+      "ALREADY_IN_STUDIO": "This person already belongs to a studio.",
+      "STUDIO_FULL": "The studio already has 20 members.",
+      "OWNER_CANNOT_LEAVE": "The owner cannot leave – transfer ownership first.",
+      "FORBIDDEN": "You don't have permission to do this."
+    },
+    "agreePrefix": "I have read and agree to the",
+    "termsLink": "Developer Terms",
+    "termsOutdatedOwner": "The Developer Terms have been updated. Please accept them again to keep creating games and uploading versions.",
+    "termsOutdatedMember": "The Developer Terms have been updated. The studio owner must accept them before the studio can create games or upload.",
+    "readTerms": "Read the terms",
+    "acceptTerms": "I agree"
   },
   "preview": {
     "title": "Playtest",
@@ -288,5 +301,73 @@
     },
     "log": "SDK log",
     "logEmpty": "No messages yet – the game hasn't loaded the SDK or called GameHub.init()."
+  },
+  "report": {
+    "button": "⚑ Report",
+    "title": "Report this game",
+    "thanks": "Thank you! An admin will review your report soon.",
+    "close": "Close",
+    "loginRequired": "Connect your wallet to send a report.",
+    "connect": "Connect wallet",
+    "submit": "Send report",
+    "cancel": "Cancel",
+    "messagePlaceholder": "More details (optional, up to 1000 characters)",
+    "reasons": {
+      "BROKEN": "Broken / doesn't load",
+      "INAPPROPRIATE": "Inappropriate content",
+      "COPYRIGHT": "Copyright infringement",
+      "CHEATING": "Score cheating",
+      "OTHER": "Other"
+    },
+    "errors": {
+      "REPORT_EXISTS": "You already reported this game and an admin is reviewing it.",
+      "RATE_LIMITED": "Too many reports, please try again later.",
+      "UNAUTHORIZED": "Connect your wallet to send a report.",
+      "GUEST_NOT_ALLOWED": "Connect your wallet to send a report.",
+      "GAME_NOT_FOUND": "Game not found.",
+      "VALIDATION_ERROR": "Invalid input.",
+      "UNKNOWN": "Could not send the report, please try again."
+    }
+  },
+  "adminReports": {
+    "title": "Game reports",
+    "status": {
+      "OPEN": "Open",
+      "RESOLVED": "Resolved",
+      "DISMISSED": "Dismissed"
+    },
+    "empty": "No reports.",
+    "loadError": "Could not load reports ({code})",
+    "notePrompt": "Resolution note (optional):",
+    "note": "Note",
+    "resolve": "Resolved",
+    "dismiss": "Dismiss",
+    "hint": "Take action first (e.g. set the game to Maintenance / Suspended below), then mark it Resolved."
+  },
+  "members": {
+    "title": "Studio members ({count})",
+    "you": "you",
+    "role": {
+      "OWNER": "Owner",
+      "MEMBER": "Member"
+    },
+    "joined": "joined {date}",
+    "makeOwner": "Make owner",
+    "remove": "Remove",
+    "leave": "Leave studio",
+    "confirmTransfer": "Transfer studio ownership to {name}? You will become a regular member.",
+    "confirmRemove": "Remove {name} from the studio?",
+    "confirmLeave": "Leave this studio? You will no longer manage its games.",
+    "transferred": "Ownership transferred.",
+    "removed": "Member removed.",
+    "left": "You left the studio.",
+    "added": "Member added.",
+    "addLabel": "Add a member by wallet address",
+    "add": "Add",
+    "addHint": "The person must have signed in to Game Hub with that wallet at least once and not belong to another studio. Max 20 members."
+  },
+  "terms": {
+    "version": "Version",
+    "back": "← Back to Developer"
   }
 }
