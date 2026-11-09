@@ -178,8 +178,9 @@ export async function updateStudioGame(
 
 /** Cấp link upload thẳng lên kho lưu trữ (file không đi qua server web) */
 export async function createUploadTicket(userId: string, input: UploadRequestInput) {
-  // Production (Vercel) không ghi được đĩa → bắt buộc cấu hình kho S3/R2 (docs/DEPLOY.md mục 3b)
-  if (process.env.NODE_ENV === "production" && storage().name === "local" && process.env.ALLOW_LOCAL_STORAGE !== "1") {
+  // Vercel không ghi được đĩa → bắt buộc cấu hình kho S3/R2 (docs/DEPLOY.md mục 3b).
+  // Dựa vào biến VERCEL (Vercel tự đặt) thay vì NODE_ENV: máy dev có thể bị đặt NODE_ENV=production ở cấp hệ thống.
+  if (process.env.VERCEL && storage().name === "local" && process.env.ALLOW_LOCAL_STORAGE !== "1") {
     throw new ApiError(503, "UPLOADS_NOT_CONFIGURED", "Chức năng upload chưa được cấu hình kho lưu trữ");
   }
   const id = randomUUID();
