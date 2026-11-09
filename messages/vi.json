@@ -60,9 +60,9 @@
     "saved": "Đã lưu {score} điểm. Kỷ lục của bạn: {best} · hạng #{rank}",
     "newBest": "Kỷ lục mới: {score} điểm! Bạn đang hạng #{rank}",
     "errors": {
-      "PLAY_TOO_SHORT": "Ván chơi quá ngắn nên điểm không được tính.",
-      "SCORE_INVALID": "Điểm không hợp lệ nên không được lưu.",
-      "SESSION_EXPIRED": "Lượt chơi đã quá lâu, điểm không được lưu.",
+      "PLAY_TOO_SHORT": "Điểm không được ghi nhận: ván chơi quá ngắn (dưới thời gian tối thiểu của game).",
+      "SCORE_INVALID": "Điểm không được ghi nhận: điểm nằm ngoài mức cho phép.",
+      "SESSION_EXPIRED": "Điểm không được ghi nhận: lượt chơi đã mở quá lâu.",
       "SESSION_ENDED": "Lượt chơi này đã nộp điểm rồi.",
       "SESSION_NOT_FOUND": "Không tìm thấy lượt chơi, hãy bắt đầu ván mới.",
       "LEADERBOARD_CLOSED": "Bảng xếp hạng này đã đóng.",
@@ -71,8 +71,12 @@
       "RATE_LIMITED": "Bạn gửi điểm quá nhanh, thử lại sau ít phút.",
       "UNAUTHORIZED": "Phiên đăng nhập đã hết, hãy kết nối ví lại.",
       "GUEST_NOT_ALLOWED": "Hãy kết nối ví để lưu điểm.",
-      "UNKNOWN": "Không lưu được điểm, hãy thử lại."
-    }
+      "UNKNOWN": "Không lưu được điểm, hãy thử lại.",
+      "SCORE_TOO_FAST": "Điểm không được ghi nhận: tốc độ ghi điểm nhanh bất thường so với thời gian chơi.",
+      "SESSION_NOT_STARTED": "Điểm không được ghi nhận: không bắt đầu được lượt chơi trên máy chủ (thử tải lại trang)."
+    },
+    "notSavedLateLogin": "Bạn đạt {score} điểm, nhưng ván này bắt đầu trước khi kết nối ví nên không được lưu. Ván sau sẽ được tính!",
+    "dismiss": "Đóng"
   },
   "leaderboard": {
     "title": "Bảng xếp hạng",

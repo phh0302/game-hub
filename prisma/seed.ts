@@ -1,4 +1,4 @@
-import { PrismaClient } from "@prisma/client";
+import { Prisma, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -29,6 +29,24 @@ async function seedCategories() {
   }
 }
 
+/**
+ * Luật chống gian lận cho bảng xếp hạng 2048:
+ * - maxScore: điểm lý thuyết tối đa của 2048 ~3,9 triệu
+ * - maxScorePerSecond: người chơi rất nhanh đạt khoảng 50–150 điểm/giây; 300 vẫn dư cho người thật
+ */
+const BOARD_2048_SETTINGS = { maxScore: 4_000_000, maxScorePerSecond: 300 };
+
+/** Bổ sung luật mới vào DB đã có – chỉ thêm key còn thiếu, KHÔNG ghi đè giá trị admin đã chỉnh */
+async function backfill2048Board() {
+  const board = await prisma.leaderboard.findFirst({ where: { key: "default", game: { slug: "2048" } } });
+  if (!board) return;
+  const current = (board.settings ?? {}) as Record<string, unknown>;
+  const missing = Object.fromEntries(Object.entries(BOARD_2048_SETTINGS).filter(([k]) => !(k in current)));
+  if (Object.keys(missing).length === 0) return;
+  await prisma.leaderboard.update({ where: { id: board.id }, data: { settings: { ...current, ...missing } as Prisma.InputJsonObject } });
+  console.log("Đã bổ sung luật cho bảng xếp hạng 2048:", Object.keys(missing).join(", "));
+}
+
 async function seed2048(studioId: string) {
   const existing = await prisma.game.findUnique({ where: { slug: "2048" } });
   if (existing) return;
@@ -52,7 +70,7 @@ async function seed2048(studioId: string) {
       },
       categories: { create: categories.map((c) => ({ categoryId: c.id })) },
       leaderboards: {
-        create: { key: "default", order: "DESC", settings: { maxScore: 4_000_000 } },
+        create: { key: "default", order: "DESC", settings: BOARD_2048_SETTINGS },
       },
       versions: {
         create: {
@@ -83,6 +101,7 @@ async function main() {
   });
 
   await seed2048(studio.id);
+  await backfill2048Board();
   console.log("Seed xong: 6 thể loại, studio Game Hub, game 2048 (v1.0.0)");
 }
 

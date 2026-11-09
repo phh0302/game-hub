@@ -60,9 +60,9 @@
     "saved": "Saved {score} points. Your best: {best} · rank #{rank}",
     "newBest": "New record: {score} points! You're rank #{rank}",
     "errors": {
-      "PLAY_TOO_SHORT": "That round was too short, so the score doesn't count.",
-      "SCORE_INVALID": "Invalid score – it was not saved.",
-      "SESSION_EXPIRED": "This round took too long, the score was not saved.",
+      "PLAY_TOO_SHORT": "Score not recorded: the round was too short (below the game's minimum play time).",
+      "SCORE_INVALID": "Score not recorded: the score is outside the allowed range.",
+      "SESSION_EXPIRED": "Score not recorded: the round was open for too long.",
       "SESSION_ENDED": "This round's score was already submitted.",
       "SESSION_NOT_FOUND": "Round not found, please start a new game.",
       "LEADERBOARD_CLOSED": "This leaderboard is closed.",
@@ -71,8 +71,12 @@
       "RATE_LIMITED": "You're submitting too fast, try again in a few minutes.",
       "UNAUTHORIZED": "Your session expired, please connect your wallet again.",
       "GUEST_NOT_ALLOWED": "Connect your wallet to save scores.",
-      "UNKNOWN": "Couldn't save your score, please try again."
-    }
+      "UNKNOWN": "Couldn't save your score, please try again.",
+      "SCORE_TOO_FAST": "Score not recorded: points were earned unusually fast for the time played.",
+      "SESSION_NOT_STARTED": "Score not recorded: the round couldn't be started on the server (try reloading the page)."
+    },
+    "notSavedLateLogin": "You scored {score}, but this round started before you connected your wallet, so it wasn't saved. Your next round will count!",
+    "dismiss": "Dismiss"
   },
   "leaderboard": {
     "title": "Leaderboard",

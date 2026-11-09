@@ -86,6 +86,18 @@ function GamePlayer({
     if (readyRef.current) sendInit();
   }, [sendInit]);
 
+  /**
+   * Báo kết quả lưu điểm ở 2 nơi: thông báo của hub + gửi SCORE_RESULT vào game
+   * (người chơi đang nhìn màn "hết ván" trong game nên phải thấy kết quả ở đó).
+   */
+  const report = useCallback(
+    (r: { saved: boolean; kind: Toast["kind"]; text: string; code?: string; data?: Record<string, unknown> }) => {
+      setToast({ kind: r.kind, text: r.text });
+      post("SCORE_RESULT", { saved: r.saved, code: r.code ?? null, message: r.text, ...r.data });
+    },
+    [post],
+  );
+
   const startSession = useCallback(() => {
     if (!canSubmitScore) {
       sessionRef.current = null;
@@ -109,11 +121,20 @@ function GamePlayer({
       sessionRef.current = null;
 
       if (!pending) {
-        if (!canSubmitScore) setToast({ kind: "info", text: t("notSaved", { score: fmt.format(score) }) });
+        report(
+          canSubmitScore
+            ? // Kết nối ví khi ván đang chơi dở → ván này không có lượt chơi phía server
+              { saved: false, kind: "info", code: "STARTED_BEFORE_LOGIN", text: t("notSavedLateLogin", { score: fmt.format(score) }) }
+            : { saved: false, kind: "info", code: "NOT_SIGNED_IN", text: t("notSaved", { score: fmt.format(score) }) },
+        );
         return;
       }
+
       const sessionId = await pending;
-      if (!sessionId) return;
+      if (!sessionId) {
+        report({ saved: false, kind: "error", code: "SESSION_NOT_STARTED", text: errorText("SESSION_NOT_STARTED") });
+        return;
+      }
 
       try {
         const res = await apiFetch<SubmitResult>(`/games/${slug}/scores`, {
@@ -121,18 +142,21 @@ function GamePlayer({
           json: { sessionId, score, leaderboard },
         });
         const rank = res.rank ?? "–";
-        setToast({
+        report({
+          saved: true,
           kind: "success",
           text: res.isNewBest
             ? t("newBest", { score: fmt.format(res.score.value), rank })
             : t("saved", { score: fmt.format(res.score.value), best: fmt.format(res.best), rank }),
+          data: { score: res.score.value, best: res.best, rank: res.rank, isNewBest: res.isNewBest },
         });
         onScoreSaved();
       } catch (err) {
-        setToast({ kind: "error", text: errorText(errorCode(err)) });
+        const code = errorCode(err);
+        report({ saved: false, kind: "error", code, text: errorText(code) });
       }
     },
-    [canSubmitScore, slug, t, fmt, onScoreSaved, errorText],
+    [canSubmitScore, slug, t, fmt, onScoreSaved, errorText, report],
   );
 
   // Luôn dùng handler mới nhất mà không phải gỡ/gắn lại listener
@@ -169,9 +193,9 @@ function GamePlayer({
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  // Tự ẩn thông báo
+  // Thông báo thành công tự ẩn; lỗi / không lưu được thì giữ đến khi người chơi đóng
   useEffect(() => {
-    if (!toast) return;
+    if (toast?.kind !== "success") return;
     const id = setTimeout(() => setToast(null), 7000);
     return () => clearTimeout(id);
   }, [toast]);
@@ -215,8 +239,8 @@ function GamePlayer({
         />
         {toast && (
           <div
-            role="status"
-            className={`absolute inset-x-3 bottom-3 rounded-xl border px-4 py-3 text-sm shadow-xl backdrop-blur ${
+            role={toast.kind === "error" ? "alert" : "status"}
+            className={`absolute inset-x-3 bottom-3 flex items-start gap-3 rounded-xl border px-4 py-3 text-sm shadow-xl backdrop-blur ${
               toast.kind === "success"
                 ? "border-neon-lime/50 bg-bg/90 text-neon-lime"
                 : toast.kind === "error"
@@ -224,7 +248,15 @@ function GamePlayer({
                   : "border-line bg-bg/90 text-ink"
             }`}
           >
-            {toast.text}
+            <span className="flex-1">{toast.text}</span>
+            <button
+              type="button"
+              onClick={() => setToast(null)}
+              aria-label={t("dismiss")}
+              className="-my-1 -mr-1 rounded-md px-2 py-1 text-base leading-none opacity-70 hover:opacity-100"
+            >
+              ×
+            </button>
           </div>
         )}
       </div>

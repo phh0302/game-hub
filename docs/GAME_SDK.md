@@ -35,6 +35,7 @@ SDK tạo biến toàn cục `window.GameHub`.
 | `GameHub.gameOver(score, { leaderboard })` | Ván kết thúc | Hub nộp điểm (số nguyên ≥ 0) lên bảng xếp hạng `leaderboard` (mặc định `"default"`) |
 | `GameHub.showRewardedAd()` | Người chơi chọn xem quảng cáo để nhận thưởng | `Promise<{ shown, rewarded, reason? }>` – **chỉ thưởng khi `rewarded === true`** |
 | `GameHub.showInterstitialAd()` | Giữa các màn | `Promise<{ shown }>` |
+| `GameHub.on("scoreResult", cb)` | Sau `gameOver()` | Kết quả lưu điểm – **nên hiển thị `message` cho người chơi** (xem bên dưới) |
 | `GameHub.on("init" \| "pause" \| "resume", cb)` | Lắng nghe hub | `init` được gửi lại khi người chơi đăng nhập hoặc đổi ngôn ngữ |
 
 Dữ liệu `init`:
@@ -48,6 +49,20 @@ Dữ liệu `init`:
   canSubmitScore: true    // false = người chơi chưa kết nối ví, điểm sẽ không được lưu
 }
 ```
+
+Dữ liệu `scoreResult`:
+
+```js
+{
+  saved: true,              // false = điểm KHÔNG được ghi nhận
+  code: null,               // khi saved = false: "PLAY_TOO_SHORT", "SCORE_TOO_FAST", "SCORE_INVALID",
+                            // "NOT_SIGNED_IN", "STARTED_BEFORE_LOGIN", "SESSION_NOT_STARTED", ...
+  message: "Kỷ lục mới: 1.696 điểm! Bạn đang hạng #3",  // đã dịch theo ngôn ngữ người chơi
+  score: 1696, best: 1696, rank: 3, isNewBest: true      // chỉ có khi saved = true
+}
+```
+
+> Luôn cho người chơi thấy `message`, đặc biệt khi `saved: false` – đừng để họ tưởng điểm đã được lưu.
 
 > Hiện hub **chưa bật quảng cáo**: `showRewardedAd()` trả về `{ shown: false, rewarded: false }`. Hãy thiết kế để game vẫn chơi bình thường khi không có quảng cáo.
 
@@ -82,7 +97,11 @@ Game mẫu đầy đủ: `public/uploads/games/2048/1.0.0/` (2048, song ngữ, b
 ## 6. Quy tắc tính điểm
 
 - Mỗi `gameStart()` → hub tạo 1 lượt chơi; mỗi lượt chơi chỉ nộp điểm **1 lần**
-- Điểm bị từ chối nếu: chơi ngắn hơn thời gian tối thiểu, quá số giờ tối đa, vượt điểm tối đa của bảng xếp hạng
+- Thời gian chơi tính từ `gameStart()` đến lúc hub nhận `gameOver()` – do **server** đo, game không sửa được
+- Điểm bị từ chối nếu: chơi ngắn hơn thời gian tối thiểu, lượt chơi mở quá số giờ tối đa, ngoài khoảng điểm cho phép,
+  hoặc **ghi điểm nhanh bất thường** (điểm ÷ số giây chơi > `maxScorePerSecond` của bảng xếp hạng)
+- Ván bị từ chối là kết thúc luôn – không nộp lại được cùng lượt chơi
+- Game nên gọi `gameStart()` ở **thao tác đầu tiên** của người chơi (không phải lúc tải trang) để thời gian tính đúng
 - Bảng xếp hạng có thể sắp xếp "cao là tốt" hoặc "thấp là tốt" (vd: thời gian hoàn thành) – do admin cấu hình
 - Người chơi chưa kết nối ví vẫn chơi được, nhưng điểm không được lưu (`canSubmitScore: false`)
 
@@ -97,6 +116,7 @@ Mọi tin nhắn có dạng `{ source: "gamehub", v: 1, type, payload }`.
 | game → hub | `GAME_START` | `{}` |
 | game → hub | `GAME_OVER` | `{ score, leaderboard }` |
 | game → hub | `AD_REQUEST` | `{ requestId, kind: "rewarded" \| "interstitial" }` |
+| hub → game | `SCORE_RESULT` | `{ saved, code, message, score?, best?, rank?, isNewBest? }` |
 | hub → game | `AD_RESULT` | `{ requestId, shown, rewarded, reason? }` |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 

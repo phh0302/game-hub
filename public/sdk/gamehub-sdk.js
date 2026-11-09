@@ -56,6 +56,10 @@
           delete pending[payload.requestId];
         }
         break;
+      case "SCORE_RESULT":
+        // Kết quả lưu điểm sau gameOver(): { saved, code, message, score?, best?, rank?, isNewBest? }
+        emit("scoreResult", payload);
+        break;
       case "PAUSE":
         emit("pause", payload);
         break;
@@ -143,7 +147,7 @@
       return requestAd("interstitial");
     },
 
-    /** Lắng nghe sự kiện từ hub: "init", "pause", "resume" */
+    /** Lắng nghe sự kiện từ hub: "init", "scoreResult", "pause", "resume" */
     on: function (event, cb) {
       (listeners[event] = listeners[event] || []).push(cb);
     },

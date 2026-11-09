@@ -53,6 +53,7 @@
     tryAgain: document.getElementById("try-again"),
     newGame: document.getElementById("new-game"),
     saveNote: document.getElementById("save-note"),
+    result: document.getElementById("result"),
   };
 
   var state = {
@@ -185,6 +186,7 @@
     // Nước đi đầu tiên của ván → báo hub bắt đầu lượt chơi
     if (!state.roundStarted) {
       state.roundStarted = true;
+      hideResult();
       if (hub) hub.gameStart();
     }
 
@@ -266,6 +268,18 @@
     els.overlay.classList.add("hidden");
   }
 
+  /** Hub báo kết quả lưu điểm (đã dịch sẵn theo ngôn ngữ người chơi) */
+  function showResult(data) {
+    if (!data || !data.message) return;
+    els.result.textContent = data.message;
+    els.result.classList.remove("hidden", "ok", "err");
+    els.result.classList.add(data.saved ? "ok" : "err");
+  }
+
+  function hideResult() {
+    els.result.classList.add("hidden");
+  }
+
   function applyText(locale) {
     t = TEXT[locale] || TEXT.en;
     document.documentElement.lang = locale === "vi" ? "vi" : "en";
@@ -336,5 +350,6 @@
     hub.init().then(applyHubData);
     // Hub gửi lại INIT khi người chơi đăng nhập / đổi ngôn ngữ
     hub.on("init", applyHubData);
+    hub.on("scoreResult", showResult);
   }
 })();

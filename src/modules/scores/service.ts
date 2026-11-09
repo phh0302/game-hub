@@ -7,6 +7,21 @@ import { logEvent } from "@/modules/events/service";
 import { getPlayableGame } from "@/modules/games/service";
 import { readLeaderboardSettings } from "@/modules/games/settings";
 import { boardKeySchema, getLeaderboardByKey, getUserRank, isBoardOpen } from "./leaderboard";
+import { checkScore, type ScoreRuleError } from "./rules";
+
+const REJECT_STATUS: Record<ScoreRuleError, number> = {
+  SESSION_EXPIRED: 410,
+  PLAY_TOO_SHORT: 400,
+  SCORE_INVALID: 400,
+  SCORE_TOO_FAST: 400,
+};
+
+const REJECT_MESSAGE: Record<ScoreRuleError, string> = {
+  SESSION_EXPIRED: "Lượt chơi đã quá hạn",
+  PLAY_TOO_SHORT: "Thời gian chơi quá ngắn, điểm không hợp lệ",
+  SCORE_INVALID: "Điểm nằm ngoài mức cho phép",
+  SCORE_TOO_FAST: "Tốc độ ghi điểm bất thường, điểm không hợp lệ",
+};
 
 export const submitScoreSchema = z.object({
   sessionId: z.string().min(1).max(50),
@@ -53,20 +68,22 @@ export async function submitScore(userId: string, slug: string, input: z.infer<t
   }
 
   const durationSeconds = Math.floor((now.getTime() - session.startedAt.getTime()) / 1000);
-  const { minPlaySeconds, maxSessionHours } = game.parsedSettings;
-  if (durationSeconds > maxSessionHours * 3600) {
-    throw new ApiError(410, "SESSION_EXPIRED", "Lượt chơi đã quá hạn");
-  }
-  if (durationSeconds < minPlaySeconds) {
-    throw new ApiError(400, "PLAY_TOO_SHORT", "Thời gian chơi quá ngắn, điểm không hợp lệ");
-  }
-
   const limits = readLeaderboardSettings(board.settings);
-  if (
-    (limits.maxScore !== undefined && input.score > limits.maxScore) ||
-    (limits.minScore !== undefined && input.score < limits.minScore)
-  ) {
-    throw new ApiError(400, "SCORE_INVALID", "Điểm nằm ngoài mức cho phép");
+  const rejected = checkScore(
+    { score: input.score, durationSeconds },
+    { ...game.parsedSettings, ...limits },
+  );
+  if (rejected) {
+    // Ván bị từ chối là kết thúc luôn (không cho nộp lại cùng lượt chơi),
+    // và ghi nhật ký để admin theo dõi gian lận / chỉnh ngưỡng cho hợp lý
+    await prisma.gameSession.updateMany({ where: { id: session.id, endedAt: null }, data: { endedAt: now } });
+    await logEvent({
+      type: "score.rejected",
+      userId,
+      gameId: game.id,
+      data: { sessionId: session.id, leaderboard: board.key, reason: rejected, value: input.score, durationSeconds },
+    });
+    throw new ApiError(REJECT_STATUS[rejected], rejected, REJECT_MESSAGE[rejected]);
   }
 
   const previous = await prisma.score.aggregate({

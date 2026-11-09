@@ -21,6 +21,8 @@ export const leaderboardSettingsSchema = z
     maxScore: z.number().int().nonnegative().optional(),
     /** Điểm tối thiểu hợp lệ (vd: thời gian hoàn thành không thể dưới X giây) */
     minScore: z.number().int().nonnegative().optional(),
+    /** Tốc độ ghi điểm tối đa (điểm/giây) – chặn bot chơi siêu nhanh */
+    maxScorePerSecond: z.number().positive().optional(),
   })
   .passthrough();
 

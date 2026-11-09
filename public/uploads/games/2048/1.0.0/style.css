@@ -229,6 +229,26 @@ body {
   gap: 10px;
 }
 
+.result {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 13px;
+  text-align: center;
+}
+
+.result.ok {
+  border-color: rgb(182 255 59 / 0.5);
+  color: #b6ff3b;
+}
+
+.result.err {
+  border-color: rgb(255 62 200 / 0.5);
+  color: var(--pink);
+}
+
 .note {
   margin: 12px 0 0;
   font-size: 12px;
