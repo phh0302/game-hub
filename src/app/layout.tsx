@@ -26,9 +26,22 @@ const display = Chakra_Petch({
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
+  const locale = await getLocale();
   return {
+    // URL tuyệt đối cho ảnh / link chia sẻ (Facebook, Zalo cần link đầy đủ)
+    metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
     title: t("title"),
     description: t("description"),
+    applicationName: "Game Hub",
+    openGraph: {
+      type: "website",
+      siteName: "Game Hub",
+      title: t("title"),
+      description: t("description"),
+      locale: locale === "vi" ? "vi_VN" : "en_US",
+      images: [{ url: `/api/og?locale=${locale}`, width: 1200, height: 630 }],
+    },
+    twitter: { card: "summary_large_image" },
   };
 }
 

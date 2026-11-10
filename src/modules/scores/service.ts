@@ -128,6 +128,7 @@ export async function submitScore(userId: string, slug: string, input: z.infer<t
   const ranking = await getUserRank(board, userId, "all");
   return {
     score: { id: score.id, value, durationSeconds, leaderboard: board.key },
+    format: limits.format ?? "number",
     isNewBest,
     best: ranking?.score ?? value,
     rank: ranking?.rank ?? null,

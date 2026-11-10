@@ -91,6 +91,97 @@ async function seed2048(studioId: string) {
   await prisma.game.update({ where: { id: game.id }, data: { currentVersionId: game.versions[0].id } });
 }
 
+/**
+ * Game mẫu chính thức (ngoài 2048). Chỉ TẠO khi chưa có – chạy lại seed không ghi đè chỉnh sửa của admin.
+ * Luật chống gian lận của từng bảng xếp hạng tính theo cách chơi thật của game (xem chú thích).
+ */
+type SampleGame = {
+  slug: string;
+  sortOrder: number;
+  categories: string[];
+  settings: Prisma.InputJsonObject;
+  board: { order: "ASC" | "DESC"; settings: Prisma.InputJsonObject };
+  vi: { name: string; description: string };
+  en: { name: string; description: string };
+};
+
+const SAMPLE_GAMES: SampleGame[] = [
+  {
+    slug: "snake",
+    sortOrder: 2,
+    categories: ["arcade", "casual"],
+    settings: { minPlaySeconds: 3, maxSessionHours: 6 },
+    // Bàn 20x20 → tối đa ~397 mồi x 10 điểm; rắn nhanh nhất 70ms/ô, mồi cách trung bình ~10 ô → < 30 điểm/giây
+    board: { order: "DESC", settings: { maxScore: 4_000, maxScorePerSecond: 30 } },
+    vi: { name: "Rắn săn mồi", description: "Điều khiển rắn neon ăn mồi, dài ra và nhanh dần. Đừng đâm vào tường hay chính mình!" },
+    en: { name: "Neon Snake", description: "Guide the neon snake to eat, grow and speed up. Don't hit the walls or yourself!" },
+  },
+  {
+    slug: "neon-flap",
+    sortOrder: 3,
+    categories: ["arcade", "action"],
+    // Thua trong 1–2 giây là chuyện thường → không đặt thời gian tối thiểu, chỉ giới hạn tốc độ ghi điểm
+    settings: { minPlaySeconds: 0, maxSessionHours: 6 },
+    // Cột xuất hiện ~0,7 cột/giây → 1,5 điểm/giây là dư cho người thật
+    board: { order: "DESC", settings: { maxScore: 100_000, maxScorePerSecond: 1.5 } },
+    vi: { name: "Neon Flap", description: "Chạm để bay lên, luồn qua khe giữa các cột neon. Khe hẹp dần theo điểm!" },
+    en: { name: "Neon Flap", description: "Tap to fly and thread the gaps between neon pillars. The gaps get tighter as you score!" },
+  },
+  {
+    slug: "memory",
+    sortOrder: 4,
+    categories: ["puzzle", "casual", "card"],
+    settings: { minPlaySeconds: 3, maxSessionHours: 1 },
+    // Điểm = thời gian hoàn thành (ms), thấp là tốt. 16 thẻ không thể lật xong dưới 5 giây;
+    // thời gian game báo không được ngắn hơn thời gian server đo quá 5 giây
+    board: {
+      order: "ASC",
+      settings: { format: "duration_ms", minScore: 5_000, maxScore: 3_600_000, timedScoreSlackSeconds: 5 },
+    },
+    vi: { name: "Lật thẻ", description: "Lật và ghép 8 cặp thẻ giống nhau. Ai hoàn thành nhanh nhất đứng đầu bảng!" },
+    en: { name: "Neon Memory", description: "Flip and match 8 pairs of cards. The fastest finish tops the leaderboard!" },
+  },
+];
+
+async function seedSampleGame(studioId: string, def: SampleGame) {
+  const existing = await prisma.game.findUnique({ where: { slug: def.slug } });
+  if (existing) return false;
+  const categories = await prisma.category.findMany({ where: { slug: { in: def.categories } } });
+  const game = await prisma.game.create({
+    data: {
+      slug: def.slug,
+      studioId,
+      status: "PUBLISHED",
+      publishedAt: new Date(),
+      thumbnailKey: `games/${def.slug}/thumbnail.svg`,
+      sortOrder: def.sortOrder,
+      settings: def.settings,
+      translations: {
+        create: [
+          { locale: "vi", ...def.vi },
+          { locale: "en", ...def.en },
+        ],
+      },
+      categories: { create: categories.map((c) => ({ categoryId: c.id })) },
+      leaderboards: { create: { key: "default", order: def.board.order, settings: def.board.settings } },
+      versions: {
+        create: {
+          version: "1.0.0",
+          storageKey: `games/${def.slug}/1.0.0`,
+          entryFile: "index.html",
+          sdkVersion: 1,
+          status: "APPROVED",
+          reviewedAt: new Date(),
+          releaseNotes: "Phiên bản đầu tiên",
+        },
+      },
+    },
+    include: { versions: true },
+  });
+  await prisma.game.update({ where: { id: game.id }, data: { currentVersionId: game.versions[0].id } });
+  return true;
+}
+
 async function main() {
   await seedCategories();
 
@@ -102,7 +193,12 @@ async function main() {
 
   await seed2048(studio.id);
   await backfill2048Board();
-  console.log("Seed xong: 6 thể loại, studio Game Hub, game 2048 (v1.0.0)");
+  const created: string[] = [];
+  for (const def of SAMPLE_GAMES) if (await seedSampleGame(studio.id, def)) created.push(def.slug);
+  console.log(
+    `Seed xong: 6 thể loại, studio Game Hub, game 2048 + ${SAMPLE_GAMES.length} game mẫu` +
+      (created.length ? ` (mới tạo: ${created.join(", ")})` : ""),
+  );
 }
 
 main()

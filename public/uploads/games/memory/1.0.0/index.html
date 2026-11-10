@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Neon Memory</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="top">
+        <h1 class="title">Memory</h1>
+        <div class="scores">
+          <div class="box"><span class="label" data-i18n="time">Thời gian</span><span id="time" class="value">0:00.0</span></div>
+          <div class="box"><span class="label" data-i18n="moves">Lượt</span><span id="moves" class="value">0</span></div>
+          <div class="box"><span class="label" data-i18n="best">Nhanh nhất</span><span id="best" class="value">–</span></div>
+        </div>
+      </header>
+
+      <div class="bar">
+        <p class="hint" data-i18n="hint">Lật 2 thẻ giống nhau. Hoàn thành càng nhanh càng tốt!</p>
+        <button id="restart" class="btn ghost" type="button" data-i18n="restart">Xếp lại</button>
+      </div>
+
+      <div id="stage" class="stage">
+        <div id="grid" class="grid" role="grid" aria-label="Memory"></div>
+        <div id="overlay" class="overlay hidden" role="dialog" aria-live="polite">
+          <p id="overlay-title" class="overlay-title"></p>
+          <p id="overlay-text" class="overlay-text"></p>
+          <button id="again" class="btn" type="button" data-i18n="again">Chơi lại</button>
+        </div>
+      </div>
+
+      <p id="result" class="result hidden" role="status" aria-live="polite"></p>
+      <p id="save-note" class="note hidden" data-i18n="saveNote">Kết nối ví trên Game Hub để lưu điểm và lên bảng xếp hạng.</p>
+    </main>
+    <script src="/sdk/gamehub-sdk.js"></script>
+    <script src="game.js"></script>
+  </body>
+</html>

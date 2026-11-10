@@ -5,23 +5,36 @@ import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LeaderboardPanel } from "@/components/leaderboard/LeaderboardPanel";
 import { ReportGameButton } from "@/components/reports/ReportGameButton";
+import { ShareButton } from "./ShareButton";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { displayName } from "@/lib/format";
+import { formatScore, type ScoreFormat } from "@/lib/score-format";
 
 /** Giao thức Game Hub SDK v1 – xem docs/GAME_SDK.md */
 const PROTOCOL = "gamehub";
 const PROTOCOL_VERSION = 1;
 
-type SubmitResult = { isNewBest: boolean; best: number; rank: number | null; score: { value: number } };
+type SubmitResult = { isNewBest: boolean; best: number; rank: number | null; score: { value: number }; format?: ScoreFormat };
 type Toast = { kind: "success" | "info" | "error"; text: string };
 
-export function GameRoom({ slug, playUrl, gameName }: { slug: string; playUrl: string | null; gameName: string }) {
+export function GameRoom({
+  slug,
+  playUrl,
+  gameName,
+  scoreFormat = "number",
+}: {
+  slug: string;
+  playUrl: string | null;
+  gameName: string;
+  /** Kiểu hiển thị điểm của bảng xếp hạng mặc định (điểm / thời gian) */
+  scoreFormat?: ScoreFormat;
+}) {
   const [refreshKey, setRefreshKey] = useState(0);
   const onScoreSaved = useCallback(() => setRefreshKey((k) => k + 1), []);
 
   return (
     <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <GamePlayer slug={slug} playUrl={playUrl} gameName={gameName} onScoreSaved={onScoreSaved} />
+      <GamePlayer slug={slug} playUrl={playUrl} gameName={gameName} scoreFormat={scoreFormat} onScoreSaved={onScoreSaved} />
       <div className="flex flex-col gap-3">
         <LeaderboardPanel slug={slug} refreshKey={refreshKey} />
         <a href={`/games/${slug}/leaderboard`} className="text-center text-sm font-semibold text-neon hover:underline">
@@ -41,11 +54,13 @@ function GamePlayer({
   slug,
   playUrl,
   gameName,
+  scoreFormat,
   onScoreSaved,
 }: {
   slug: string;
   playUrl: string | null;
   gameName: string;
+  scoreFormat: ScoreFormat;
   onScoreSaved: () => void;
 }) {
   const t = useTranslations("game");
@@ -58,9 +73,16 @@ function GamePlayer({
   /** Lượt chơi hiện tại: Promise<sessionId | null> (null = không lưu điểm được) */
   const sessionRef = useRef<Promise<string | null> | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  /** Điểm ván vừa xong – dùng cho nút "Khoe điểm" */
+  const [lastScore, setLastScore] = useState<{ value: number; format: ScoreFormat } | null>(null);
+  /** Bảng tính theo thời gian dùng câu "hoàn thành trong 0:42,7" thay vì "đạt X điểm" */
+  const msg = useCallback((key: string, format: ScoreFormat = scoreFormat) => (format === "duration_ms" ? `${key}Time` : key), [scoreFormat]);
 
   const canSubmitScore = Boolean(user && !user.isGuest);
-  const fmt = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US");
+  const fmt = useCallback(
+    (value: number, format: ScoreFormat = scoreFormat) => formatScore(value, format, locale),
+    [scoreFormat, locale],
+  );
 
   const errorText = useCallback(
     (code: string) => (t.has(`errors.${code}`) ? t(`errors.${code}`) : t("errors.UNKNOWN")),
@@ -102,6 +124,8 @@ function GamePlayer({
   const startSession = useCallback(() => {
     if (!canSubmitScore) {
       sessionRef.current = null;
+      // Vẫn đếm lượt chơi của khách (không lưu điểm) để thống kê
+      void apiFetch(`/games/${slug}/plays`, { method: "POST" }).catch(() => undefined);
       return;
     }
     sessionRef.current = apiFetch<{ sessionId: string }>(`/games/${slug}/sessions`, { method: "POST" })
@@ -117,6 +141,7 @@ function GamePlayer({
       const score = Math.floor(Number(payload.score));
       if (!Number.isFinite(score) || score < 0) return;
       const leaderboard = typeof payload.leaderboard === "string" ? payload.leaderboard : "default";
+      setLastScore({ value: score, format: scoreFormat });
 
       const pending = sessionRef.current;
       sessionRef.current = null;
@@ -125,8 +150,8 @@ function GamePlayer({
         report(
           canSubmitScore
             ? // Kết nối ví khi ván đang chơi dở → ván này không có lượt chơi phía server
-              { saved: false, kind: "info", code: "STARTED_BEFORE_LOGIN", text: t("notSavedLateLogin", { score: fmt.format(score) }) }
-            : { saved: false, kind: "info", code: "NOT_SIGNED_IN", text: t("notSaved", { score: fmt.format(score) }) },
+              { saved: false, kind: "info", code: "STARTED_BEFORE_LOGIN", text: t(msg("notSavedLateLogin"), { score: fmt(score) }) }
+            : { saved: false, kind: "info", code: "NOT_SIGNED_IN", text: t(msg("notSaved"), { score: fmt(score) }) },
         );
         return;
       }
@@ -147,8 +172,8 @@ function GamePlayer({
           saved: true,
           kind: "success",
           text: res.isNewBest
-            ? t("newBest", { score: fmt.format(res.score.value), rank })
-            : t("saved", { score: fmt.format(res.score.value), best: fmt.format(res.best), rank }),
+            ? t(msg("newBest", res.format), { score: fmt(res.score.value, res.format), rank })
+            : t(msg("saved", res.format), { score: fmt(res.score.value, res.format), best: fmt(res.best, res.format), rank }),
           data: { score: res.score.value, best: res.best, rank: res.rank, isNewBest: res.isNewBest },
         });
         onScoreSaved();
@@ -157,7 +182,7 @@ function GamePlayer({
         report({ saved: false, kind: "error", code, text: errorText(code) });
       }
     },
-    [canSubmitScore, slug, t, fmt, onScoreSaved, errorText, report],
+    [canSubmitScore, slug, t, fmt, msg, scoreFormat, onScoreSaved, errorText, report],
   );
 
   // Luôn dùng handler mới nhất mà không phải gỡ/gắn lại listener
@@ -263,7 +288,10 @@ function GamePlayer({
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <ReportGameButton slug={slug} />
+        <div className="flex flex-wrap items-start gap-2">
+          <ShareButton slug={slug} gameName={gameName} score={lastScore} />
+          <ReportGameButton slug={slug} />
+        </div>
         <button
           type="button"
           onClick={() => void wrapRef.current?.requestFullscreen?.()}

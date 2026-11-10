@@ -110,7 +110,14 @@ Dữ liệu `scoreResult`:
 </script>
 ```
 
-Game mẫu đầy đủ: `public/uploads/games/2048/1.0.0/` (2048, song ngữ, bàn phím + vuốt).
+Game mẫu đầy đủ (song ngữ, bàn phím + vuốt/chạm) trong `public/uploads/games/`:
+
+| Game | Kiểu | Điểm |
+|---|---|---|
+| `2048/1.0.0` | DOM, lưới | điểm cộng dồn |
+| `snake/1.0.0` | Canvas, vòng lặp theo nhịp | 10 điểm/mồi, xử lý `pause` |
+| `neon-flap/1.0.0` | Canvas, vật lý bước cố định | số cột vượt qua, xử lý `pause`/`resume` |
+| `memory/1.0.0` | DOM, lật thẻ | thời gian hoàn thành (ms), bảng "thấp là tốt" |
 
 ## 6. Quy tắc tính điểm
 
@@ -121,6 +128,9 @@ Game mẫu đầy đủ: `public/uploads/games/2048/1.0.0/` (2048, song ngữ, b
 - Ván bị từ chối là kết thúc luôn – không nộp lại được cùng lượt chơi
 - Game nên gọi `gameStart()` ở **thao tác đầu tiên** của người chơi (không phải lúc tải trang) để thời gian tính đúng
 - Bảng xếp hạng có thể sắp xếp "cao là tốt" hoặc "thấp là tốt" (vd: thời gian hoàn thành) – do admin cấu hình
+- **Game tính theo thời gian**: gửi `GameHub.gameOver(soMiliGiay)` (vd 42700 = 42,7 giây). Admin đặt bảng xếp hạng
+  `order: ASC` + `format: "duration_ms"` → hub hiện điểm dạng `0:42,7`; thêm `timedScoreSlackSeconds` để từ chối
+  thời gian ngắn hơn thời gian server đo được (chống gửi thời gian giả). Ví dụ: game `memory`
 - Người chơi chưa kết nối ví vẫn chơi được, nhưng điểm không được lưu (`canSubmitScore: false`)
 
 ## 7. Giao thức (cho ai muốn tự viết SDK)

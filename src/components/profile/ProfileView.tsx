@@ -6,11 +6,12 @@ import { useLocale, useTranslations } from "next-intl";
 import { useAuth, type AuthUser } from "@/components/auth/AuthProvider";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { displayName, shortAddress } from "@/lib/format";
+import { formatScore, type ScoreFormat } from "@/lib/score-format";
 
 type GameRef = { slug: string; name: string; thumbnailUrl: string | null };
 type MyScores = {
-  bests: { game: GameRef; leaderboard: string; bestScore: number; plays: number }[];
-  recent: { id: string; value: number; durationSeconds: number; createdAt: string; leaderboard: string; game: GameRef }[];
+  bests: { game: GameRef; leaderboard: string; bestScore: number; plays: number; format?: ScoreFormat }[];
+  recent: { id: string; value: number; durationSeconds: number; createdAt: string; leaderboard: string; format?: ScoreFormat; game: GameRef }[];
 };
 
 export function ProfileView() {
@@ -159,7 +160,6 @@ function Achievements() {
       .catch(() => setFailed(true));
   }, [locale]);
 
-  const fmt = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US");
   const date = new Intl.DateTimeFormat(locale === "vi" ? "vi-VN" : "en-US", { dateStyle: "short", timeStyle: "short" });
 
   if (failed) return <p className="text-neon-pink">{t("errors.unknown")}</p>;
@@ -195,7 +195,7 @@ function Achievements() {
                   </p>
                   <p className="text-xs text-muted">{t("plays", { count: b.plays })}</p>
                 </div>
-                <span className="font-display text-lg font-bold tabular-nums text-neon">{fmt.format(b.bestScore)}</span>
+                <span className="font-display text-lg font-bold tabular-nums text-neon">{formatScore(b.bestScore, b.format, locale)}</span>
               </Link>
             ))}
           </div>
@@ -219,7 +219,7 @@ function Achievements() {
                 {data.recent.map((s) => (
                   <tr key={s.id}>
                     <td className="px-4 py-2.5">{s.game.name}</td>
-                    <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{fmt.format(s.value)}</td>
+                    <td className="px-4 py-2.5 text-right font-semibold tabular-nums">{formatScore(s.value, s.format, locale)}</td>
                     <td className="px-4 py-2.5 text-right tabular-nums text-muted">{formatDuration(s.durationSeconds)}</td>
                     <td className="px-4 py-2.5 text-right text-muted">{date.format(new Date(s.createdAt))}</td>
                   </tr>

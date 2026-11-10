@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { assetUrl } from "@/lib/assets";
 import { toNumber } from "@/lib/format";
 import { pickTranslation } from "@/lib/locale";
+import { readLeaderboardSettings } from "@/modules/games/settings";
 import { userWithIdentities } from "./dto";
 import { usernameSchema } from "./username";
 
@@ -36,7 +37,7 @@ export async function getMyScores(userId: string, locale: string) {
       orderBy: { createdAt: "desc" },
       take: 20,
       include: {
-        leaderboard: { select: { key: true } },
+        leaderboard: { select: { key: true, settings: true } },
         game: { select: { slug: true, thumbnailKey: true, translations: true } },
       },
     }),
@@ -63,6 +64,7 @@ export async function getMyScores(userId: string, locale: string) {
         game: gameDto(board.game),
         leaderboard: board.key,
         bestScore: best === null ? 0 : toNumber(best),
+        format: readLeaderboardSettings(board.settings).format ?? "number",
         plays: g._count._all,
       },
     ];
@@ -76,6 +78,7 @@ export async function getMyScores(userId: string, locale: string) {
       durationSeconds: s.durationSeconds,
       createdAt: s.createdAt,
       leaderboard: s.leaderboard.key,
+      format: readLeaderboardSettings(s.leaderboard.settings).format ?? "number",
       game: gameDto(s.game),
     })),
   };

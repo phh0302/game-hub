@@ -23,6 +23,13 @@ export const leaderboardSettingsSchema = z
     minScore: z.number().int().nonnegative().optional(),
     /** Tốc độ ghi điểm tối đa (điểm/giây) – chặn bot chơi siêu nhanh */
     maxScorePerSecond: z.number().positive().optional(),
+    /** Cách hiển thị điểm: "number" (mặc định) hoặc "duration_ms" (thời gian hoàn thành, mili-giây – thường đi với order ASC) */
+    format: z.enum(["number", "duration_ms"]).optional(),
+    /**
+     * Bảng tính theo thời gian (mili-giây): thời gian game báo không được NGẮN hơn thời gian server đo
+     * quá số giây này (trừ hao độ trễ mạng) → chặn gửi thời gian giả siêu ngắn
+     */
+    timedScoreSlackSeconds: z.number().nonnegative().max(60).optional(),
   })
   .passthrough();
 
