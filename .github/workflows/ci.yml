@@ -96,3 +96,61 @@ jobs:
 
       - name: Seed chạy được (2 lần – phải an toàn khi chạy lại)
         run: npx prisma db seed && npx prisma db seed
+
+  # Test trình duyệt thật (Playwright): build production + database thật + ví MetaMask giả lập.
+  # Đăng nhập ví → chơi game lưu điểm → hồ sơ + ảnh đại diện → trang quản trị → chia sẻ / SEO
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: ci
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U ci -d ci"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
+      DATABASE_URL_UNPOOLED: postgresql://ci:ci@localhost:5432/ci
+      JWT_SECRET: ci-only-secret-0123456789abcdef0123456789abcdef
+      NEXT_PUBLIC_APP_URL: http://localhost:3000
+      # Ví admin của test = khóa mẫu công khai Hardhat #0 (xem tests/e2e/wallet.ts)
+      ADMIN_WALLETS: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+      STORAGE_DRIVER: local
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Cài thư viện
+        run: npm install --no-audit --no-fund
+
+      - name: Tạo bảng + dữ liệu mẫu
+        run: npx prisma migrate deploy && npx prisma db seed
+
+      - name: Build production
+        run: npm run build
+
+      - name: Cài trình duyệt Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Chạy test trình duyệt
+        run: npx playwright test
+
+      - name: Lưu báo cáo khi lỗi (ảnh chụp + trace)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
