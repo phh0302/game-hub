@@ -47,7 +47,9 @@
       "INVALID_SIGNATURE": "Chữ ký không hợp lệ, hãy thử lại.",
       "INVALID_MESSAGE": "Thông điệp đăng nhập không hợp lệ hoặc đã hết hạn.",
       "RATE_LIMITED": "Bạn thử quá nhiều lần, đợi một lát rồi thử lại.",
-      "UNKNOWN": "Có lỗi xảy ra, hãy thử lại."
+      "UNKNOWN": "Có lỗi xảy ra, hãy thử lại.",
+      "ACCOUNT_SUSPENDED": "Tài khoản của bạn đã bị khóa. Liên hệ admin nếu bạn nghĩ đây là nhầm lẫn.",
+      "ACCOUNT_DISABLED": "Tài khoản này đã bị vô hiệu hóa."
     },
     "developer": "Developer"
   },
@@ -119,7 +121,11 @@
       "usernameTaken": "Tên này đã có người dùng.",
       "invalid": "Thông tin không hợp lệ: tên có thể đã bị cấm (admin, system…) hoặc ảnh không phải link https://.",
       "unknown": "Có lỗi xảy ra, hãy thử lại."
-    }
+    },
+    "security": "Bảo mật",
+    "logoutAllHint": "Đăng xuất khỏi tất cả trình duyệt và thiết bị đang đăng nhập tài khoản này (kể cả máy này). Dùng khi bạn đăng nhập trên máy lạ hoặc nghi bị lộ.",
+    "logoutAll": "Đăng xuất mọi thiết bị",
+    "logoutAllConfirm": "Đăng xuất khỏi mọi thiết bị? Bạn sẽ cần ký lại bằng ví để đăng nhập."
   },
   "admin": {
     "title": "Quản trị",
@@ -370,5 +376,31 @@
   "terms": {
     "version": "Phiên bản",
     "back": "← Về trang Developer"
+  },
+  "adminUsers": {
+    "title": "Người dùng",
+    "placeholder": "Địa chỉ ví 0x… hoặc tên người dùng",
+    "search": "Tìm",
+    "suspended": "Đã khóa",
+    "stats": "Tạo {created} · Đăng nhập gần nhất {lastLogin} · {sessions} phiên đang mở · {scores} điểm đã lưu",
+    "suspendedInfo": "Khóa lúc {date} · Lý do: {reason}",
+    "suspend": "Khóa tài khoản",
+    "unsuspend": "Mở khóa",
+    "reasonPrompt": "Lý do khóa {name} (không bắt buộc):",
+    "hint": "Khóa tài khoản: đăng xuất ngay trên mọi thiết bị, không đăng nhập lại được, điểm bị ẩn khỏi bảng xếp hạng. Mở khóa thì điểm hiện lại.",
+    "errors": {
+      "generic": "Lỗi: {code}",
+      "USER_NOT_FOUND": "Không tìm thấy người dùng (nhập đủ địa chỉ ví hoặc đúng tên).",
+      "CANNOT_SUSPEND_ADMIN": "Không thể khóa tài khoản admin.",
+      "CANNOT_SUSPEND_SELF": "Không thể tự khóa tài khoản của mình.",
+      "VALIDATION_ERROR": "Thông tin không hợp lệ."
+    }
+  },
+  "errorPage": {
+    "title": "Đã có lỗi xảy ra",
+    "description": "Trang gặp sự cố ngoài ý muốn. Lỗi đã được ghi lại, bạn thử lại nhé.",
+    "code": "Mã lỗi: {digest}",
+    "retry": "Thử lại",
+    "home": "Về trang chủ"
   }
 }

@@ -12,7 +12,7 @@ export async function POST(req: Request, { params }: { params: Promise<{ id: str
   return handle(async () => {
     const user = await requireRegisteredUser();
     const studio = await requireMyStudio(user.id);
-    rateLimit(`dev-version:${user.id}`, 10, 60 * 60_000);
+    await rateLimit(`dev-version:${user.id}`, 10, 60 * 60_000);
     const { id } = await params;
     const input = devVersionCreateSchema.parse(await readJson(req));
     return ok({ version: await submitVersion(studio, user.id, id, input) }, { status: 201 });

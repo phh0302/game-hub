@@ -7,7 +7,7 @@ import { startSession } from "@/modules/scores/service";
 export async function POST(_req: Request, { params }: { params: Promise<{ slug: string }> }) {
   return handle(async () => {
     const user = await requireRegisteredUser();
-    rateLimit(`session:${user.id}`, 30, 60_000);
+    await rateLimit(`session:${user.id}`, 30, 60_000);
     const { slug } = await params;
     return ok(await startSession(user.id, slug), { status: 201 });
   });

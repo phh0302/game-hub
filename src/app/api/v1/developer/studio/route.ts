@@ -16,7 +16,7 @@ export async function GET() {
 export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireRegisteredUser();
-    rateLimit(`studio:${user.id}`, 5, 60 * 60_000);
+    await rateLimit(`studio:${user.id}`, 5, 60 * 60_000);
     const input = studioCreateSchema.parse(await readJson(req));
     return ok({ studio: await createStudio(user.id, input) }, { status: 201 });
   });
