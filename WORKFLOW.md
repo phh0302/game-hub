@@ -149,7 +149,7 @@
 - [x] Điều khoản người đăng game `/terms/developer` (có phiên bản): bắt buộc tick khi tạo studio; đổi phiên bản → chủ studio phải đồng ý lại mới tạo game / upload được *(bản nháp – nên nhờ luật sư xem lại)*
 - [x] Thành viên studio: chủ studio thêm bằng địa chỉ ví (tối đa 20), xóa thành viên, chuyển quyền chủ; thành viên tự rời studio
 - [x] CI có thêm job `migrations`: chạy migration trên Postgres thật + kiểm tra schema khớp migration + seed 2 lần
-- [ ] Hỗ trợ bản build nén `.br` / `.gz` (Unity WebGL nén)
+- [x] Hỗ trợ bản build nén `.br` / `.gz` (Unity WebGL Brotli/Gzip): giải nén lúc upload, giữ tên file, Content-Type theo file bên trong, chặn bomb nén
 
 ## Phase 11 – Kiếm tiền (sau MVP)
 - [ ] Quảng cáo có thưởng / xen giữa màn qua SDK (Google H5 Games Ads)

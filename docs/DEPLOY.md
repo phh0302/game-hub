@@ -116,7 +116,7 @@ Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản
 ## Lưu ý vận hành
 
 - **Bản Preview** (mỗi nhánh / pull request Vercel tạo 1 link riêng): đăng nhập ví sẽ **không** chạy vì domain khác `NEXT_PUBLIC_APP_URL` – đây là cơ chế chống giả mạo, không phải lỗi
-- **Thêm game mới**: hiện vẫn chép bản build vào `public/uploads/games/...`, commit + push → Vercel tự deploy; sau đó vào trang Quản trị thêm phiên bản + duyệt. Upload trực tiếp sẽ có ở Phase 10
+- **Thêm game mới**: developer tự upload ở trang `/developer` (cần R2 – mục 3b) → admin chơi thử + duyệt ở trang Quản trị
 - **Rate limit** đang lưu trong bộ nhớ từng server → trên Vercel chỉ chặn được một phần. Khi có nhiều người chơi: chuyển sang Upstash Redis
 - **Xem lỗi**: Vercel → project → **Logs**
 - **Sao lưu database**: Neon có khôi phục theo thời điểm (point-in-time restore) – kiểm tra số ngày giữ lại của gói đang dùng
