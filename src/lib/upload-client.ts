@@ -9,16 +9,17 @@ type Ticket = { url: string; method: "PUT"; headers: Record<string, string>; key
  * 1. xin link upload ký sẵn  2. PUT file lên link đó (có báo % tiến độ)  → trả về key của file
  */
 export async function uploadFile(
-  file: File,
-  kind: "build" | "image",
+  file: Blob,
+  kind: "build" | "image" | "avatar",
   onProgress?: (percent: number) => void,
 ): Promise<string> {
   // Một số trình duyệt/hệ điều hành không điền type cho file .zip
   const contentType = file.type || (kind === "build" ? "application/zip" : "application/octet-stream");
-  const { upload } = await apiFetch<{ upload: Ticket }>("/developer/uploads", {
-    method: "POST",
-    json: { kind, contentType, size: file.size },
-  });
+  // Ảnh đại diện: link riêng, không cần là developer
+  const { upload } =
+    kind === "avatar"
+      ? await apiFetch<{ upload: Ticket }>("/me/avatar-upload", { method: "POST", json: { contentType, size: file.size } })
+      : await apiFetch<{ upload: Ticket }>("/developer/uploads", { method: "POST", json: { kind, contentType, size: file.size } });
 
   await new Promise<void>((resolve, reject) => {
     const xhr = new XMLHttpRequest();

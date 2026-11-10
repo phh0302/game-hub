@@ -23,3 +23,7 @@ Thumbs.db
 
 # File người dùng upload khi chạy local (STORAGE_DRIVER=local)
 public/uploads/u/
+
+# Kết quả test trình duyệt (Playwright)
+test-results/
+playwright-report/

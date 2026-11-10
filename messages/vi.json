@@ -106,8 +106,7 @@
     "wallet": "Ví",
     "username": "Tên hiển thị",
     "usernameHint": "3–20 ký tự: chữ thường, số, dấu gạch dưới (chữ hoa tự chuyển thành chữ thường). Để trống = dùng địa chỉ ví.",
-    "avatarUrl": "Ảnh đại diện (URL)",
-    "avatarHint": "Dán link ảnh bắt đầu bằng https://",
+    "avatarHint": "Ảnh đại diện: PNG, JPG hoặc WEBP – tự cắt vuông và thu nhỏ. Bấm Lưu để áp dụng.",
     "save": "Lưu thay đổi",
     "saving": "Đang lưu…",
     "saved": "Đã lưu!",
@@ -123,13 +122,25 @@
     "loading": "Đang tải…",
     "errors": {
       "usernameTaken": "Tên này đã có người dùng.",
-      "invalid": "Thông tin không hợp lệ: tên có thể đã bị cấm (admin, system…) hoặc ảnh không phải link https://.",
-      "unknown": "Có lỗi xảy ra, hãy thử lại."
+      "invalid": "Thông tin không hợp lệ: tên có thể đã bị cấm (admin, system…) hoặc sai định dạng.",
+      "unknown": "Có lỗi xảy ra, hãy thử lại.",
+      "IMAGE_INVALID": "File không phải ảnh hợp lệ (PNG, JPG, WEBP, tối đa 1MB).",
+      "FILE_TOO_LARGE": "Ảnh quá lớn (tối đa 1MB).",
+      "UPLOAD_TYPE_NOT_ALLOWED": "Chỉ nhận ảnh PNG, JPG, WEBP.",
+      "UPLOAD_FAILED": "Upload ảnh thất bại, thử lại nhé.",
+      "UPLOADS_NOT_CONFIGURED": "Máy chủ chưa bật chức năng upload.",
+      "RATE_LIMITED": "Bạn đổi ảnh quá nhiều lần, thử lại sau.",
+      "IMAGE_KEY_INVALID": "Ảnh không hợp lệ – hãy tải lên lại.",
+      "UPLOAD_NOT_FOUND": "Không tìm thấy ảnh vừa tải – hãy tải lên lại."
     },
     "security": "Bảo mật",
     "logoutAllHint": "Đăng xuất khỏi tất cả trình duyệt và thiết bị đang đăng nhập tài khoản này (kể cả máy này). Dùng khi bạn đăng nhập trên máy lạ hoặc nghi bị lộ.",
     "logoutAll": "Đăng xuất mọi thiết bị",
-    "logoutAllConfirm": "Đăng xuất khỏi mọi thiết bị? Bạn sẽ cần ký lại bằng ví để đăng nhập."
+    "logoutAllConfirm": "Đăng xuất khỏi mọi thiết bị? Bạn sẽ cần ký lại bằng ví để đăng nhập.",
+    "avatarUpload": "Tải ảnh lên",
+    "avatarChange": "Đổi ảnh",
+    "avatarUploading": "Đang tải…",
+    "avatarRemove": "Bỏ ảnh"
   },
   "admin": {
     "title": "Quản trị",
@@ -452,5 +463,9 @@
     },
     "guests": "{n} khách",
     "note": "Ngày tính theo giờ Việt Nam. Lượt chơi của khách (chưa kết nối ví) được đếm từ bản này trở đi; TG chơi TB tính trên các ván đã lưu điểm."
+  },
+  "pwa": {
+    "install": "Cài Game Hub lên máy",
+    "iosHelp": "Trên iPhone/iPad: bấm nút Chia sẻ (ô vuông có mũi tên) ở Safari → chọn \"Thêm vào Màn hình chính\"."
   }
 }

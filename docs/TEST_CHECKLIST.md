@@ -39,7 +39,8 @@ Ghi kết quả: ✅ đạt · ❌ lỗi (ghi lại bước + ảnh chụp) · �
 | 3.2 | Tab Hôm nay / Tuần / Tất cả | Chuyển được, không lỗi | |
 | 3.3 | `/profile` → đặt tên `Ha_Pham` → Lưu | Lưu thành `ha_pham`; bảng xếp hạng hiện tên mới | |
 | 3.4 | Ví khác đặt trùng tên `ha_pham` | Báo "Tên này đã có người dùng" | |
-| 3.5 | Đặt tên `admin` hoặc ảnh `http://…` | Báo thông tin không hợp lệ | |
+| 3.5 | Đặt tên `admin` | Báo thông tin không hợp lệ | |
+| 3.5b | Tải ảnh đại diện (ảnh chữ nhật bất kỳ) → Lưu | Ảnh được cắt vuông, hiện ở hồ sơ + bảng xếp hạng; đổi file `.txt` thành `.png` rồi tải → báo không phải ảnh | |
 | 3.6 | Mục Thành tích + Lượt chơi gần đây | Đúng điểm cao nhất, số lượt chơi, thời gian | |
 
 ## 4. Quản trị (P1)

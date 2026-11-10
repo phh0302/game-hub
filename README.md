@@ -71,6 +71,8 @@ src/modules/         nghiệp vụ theo từng phần: auth, users, games, score
 src/components/      component giao diện
 src/i18n/            cấu hình song ngữ (ngôn ngữ lưu trong cookie NEXT_LOCALE)
 src/lib/             prisma client, env, xử lý lỗi API, rate limit, URL file, tiện ích
+tests/unit/          unit test (npm test)
+tests/e2e/           test trình duyệt Playwright (npm run test:e2e – cần build + database đã seed)
 ```
 
 ## Nguyên tắc khi phát triển tiếp

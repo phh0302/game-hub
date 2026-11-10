@@ -3,10 +3,10 @@ import { z } from "zod";
 import { Prisma, type Leaderboard } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/lib/api";
-import { assetUrl } from "@/lib/assets";
 import { displayName, toNumber } from "@/lib/format";
 import { pickTranslation } from "@/lib/locale";
 import { readLeaderboardSettings } from "@/modules/games/settings";
+import { avatarUrl } from "@/modules/users/dto";
 import { isBoardOpen, periodStart, type Period } from "./period";
 
 export { isBoardOpen, periodStart };
@@ -81,7 +81,7 @@ export async function getTopEntries(board: Leaderboard, period: Period, limit = 
     userId: row.userId,
     displayName: displayName({ id: row.userId, username: row.username, walletAddress: row.walletAddress }),
     walletAddress: row.walletAddress,
-    avatarUrl: assetUrl(row.avatarKey),
+    avatarUrl: avatarUrl(row.avatarKey),
     score: toNumber(row.score),
     achievedAt: row.achievedAt,
   }));

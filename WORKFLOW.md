@@ -116,7 +116,7 @@
 - [x] Checklist kiểm thử thủ công: `docs/TEST_CHECKLIST.md`
 - [ ] Chạy checklist thủ công với MetaMask (đăng nhập, chơi, nộp điểm, admin, bảo mật)
 - [ ] Kiểm tra trên điện thoại (trình duyệt trong app MetaMask)
-- Hạn chế đã biết (làm sau): ảnh đại diện là link ngoài (chuyển sang upload) · ~~thu hồi JWT~~, ~~rate limit Redis~~ → xong ở Phase 9b
+- Hạn chế đã biết: ~~ảnh đại diện link ngoài~~, ~~thu hồi JWT~~, ~~rate limit Redis~~ → đã xử lý ở Phase 9b / 9d
 
 ## Phase 9 – Deploy
 - [x] CI GitHub Actions: cài thư viện → kiểm tra schema → TypeScript → unit test → build production → npm audit (xanh)
@@ -149,6 +149,12 @@
 - [x] Trang Quản trị có mục **Thống kê** (7/30/90 ngày): lượt chơi, người chơi, người dùng mới, điểm, biểu đồ theo ngày, bảng theo game
 - [x] Đếm lượt chơi của khách chưa kết nối ví (`play.anonymous`) – cần cho thống kê và chia doanh thu quảng cáo sau này
 - [ ] Thử chia sẻ link game lên Facebook / Zalo (chỉ chạy trên bản deploy, link localhost không xem trước được)
+
+## Phase 9d – Hoàn thiện trải nghiệm
+- [x] Upload ảnh đại diện: tự cắt vuông 256x256 trên trình duyệt, server kiểm tra đúng chủ, ≤ 1MB, đúng chữ ký PNG/JPG/WEBP; bỏ link ảnh ngoài
+- [x] Test trình duyệt tự động (Playwright) trong CI – job `e2e`: ví MetaMask giả lập, đăng nhập, chơi Lật thẻ lưu điểm, hồ sơ + ảnh đại diện, đăng xuất mọi thiết bị, chặn trang quản trị, thống kê, khóa/mở khóa, sandbox game, ảnh chia sẻ, sitemap, PWA (10+ test, chạy `npm run test:e2e`)
+- [x] PWA: cài Game Hub lên màn hình chính (manifest, icon thường + maskable, nút **Cài Game Hub** ở chân trang, hướng dẫn riêng cho iPhone), service worker cache file tĩnh + trang `offline.html` khi mất mạng
+- [ ] Thử cài app trên điện thoại thật (Android Chrome + iPhone Safari) sau khi deploy – cần https
 
 ## Phase 10 – Nền tảng cho developer
 - [x] Đăng ký làm developer → tạo Studio (trang `/developer`)
