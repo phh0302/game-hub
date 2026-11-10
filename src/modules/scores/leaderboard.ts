@@ -6,6 +6,7 @@ import { ApiError } from "@/lib/api";
 import { assetUrl } from "@/lib/assets";
 import { displayName, toNumber } from "@/lib/format";
 import { pickTranslation } from "@/lib/locale";
+import { readLeaderboardSettings } from "@/modules/games/settings";
 import { isBoardOpen, periodStart, type Period } from "./period";
 
 export { isBoardOpen, periodStart };
@@ -115,8 +116,15 @@ export function toBoardDto(board: Leaderboard & { translations: { locale: string
     key: board.key,
     name: pickTranslation(board.translations, locale)?.name ?? null,
     order: board.order,
+    format: readLeaderboardSettings(board.settings).format ?? "number",
     startsAt: board.startsAt,
     endsAt: board.endsAt,
     isOpen: isBoardOpen(board),
   };
+}
+
+/** Kiểu hiển thị điểm của bảng xếp hạng (mặc định "default") – trang game dùng để định dạng thông báo điểm */
+export async function getBoardFormat(gameId: string, key = "default") {
+  const board = await prisma.leaderboard.findFirst({ where: { gameId, key, deletedAt: null }, select: { settings: true } });
+  return readLeaderboardSettings(board?.settings).format ?? "number";
 }

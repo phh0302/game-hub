@@ -1,0 +1,181 @@
+:root {
+  --bg: #07070f;
+  --surface: #11111f;
+  --surface-2: #1a1a2e;
+  --line: #2a2a45;
+  --ink: #ecebff;
+  --muted: #9a98c3;
+  --neon: #22e3ff;
+  --pink: #ff3ec8;
+  --lime: #b6ff3b;
+  /* Chừa chỗ cho tiêu đề và dòng kết quả để khung game không phải cuộn */
+  --size: min(92vw, calc(100vh - 170px), 480px);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  overscroll-behavior: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) var(--bg);
+  color-scheme: dark;
+}
+
+.app {
+  width: var(--size);
+  margin: 0 auto;
+  padding: 14px 0 10px;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(28px, 8vmin, 44px);
+  font-weight: 800;
+  letter-spacing: 1px;
+  background: linear-gradient(90deg, var(--neon), var(--pink));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.scores {
+  display: flex;
+  gap: 8px;
+}
+
+.box {
+  min-width: 72px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  text-align: center;
+}
+
+.label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.value {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: 0;
+  border-radius: 10px;
+  background: linear-gradient(90deg, var(--neon), var(--pink));
+  color: var(--bg);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn.ghost {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+}
+
+.stage {
+  position: relative;
+  width: var(--size);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+  touch-action: none;
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 20px;
+  background: rgb(7 7 15 / 0.78);
+  backdrop-filter: blur(3px);
+  text-align: center;
+}
+
+.overlay-title {
+  margin: 0;
+  font-size: clamp(24px, 7vmin, 36px);
+  font-weight: 800;
+}
+
+.overlay-text {
+  margin: 0 0 10px;
+  color: var(--muted);
+}
+
+.result {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  font-size: 13px;
+  text-align: center;
+}
+
+.result.ok {
+  border-color: rgb(182 255 59 / 0.5);
+  color: var(--lime);
+}
+
+.result.err {
+  border-color: rgb(255 62 200 / 0.5);
+  color: var(--pink);
+}
+
+.note {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.hidden {
+  display: none !important;
+}
+
+/* Snake: bàn chơi vuông */
+.stage {
+  aspect-ratio: 1 / 1;
+}

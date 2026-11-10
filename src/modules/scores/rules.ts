@@ -18,6 +18,8 @@ export type ScoreRules = {
    * Bắt được bot chơi siêu nhanh mà vẫn không phạt người thua nhanh với điểm thấp.
    */
   maxScorePerSecond?: number;
+  /** Điểm là thời gian (ms): không được ngắn hơn thời gian server đo quá số giây này */
+  timedScoreSlackSeconds?: number;
 };
 
 /** null = điểm hợp lệ; ngược lại trả mã lỗi */
@@ -30,6 +32,9 @@ export function checkScore(input: { score: number; durationSeconds: number }, ru
   if (rules.minScore !== undefined && score < rules.minScore) return "SCORE_INVALID";
   if (rules.maxScorePerSecond !== undefined && score > rules.maxScorePerSecond * Math.max(durationSeconds, 1)) {
     return "SCORE_TOO_FAST";
+  }
+  if (rules.timedScoreSlackSeconds !== undefined && score < (durationSeconds - rules.timedScoreSlackSeconds) * 1000) {
+    return "SCORE_INVALID";
   }
   return null;
 }

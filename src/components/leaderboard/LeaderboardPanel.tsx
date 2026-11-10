@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { apiFetch } from "@/lib/client-api";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { formatScore, type ScoreFormat } from "@/lib/score-format";
 
 type Period = "day" | "week" | "all";
 
@@ -16,7 +17,7 @@ type Entry = {
 };
 
 type BoardResponse = {
-  leaderboard: { key: string; name: string | null; order: "ASC" | "DESC" };
+  leaderboard: { key: string; name: string | null; order: "ASC" | "DESC"; format?: ScoreFormat };
   entries: Entry[];
   me: { rank: number; score: number } | null;
 };
@@ -59,7 +60,7 @@ export function LeaderboardPanel({
     void load();
   }, [load, refreshKey, user?.id]);
 
-  const fmt = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US");
+  const fmt = (value: number) => formatScore(value, data?.leaderboard.format, locale);
   const meInList = data?.entries.some((e) => e.userId === user?.id);
 
   return (
@@ -126,7 +127,7 @@ function Row({
 }: {
   entry: Entry;
   highlight: boolean;
-  fmt: Intl.NumberFormat;
+  fmt: (value: number) => string;
   you: string;
 }) {
   const medal = entry.rank === 1 ? "text-neon-lime" : entry.rank === 2 ? "text-neon" : entry.rank === 3 ? "text-neon-pink" : "text-muted";
@@ -145,7 +146,7 @@ function Row({
         {entry.displayName}
         {highlight && entry.displayName !== you && <span className="ml-1.5 text-xs text-neon">({you})</span>}
       </span>
-      <span className="font-semibold tabular-nums">{fmt.format(entry.score)}</span>
+      <span className="font-semibold tabular-nums">{fmt(entry.score)}</span>
     </li>
   );
 }

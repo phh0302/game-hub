@@ -35,3 +35,13 @@ test("lượt chơi mở quá lâu → SESSION_EXPIRED", () => {
 test("không cấu hình giới hạn tốc độ thì không kiểm tra", () => {
   assert.equal(checkScore({ score: 1_000_000, durationSeconds: 5 }, { minPlaySeconds: 0, maxSessionHours: 6 }), null);
 });
+
+test("bảng tính theo thời gian: thời gian game báo không được ngắn hơn thời gian server đo quá mức trừ hao", () => {
+  const rules = { minPlaySeconds: 3, maxSessionHours: 2, minScore: 8000, maxScore: 3_600_000, timedScoreSlackSeconds: 5 };
+  // Server đo 42 giây, game báo 40,2 giây → hợp lệ (trễ mạng)
+  assert.equal(checkScore({ score: 40_200, durationSeconds: 42 }, rules), null);
+  // Server đo 60 giây mà game báo 12 giây → gian lận
+  assert.equal(checkScore({ score: 12_000, durationSeconds: 60 }, rules), "SCORE_INVALID");
+  // Dưới thời gian tối thiểu có thể của game
+  assert.equal(checkScore({ score: 5_000, durationSeconds: 5 }, rules), "SCORE_INVALID");
+});

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { GameRoom } from "@/components/games/GameRoom";
+import { getBoardFormat } from "@/modules/scores/leaderboard";
 import { loadGame } from "./data";
 
 export const dynamic = "force-dynamic";
@@ -19,6 +20,7 @@ export default async function GamePage({ params }: Props) {
   const t = await getTranslations("game");
   const game = await loadGame(slug, await getLocale());
   const playable = game.status === "PUBLISHED" ? game.playUrl : null;
+  const scoreFormat = await getBoardFormat(game.id);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
@@ -44,7 +46,7 @@ export default async function GamePage({ params }: Props) {
         </div>
       </header>
 
-      <GameRoom slug={game.slug} playUrl={playable} gameName={game.name} />
+      <GameRoom slug={game.slug} playUrl={playable} gameName={game.name} scoreFormat={scoreFormat} />
     </div>
   );
 }
