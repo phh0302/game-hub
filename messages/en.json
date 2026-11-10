@@ -417,5 +417,40 @@
     "scoreTextTime": "I finished {game} in {score} on Game Hub – can you go faster?",
     "ogScore": "Challenge: {score} points in {game}",
     "ogScoreTime": "Challenge: finish {game} in {score}"
+  },
+  "adminStats": {
+    "title": "Analytics",
+    "range": "{days} days",
+    "loading": "Loading…",
+    "loadError": "Could not load analytics ({code})",
+    "empty": "No data in this range",
+    "kpi": {
+      "plays": "Plays",
+      "playsHint": "incl. {guests} guest plays",
+      "players": "Players (wallet)",
+      "playersHint": "connected a wallet and played",
+      "newUsers": "New users",
+      "usersHint": "{total} users in total",
+      "scores": "Saved scores",
+      "rejectedHint": "{rejected} rejected · {reports} open reports"
+    },
+    "chart": {
+      "plays": "Plays per day",
+      "newUsers": "New users per day"
+    },
+    "unit": {
+      "plays": "plays",
+      "users": "users"
+    },
+    "perGame": "By game",
+    "col": {
+      "game": "Game",
+      "plays": "Plays",
+      "players": "Players",
+      "scores": "Scores",
+      "avg": "Avg play time"
+    },
+    "guests": "{n} guests",
+    "note": "Days use Vietnam time. Guest plays (no wallet) are counted from this release on; avg play time covers rounds with a saved score."
   }
 }

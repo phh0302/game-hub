@@ -417,5 +417,40 @@
     "scoreTextTime": "Mình hoàn thành {game} trong {score} trên Game Hub – bạn nhanh hơn không?",
     "ogScore": "Thách đấu: {score} điểm ở {game}",
     "ogScoreTime": "Thách đấu: hoàn thành {game} trong {score}"
+  },
+  "adminStats": {
+    "title": "Thống kê",
+    "range": "{days} ngày",
+    "loading": "Đang tải…",
+    "loadError": "Không tải được thống kê ({code})",
+    "empty": "Chưa có dữ liệu trong khoảng này",
+    "kpi": {
+      "plays": "Lượt chơi",
+      "playsHint": "gồm {guests} lượt của khách",
+      "players": "Người chơi (ví)",
+      "playersHint": "đã kết nối ví và chơi",
+      "newUsers": "Người dùng mới",
+      "usersHint": "tổng {total} người dùng",
+      "scores": "Điểm đã lưu",
+      "rejectedHint": "{rejected} bị từ chối · {reports} báo cáo chờ"
+    },
+    "chart": {
+      "plays": "Lượt chơi mỗi ngày",
+      "newUsers": "Người dùng mới mỗi ngày"
+    },
+    "unit": {
+      "plays": "lượt",
+      "users": "người"
+    },
+    "perGame": "Theo game",
+    "col": {
+      "game": "Game",
+      "plays": "Lượt chơi",
+      "players": "Người chơi",
+      "scores": "Điểm lưu",
+      "avg": "TG chơi TB"
+    },
+    "guests": "{n} khách",
+    "note": "Ngày tính theo giờ Việt Nam. Lượt chơi của khách (chưa kết nối ví) được đếm từ bản này trở đi; TG chơi TB tính trên các ván đã lưu điểm."
   }
 }

@@ -124,6 +124,8 @@ function GamePlayer({
   const startSession = useCallback(() => {
     if (!canSubmitScore) {
       sessionRef.current = null;
+      // Vẫn đếm lượt chơi của khách (không lưu điểm) để thống kê
+      void apiFetch(`/games/${slug}/plays`, { method: "POST" }).catch(() => undefined);
       return;
     }
     sessionRef.current = apiFetch<{ sessionId: string }>(`/games/${slug}/sessions`, { method: "POST" })

@@ -141,6 +141,15 @@
 - [ ] Tạo Upstash Redis + Sentry, nhập biến môi trường trên Vercel (`docs/DEPLOY.md` mục 3c)
 - Lưu ý: người đang đăng nhập bằng phiên cũ (trước bản này) phải kết nối ví lại 1 lần
 
+## Phase 9c – Nội dung & thu hút người chơi
+- [x] 3 game mẫu mới (song ngữ, phím + chạm): **Rắn săn mồi** (`snake`), **Neon Flap** (`neon-flap`), **Lật thẻ** (`memory`) – seed tự tạo khi deploy
+- [x] Bảng xếp hạng tính theo thời gian: `format: "duration_ms"` (hiện `0:42,7`) + `timedScoreSlackSeconds` chống gửi thời gian giả
+- [x] Chia sẻ: nút **Chia sẻ / Khoe điểm** (điện thoại mở bảng chia sẻ, máy tính copy link), ảnh xem trước 1200x630 cho Facebook/Zalo (`/api/og`)
+- [x] SEO: `sitemap.xml`, `robots.txt`, metadata Open Graph cho trang chủ / game / bảng xếp hạng
+- [x] Trang Quản trị có mục **Thống kê** (7/30/90 ngày): lượt chơi, người chơi, người dùng mới, điểm, biểu đồ theo ngày, bảng theo game
+- [x] Đếm lượt chơi của khách chưa kết nối ví (`play.anonymous`) – cần cho thống kê và chia doanh thu quảng cáo sau này
+- [ ] Thử chia sẻ link game lên Facebook / Zalo (chỉ chạy trên bản deploy, link localhost không xem trước được)
+
 ## Phase 10 – Nền tảng cho developer
 - [x] Đăng ký làm developer → tạo Studio (trang `/developer`)
 - [x] Developer tạo game (Nháp), sửa tên/mô tả/thể loại, upload ảnh bìa
