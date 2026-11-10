@@ -279,7 +279,8 @@
       "ALREADY_IN_STUDIO": "This person already belongs to a studio.",
       "STUDIO_FULL": "The studio already has 20 members.",
       "OWNER_CANNOT_LEAVE": "The owner cannot leave – transfer ownership first.",
-      "FORBIDDEN": "You don't have permission to do this."
+      "FORBIDDEN": "You don't have permission to do this.",
+      "ZIP_COMPRESSED_INVALID": "Corrupted or invalid .br/.gz file: {detail}"
     },
     "agreePrefix": "I have read and agree to the",
     "termsLink": "Developer Terms",

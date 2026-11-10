@@ -41,6 +41,19 @@ const nextConfig: NextConfig = {
           { key: "Content-Security-Policy", value: GAME_CSP },
         ],
       },
+      // Bản build Unity nén sẵn (.br/.gz) đã được hub giải nén khi upload, nhưng vẫn giữ tên cũ →
+      // khai báo đúng Content-Type theo file bên trong (khi chạy kho local; R2 tự lưu Content-Type lúc upload)
+      ...[
+        ["js", "text/javascript; charset=utf-8"],
+        ["wasm", "application/wasm"],
+        ["data", "application/octet-stream"],
+        ["symbols\\.json", "application/json"],
+      ].flatMap(([ext, type]) =>
+        ["br", "gz"].map((enc) => ({
+          source: `/uploads/:path(.*\\.${ext}\\.${enc})`,
+          headers: [{ key: "Content-Type", value: type }],
+        })),
+      ),
     ];
   },
 };

@@ -1,3 +1,4 @@
+import { brotliDecompressSync, gunzipSync } from "node:zlib";
 import { unzipSync, type UnzipFileInfo } from "fflate";
 import { buildContentType, extensionOf } from "./content-types.ts";
 import { MAX_BUILD_FILES, MAX_UNZIPPED_BYTES } from "./limits.ts";
@@ -7,6 +8,11 @@ import { MAX_BUILD_FILES, MAX_UNZIPPED_BYTES } from "./limits.ts";
  * Chặn: zip bomb (giới hạn tổng dung lượng/số file theo khai báo, rồi đối chiếu kích thước thật),
  * đường dẫn thoát thư mục (../, đường dẫn tuyệt đối), file không thuộc danh sách cho phép.
  * Tự bỏ 1 cấp thư mục gốc nếu người dùng nén cả thư mục (vd: my-game/index.html).
+ *
+ * File nén sẵn `.br` / `.gz` (Unity WebGL bật Compression Format): hub GIẢI NÉN khi upload và lưu
+ * nội dung gốc dưới ĐÚNG tên cũ (vd `Build/game.wasm.br`) với Content-Type của file bên trong.
+ * Nhờ vậy kho lưu trữ không cần header `Content-Encoding` (R2 / localhost đều chạy) – loader Unity
+ * vẫn tải đúng tên file và nhận được nội dung đã giải nén.
  */
 
 export type BuildFile = { path: string; data: Uint8Array; contentType: string };
@@ -18,7 +24,8 @@ export type ZipErrorCode =
   | "ZIP_TOO_LARGE_UNZIPPED"
   | "ZIP_UNSAFE_PATH"
   | "ZIP_FILE_TYPE_NOT_ALLOWED"
-  | "ZIP_NO_INDEX_HTML";
+  | "ZIP_NO_INDEX_HTML"
+  | "ZIP_COMPRESSED_INVALID";
 
 export class ZipValidationError extends Error {
   // Khai báo field tường minh (không dùng "public" trong constructor) để Node chạy test được bằng type stripping
@@ -37,6 +44,36 @@ const IGNORED = /(^|\/)(__MACOSX\/|\.DS_Store$|Thumbs\.db$|desktop\.ini$)/i;
 
 function normalize(name: string): string {
   return name.replace(/\\/g, "/");
+}
+
+/** Đuôi nén sẵn được hỗ trợ → tên file bên trong (bỏ đuôi nén) */
+const PRECOMPRESSED = /\.(br|gz)$/i;
+
+function innerPath(path: string): { inner: string; encoding: "br" | "gz" | null } {
+  const m = path.match(PRECOMPRESSED);
+  if (!m) return { inner: path, encoding: null };
+  return { inner: path.slice(0, -m[0].length), encoding: m[1].toLowerCase() as "br" | "gz" };
+}
+
+/** Content-Type khi phục vụ: file nén sẵn lấy theo file bên trong (game.js.br → text/javascript) */
+function servedContentType(path: string): string | null {
+  const { inner, encoding } = innerPath(path);
+  if (encoding && PRECOMPRESSED.test(inner)) return null; // không cho nén 2 lớp (a.js.gz.br)
+  return buildContentType(inner);
+}
+
+/** Giải nén có giới hạn dung lượng đầu ra (chống bomb nén) */
+function decompress(name: string, data: Uint8Array, encoding: "br" | "gz", maxBytes: number): Uint8Array {
+  try {
+    const out = encoding === "br" ? brotliDecompressSync(data, { maxOutputLength: Math.max(1, maxBytes) }) : gunzipSync(data, { maxOutputLength: Math.max(1, maxBytes) });
+    return new Uint8Array(out.buffer, out.byteOffset, out.byteLength);
+  } catch (err) {
+    const code = (err as { code?: string }).code;
+    if (code === "ERR_BUFFER_TOO_LARGE" || (err instanceof RangeError && /maxOutputLength|too large/i.test(err.message))) {
+      throw new ZipValidationError("ZIP_TOO_LARGE_UNZIPPED");
+    }
+    throw new ZipValidationError("ZIP_COMPRESSED_INVALID", name);
+  }
 }
 
 function isUnsafe(path: string): boolean {
@@ -69,7 +106,7 @@ export function extractBuild(zip: Uint8Array): { files: BuildFile[]; totalBytes:
   for (const f of entries) {
     const name = normalize(f.name);
     if (isUnsafe(name)) throw new ZipValidationError("ZIP_UNSAFE_PATH", name);
-    if (!buildContentType(name)) {
+    if (!servedContentType(name)) {
       throw new ZipValidationError("ZIP_FILE_TYPE_NOT_ALLOWED", `${name} (.${extensionOf(name) || "?"})`);
     }
     declared += f.originalSize;
@@ -98,13 +135,15 @@ export function extractBuild(zip: Uint8Array): { files: BuildFile[]; totalBytes:
   let totalBytes = 0;
   const files: BuildFile[] = [];
   for (const info of entries) {
-    const data = unzipped[info.name];
+    const raw = unzipped[info.name];
     // Kích thước thật phải khớp khai báo (zip bomb hay khai man kích thước)
-    if (!data || data.byteLength !== info.originalSize) throw new ZipValidationError("ZIP_INVALID", info.name);
+    if (!raw || raw.byteLength !== info.originalSize) throw new ZipValidationError("ZIP_INVALID", info.name);
+    const path = normalize(info.name).slice(prefix.length);
+    const { encoding } = innerPath(path);
+    const data = encoding ? decompress(path, raw, encoding, MAX_UNZIPPED_BYTES - totalBytes) : raw;
     totalBytes += data.byteLength;
     if (totalBytes > MAX_UNZIPPED_BYTES) throw new ZipValidationError("ZIP_TOO_LARGE_UNZIPPED");
-    const path = normalize(info.name).slice(prefix.length);
-    files.push({ path, data, contentType: buildContentType(path)! });
+    files.push({ path, data, contentType: servedContentType(path)! });
   }
 
   return { files, totalBytes, strippedFolder: prefix ? prefix.slice(0, -1) : null };

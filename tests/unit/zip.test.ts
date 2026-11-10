@@ -64,3 +64,33 @@ test("zip bomb: tổng dung lượng giải nén vượt giới hạn", () => {
   assert.ok(zip.byteLength < 1024 * 1024, "zip phải nhỏ hơn 1MB");
   assert.equal(code(() => extractBuild(zip)), "ZIP_TOO_LARGE_UNZIPPED");
 });
+
+test("Unity nén sẵn .br / .gz: giải nén, giữ tên file, Content-Type theo file bên trong", async () => {
+  const { brotliCompressSync, gzipSync } = await import("node:zlib");
+  const wasm = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0]);
+  const zip = zipSync({
+    "index.html": html,
+    "Build/game.framework.js.br": new Uint8Array(brotliCompressSync(js)),
+    "Build/game.wasm.gz": new Uint8Array(gzipSync(wasm)),
+  });
+  const out = extractBuild(zip);
+  const fw = out.files.find((f) => f.path === "Build/game.framework.js.br");
+  const wa = out.files.find((f) => f.path === "Build/game.wasm.gz");
+  assert.deepEqual(Array.from(fw!.data), Array.from(js));
+  assert.equal(fw!.contentType, "text/javascript; charset=utf-8");
+  assert.deepEqual(Array.from(wa!.data), Array.from(wasm));
+  assert.equal(wa!.contentType, "application/wasm");
+  assert.equal(out.totalBytes, html.length + js.length + wasm.length);
+});
+
+test("file .br hỏng / đuôi lạ bên trong / nén 2 lớp bị từ chối", () => {
+  assert.equal(code(() => extractBuild(zipSync({ "index.html": html, "a.js.br": new Uint8Array([1, 2, 3, 4]) }))), "ZIP_COMPRESSED_INVALID");
+  assert.equal(code(() => extractBuild(zipSync({ "index.html": html, "run.exe.gz": new Uint8Array([1]) }))), "ZIP_FILE_TYPE_NOT_ALLOWED");
+  assert.equal(code(() => extractBuild(zipSync({ "index.html": html, "a.js.gz.br": new Uint8Array([1]) }))), "ZIP_FILE_TYPE_NOT_ALLOWED");
+});
+
+test("bomb nén: .gz giải ra vượt 150MB bị chặn", async () => {
+  const { gzipSync } = await import("node:zlib");
+  const bomb = new Uint8Array(gzipSync(new Uint8Array(151 * 1024 * 1024)));
+  assert.equal(code(() => extractBuild(zipSync({ "index.html": html, "big.data.gz": bomb }))), "ZIP_TOO_LARGE_UNZIPPED");
+});

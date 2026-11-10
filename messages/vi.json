@@ -279,7 +279,8 @@
       "ALREADY_IN_STUDIO": "Người này đã thuộc một studio.",
       "STUDIO_FULL": "Studio đã đủ 20 thành viên.",
       "OWNER_CANNOT_LEAVE": "Chủ studio không thể rời – hãy chuyển quyền chủ cho người khác trước.",
-      "FORBIDDEN": "Bạn không có quyền làm việc này."
+      "FORBIDDEN": "Bạn không có quyền làm việc này.",
+      "ZIP_COMPRESSED_INVALID": "File nén .br/.gz bị hỏng hoặc không đúng định dạng: {detail}"
     },
     "agreePrefix": "Tôi đã đọc và đồng ý với",
     "termsLink": "Điều khoản dành cho người đăng game",

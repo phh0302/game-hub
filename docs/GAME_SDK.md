@@ -17,8 +17,11 @@ Tài liệu cho developer muốn đưa game HTML5 lên Game Hub.
 - Mọi đường dẫn tài nguyên trong game là **đường dẫn tương đối** (`./img/a.png`, không dùng `/img/a.png`)
 - Chỉ file web: `html js mjs css json map txt xml csv`, ảnh `png jpg gif webp avif svg ico bmp`,
   âm thanh/video `mp3 ogg wav m4a aac mp4 webm`, font `woff woff2 ttf otf`,
-  engine `wasm data bin unityweb pck atlas fnt plist tmx tsx glb gltf`. File khác (`exe`, `php`, `sh`…) bị từ chối
-- **Unity WebGL**: Build Settings → Compression Format = **Disabled** (hoặc bật *Decompression Fallback*) – hub chưa hỗ trợ file `.br` / `.gz`
+  engine `wasm data bin unityweb pck atlas fnt plist tmx tsx glb gltf`, và bản nén sẵn `.br` / `.gz` của các file trên. File khác (`exe`, `php`, `sh`…) bị từ chối
+- **Unity WebGL**: Compression Format **Brotli**, **Gzip** hay **Disabled** đều được. File nén sẵn `.br` / `.gz`
+  (vd `Build/game.wasm.br`) được hub **giải nén lúc upload** và phục vụ đúng tên cũ – không cần cấu hình server.
+  Không cần bật *Decompression Fallback*. File bên trong phải thuộc danh sách đuôi được phép; không nén 2 lớp
+- Giới hạn 150MB tính theo dung lượng **sau khi giải nén** cả file `.br` / `.gz`
 - Không cần server riêng: game chạy hoàn toàn trên trình duyệt
 - File rác (`__MACOSX/`, `.DS_Store`, `Thumbs.db`) được tự bỏ qua
 
