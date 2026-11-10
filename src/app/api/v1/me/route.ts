@@ -10,7 +10,7 @@ export async function GET() {
   });
 }
 
-/** Cập nhật hồ sơ: { username?, avatarUrl? } – username trùng trả lỗi 409 */
+/** Cập nhật hồ sơ: { username?, avatarKey? } – username trùng trả lỗi 409 */
 export async function PATCH(req: Request) {
   return handle(async () => {
     const user = await requireRegisteredUser();

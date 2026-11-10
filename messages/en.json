@@ -106,8 +106,7 @@
     "wallet": "Wallet",
     "username": "Display name",
     "usernameHint": "3–20 characters: lowercase letters, numbers, underscore (uppercase is converted). Empty = use wallet address.",
-    "avatarUrl": "Avatar (URL)",
-    "avatarHint": "Paste an image link starting with https://",
+    "avatarHint": "Avatar: PNG, JPG or WEBP – cropped square and resized automatically. Press Save to apply.",
     "save": "Save changes",
     "saving": "Saving…",
     "saved": "Saved!",
@@ -123,13 +122,25 @@
     "loading": "Loading…",
     "errors": {
       "usernameTaken": "That name is already taken.",
-      "invalid": "Invalid details: the name may be reserved (admin, system…) or the avatar is not an https:// link.",
-      "unknown": "Something went wrong, please try again."
+      "invalid": "Invalid input: the name may be reserved (admin, system…) or badly formatted.",
+      "unknown": "Something went wrong, please try again.",
+      "IMAGE_INVALID": "Not a valid image (PNG, JPG, WEBP, up to 1MB).",
+      "FILE_TOO_LARGE": "Image too large (max 1MB).",
+      "UPLOAD_TYPE_NOT_ALLOWED": "Only PNG, JPG, WEBP images are accepted.",
+      "UPLOAD_FAILED": "Upload failed, please try again.",
+      "UPLOADS_NOT_CONFIGURED": "Uploads are not enabled on this server.",
+      "RATE_LIMITED": "Too many avatar changes, try again later.",
+      "IMAGE_KEY_INVALID": "Invalid image – please upload again.",
+      "UPLOAD_NOT_FOUND": "Uploaded image not found – please upload again."
     },
     "security": "Security",
     "logoutAllHint": "Sign out of every browser and device using this account (including this one). Use it if you signed in on an unfamiliar device or suspect a leak.",
     "logoutAll": "Sign out everywhere",
-    "logoutAllConfirm": "Sign out of all devices? You will need to sign with your wallet again."
+    "logoutAllConfirm": "Sign out of all devices? You will need to sign with your wallet again.",
+    "avatarUpload": "Upload photo",
+    "avatarChange": "Change photo",
+    "avatarUploading": "Uploading…",
+    "avatarRemove": "Remove photo"
   },
   "admin": {
     "title": "Admin",

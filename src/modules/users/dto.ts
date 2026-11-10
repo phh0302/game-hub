@@ -1,5 +1,5 @@
 import type { Prisma } from "@prisma/client";
-import { assetUrl } from "@/lib/assets";
+import { assetUrl, isUploadKey } from "@/lib/assets";
 
 export const userWithIdentities = { identities: true } satisfies Prisma.UserInclude;
 export type UserWithIdentities = Prisma.UserGetPayload<{ include: typeof userWithIdentities }>;
@@ -26,9 +26,14 @@ export function toPublicUser(user: UserWithIdentities): PublicUser {
   return {
     id: user.id,
     username: user.username,
-    avatarUrl: assetUrl(user.avatarKey),
+    avatarUrl: avatarUrl(user.avatarKey),
     role: user.role,
     isGuest: user.isGuest,
     walletAddress: primaryWallet(user),
   };
+}
+
+/** Chỉ hiện ảnh đại diện đã upload lên kho của hub – link ngoài cũ (trước khi có upload) bị bỏ qua */
+export function avatarUrl(key: string | null | undefined): string | null {
+  return key && isUploadKey(key) ? assetUrl(key) : null;
 }

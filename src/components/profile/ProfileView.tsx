@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useLocale, useTranslations } from "next-intl";
 import { useAuth, type AuthUser } from "@/components/auth/AuthProvider";
 import { apiFetch, errorCode } from "@/lib/client-api";
+import { uploadFile } from "@/lib/upload-client";
 import { displayName, shortAddress } from "@/lib/format";
 import { formatScore, type ScoreFormat } from "@/lib/score-format";
 
@@ -57,12 +58,54 @@ function Security() {
   );
 }
 
+/** Cắt ảnh thành hình vuông ở giữa + thu nhỏ còn 256x256 → file nhỏ (vài chục KB), tải nhanh */
+async function squareAvatar(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  const side = Math.min(bitmap.width, bitmap.height);
+  const size = 256;
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) throw new Error("canvas");
+  ctx.imageSmoothingQuality = "high";
+  ctx.drawImage(bitmap, (bitmap.width - side) / 2, (bitmap.height - side) / 2, side, side, 0, 0, size, size);
+  bitmap.close();
+  const toBlob = (type: string) => new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, type, 0.9));
+  // Safari cũ không xuất được WEBP → dùng PNG
+  const webp = await toBlob("image/webp");
+  const blob = webp && webp.type === "image/webp" ? webp : await toBlob("image/png");
+  if (!blob) throw new Error("encode");
+  return blob;
+}
+
 function ProfileForm({ user }: { user: AuthUser }) {
   const t = useTranslations("profile");
   const { setUser } = useAuth();
   const [username, setUsername] = useState(user.username ?? "");
-  const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl ?? "");
+  /** undefined = giữ ảnh hiện tại · null = bỏ ảnh · string = key ảnh mới vừa upload */
+  const [avatarKey, setAvatarKey] = useState<string | null | undefined>(undefined);
+  const [preview, setPreview] = useState<string | null>(user.avatarUrl);
+  const [uploading, setUploading] = useState(false);
   const [state, setState] = useState<{ kind: "idle" | "saving" | "saved" | "error"; code?: string }>({ kind: "idle" });
+
+  async function onPickAvatar(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    e.target.value = "";
+    if (!file) return;
+    setUploading(true);
+    setState({ kind: "idle" });
+    try {
+      const blob = await squareAvatar(file);
+      const key = await uploadFile(blob, "avatar");
+      setAvatarKey(key);
+      setPreview(URL.createObjectURL(blob));
+    } catch (err) {
+      setState({ kind: "error", code: err instanceof Error && !("code" in err) ? "IMAGE_INVALID" : errorCode(err) });
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -70,9 +113,11 @@ function ProfileForm({ user }: { user: AuthUser }) {
     try {
       const { user: updated } = await apiFetch<{ user: AuthUser }>("/me", {
         method: "PATCH",
-        json: { username: username.trim() || null, avatarUrl: avatarUrl.trim() || null },
+        json: { username: username.trim() || null, ...(avatarKey !== undefined ? { avatarKey } : {}) },
       });
       setUser(updated);
+      setAvatarKey(undefined);
+      setPreview(updated.avatarUrl);
       setState({ kind: "saved" });
     } catch (err) {
       setState({ kind: "error", code: errorCode(err) });
@@ -80,18 +125,40 @@ function ProfileForm({ user }: { user: AuthUser }) {
   }
 
   const errorText = (code?: string) =>
-    code === "CONFLICT" ? t("errors.usernameTaken") : code === "VALIDATION_ERROR" ? t("errors.invalid") : t("errors.unknown");
+    code === "CONFLICT"
+      ? t("errors.usernameTaken")
+      : code === "VALIDATION_ERROR"
+        ? t("errors.invalid")
+        : code && t.has(`errors.${code}`)
+          ? t(`errors.${code}`)
+          : t("errors.unknown");
 
   return (
     <form onSubmit={onSubmit} className="grid gap-6 rounded-2xl border border-line bg-surface p-6 sm:grid-cols-[auto_1fr]">
       <div className="flex flex-col items-center gap-2">
-        {avatarUrl ? (
+        {preview ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={avatarUrl} alt="" className="size-24 rounded-full border border-line object-cover" />
+          <img src={preview} alt="" className="size-24 rounded-full border border-line object-cover" />
         ) : (
           <span className="grid size-24 place-items-center rounded-full bg-surface-2 font-display text-3xl font-bold text-muted">
             {displayName(user).slice(0, 1).toUpperCase()}
           </span>
+        )}
+        <label className={`cursor-pointer text-xs font-semibold text-neon hover:underline ${uploading ? "pointer-events-none opacity-60" : ""}`}>
+          {uploading ? t("avatarUploading") : preview ? t("avatarChange") : t("avatarUpload")}
+          <input type="file" accept="image/png,image/jpeg,image/webp" onChange={onPickAvatar} className="sr-only" />
+        </label>
+        {preview && !uploading && (
+          <button
+            type="button"
+            onClick={() => {
+              setAvatarKey(null);
+              setPreview(null);
+            }}
+            className="text-xs text-muted hover:text-neon-pink"
+          >
+            {t("avatarRemove")}
+          </button>
         )}
         {user.role === "ADMIN" && (
           <span className="rounded-md bg-neon-pink/15 px-2 py-0.5 text-xs font-semibold text-neon-pink">ADMIN</span>
@@ -120,22 +187,12 @@ function ProfileForm({ user }: { user: AuthUser }) {
           <span className="text-xs text-muted">{t("usernameHint")}</span>
         </label>
 
-        <label className="flex flex-col gap-1.5 text-sm">
-          <span className="font-medium">{t("avatarUrl")}</span>
-          <input
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            type="url"
-            placeholder="https://…"
-            className="rounded-lg border border-line bg-bg px-3 py-2 outline-none focus:border-neon"
-          />
-          <span className="text-xs text-muted">{t("avatarHint")}</span>
-        </label>
+        <p className="text-xs text-muted">{t("avatarHint")}</p>
 
         <div className="flex items-center gap-3">
           <button
             type="submit"
-            disabled={state.kind === "saving"}
+            disabled={state.kind === "saving" || uploading}
             className="rounded-lg bg-linear-to-r from-neon to-neon-pink px-5 py-2 font-semibold text-bg disabled:opacity-60"
           >
             {state.kind === "saving" ? t("saving") : t("save")}

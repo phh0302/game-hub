@@ -11,6 +11,7 @@
 | Nhúng hub vào web lạ để lừa ký ví | `X-Frame-Options: DENY` cho trang hub | `next.config.ts` |
 | Gian lận điểm | Lượt chơi phía server, nộp 1 lần, thời gian chơi tối thiểu, điểm tối đa theo bảng xếp hạng | `src/modules/scores/service.ts` |
 | Spam API | Rate limit theo IP / user, bộ đếm dùng chung trên Upstash Redis (không có Redis → đếm trong bộ nhớ); body JSON tối đa 64KB | `src/lib/rate-limit.ts`, `src/lib/api.ts` |
+| Ảnh đại diện độc hại / theo dõi người xem | Chỉ nhận ảnh upload lên kho của hub (không nhận link ngoài – link ngoài cũ bị ẩn); server kiểm tra key thuộc đúng user, ≤ 1MB, chữ ký file PNG/JPG/WEBP (chặn SVG/HTML giả ảnh) | `src/modules/users/service.ts`, `src/modules/uploads/image.ts` |
 | Tài khoản phá hoại | Admin khóa tài khoản: thu hồi mọi phiên, chặn đăng nhập, ẩn điểm khỏi bảng xếp hạng | `src/modules/users/moderation.ts` |
 | Lỗi không ai biết | Lỗi server (API, trang) + lỗi trình duyệt gửi lên Sentry (đã ẩn cookie/token, bỏ query string) | `src/lib/monitoring.ts`, `src/instrumentation.ts` |
 | Dữ liệu sai định dạng | Kiểm tra mọi input bằng zod | `src/modules/*/schemas.ts` |
@@ -35,7 +36,6 @@ CI chặn lỗ hổng mức **critical**; mức **high** được in báo cáo �
 
 - Middleware (Edge) chỉ kiểm tra chữ ký JWT để chặn trang `/profile`, `/admin`…; phiên đã thu hồi vẫn mở được khung trang nhưng mọi dữ liệu/API đều bị từ chối (kiểm tra ở server)
 - Upstash lỗi / chậm > 1,5 giây → rate limit tạm đếm trong bộ nhớ (không chặn người dùng thật) và ghi lỗi lên Sentry
-- Ảnh đại diện là link ngoài (người xem tải ảnh từ server lạ) → Phase 10 chuyển sang upload ảnh
 - Link upload ký sẵn không giới hạn dung lượng phía R2 → server kiểm tra lại kích thước trước khi xử lý; lifecycle rule xóa `u/incoming/` sau 1 ngày
 - Developer sửa tên/mô tả game đã phát hành không cần duyệt lại → dựa vào **báo cáo vi phạm** của người chơi + admin xử lý
 - Điểm do game gửi lên vẫn có thể bị sửa nếu người chơi đọc được code game – chỉ hạn chế được bằng giới hạn hợp lý; game cần chống gian lận mạnh phải tự xác minh phía server

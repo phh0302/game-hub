@@ -116,7 +116,7 @@
 - [x] Checklist kiểm thử thủ công: `docs/TEST_CHECKLIST.md`
 - [ ] Chạy checklist thủ công với MetaMask (đăng nhập, chơi, nộp điểm, admin, bảo mật)
 - [ ] Kiểm tra trên điện thoại (trình duyệt trong app MetaMask)
-- Hạn chế đã biết (làm sau): ảnh đại diện là link ngoài (chuyển sang upload) · ~~thu hồi JWT~~, ~~rate limit Redis~~ → xong ở Phase 9b
+- Hạn chế đã biết: ~~ảnh đại diện link ngoài~~, ~~thu hồi JWT~~, ~~rate limit Redis~~ → đã xử lý ở Phase 9b / 9d
 
 ## Phase 9 – Deploy
 - [x] CI GitHub Actions: cài thư viện → kiểm tra schema → TypeScript → unit test → build production → npm audit (xanh)
