@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Be_Vietnam_Pro, Chakra_Petch } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
@@ -24,6 +24,11 @@ const display = Chakra_Petch({
   display: "swap",
 });
 
+export const viewport: Viewport = {
+  themeColor: "#07070f",
+  colorScheme: "dark",
+};
+
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("meta");
   const locale = await getLocale();
@@ -33,6 +38,8 @@ export async function generateMetadata(): Promise<Metadata> {
     title: t("title"),
     description: t("description"),
     applicationName: "Game Hub",
+    // Mở từ màn hình chính iPhone: toàn màn hình, thanh trạng thái tối
+    appleWebApp: { capable: true, title: "Game Hub", statusBarStyle: "black-translucent" },
     openGraph: {
       type: "website",
       siteName: "Game Hub",

@@ -33,6 +33,14 @@ const nextConfig: NextConfig = {
         headers: [{ key: "X-Frame-Options", value: "DENY" }],
       },
       {
+        // Service worker phải luôn lấy bản mới nhất (trình duyệt tự kiểm tra cập nhật)
+        source: "/sw.js",
+        headers: [
+          { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+          { key: "Content-Type", value: "application/javascript; charset=utf-8" },
+        ],
+      },
+      {
         // Mọi file trong /uploads (game chính thức + file developer upload khi chạy local):
         // chỉ hub được nhúng + luôn chạy trong sandbox → file HTML/SVG lạ không chạm được cookie của hub
         source: "/uploads/:path*",

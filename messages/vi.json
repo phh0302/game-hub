@@ -463,5 +463,9 @@
     },
     "guests": "{n} khách",
     "note": "Ngày tính theo giờ Việt Nam. Lượt chơi của khách (chưa kết nối ví) được đếm từ bản này trở đi; TG chơi TB tính trên các ván đã lưu điểm."
+  },
+  "pwa": {
+    "install": "Cài Game Hub lên máy",
+    "iosHelp": "Trên iPhone/iPad: bấm nút Chia sẻ (ô vuông có mũi tên) ở Safari → chọn \"Thêm vào Màn hình chính\"."
   }
 }

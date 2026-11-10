@@ -150,6 +150,12 @@
 - [x] Đếm lượt chơi của khách chưa kết nối ví (`play.anonymous`) – cần cho thống kê và chia doanh thu quảng cáo sau này
 - [ ] Thử chia sẻ link game lên Facebook / Zalo (chỉ chạy trên bản deploy, link localhost không xem trước được)
 
+## Phase 9d – Hoàn thiện trải nghiệm
+- [x] Upload ảnh đại diện: tự cắt vuông 256x256 trên trình duyệt, server kiểm tra đúng chủ, ≤ 1MB, đúng chữ ký PNG/JPG/WEBP; bỏ link ảnh ngoài
+- [x] Test trình duyệt tự động (Playwright) trong CI – job `e2e`: ví MetaMask giả lập, đăng nhập, chơi Lật thẻ lưu điểm, hồ sơ + ảnh đại diện, đăng xuất mọi thiết bị, chặn trang quản trị, thống kê, khóa/mở khóa, sandbox game, ảnh chia sẻ, sitemap, PWA (10+ test, chạy `npm run test:e2e`)
+- [x] PWA: cài Game Hub lên màn hình chính (manifest, icon thường + maskable, nút **Cài Game Hub** ở chân trang, hướng dẫn riêng cho iPhone), service worker cache file tĩnh + trang `offline.html` khi mất mạng
+- [ ] Thử cài app trên điện thoại thật (Android Chrome + iPhone Safari) sau khi deploy – cần https
+
 ## Phase 10 – Nền tảng cho developer
 - [x] Đăng ký làm developer → tạo Studio (trang `/developer`)
 - [x] Developer tạo game (Nháp), sửa tên/mô tả/thể loại, upload ảnh bìa

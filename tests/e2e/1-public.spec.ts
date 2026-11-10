@@ -50,3 +50,15 @@ test("khách chưa kết nối ví vẫn chơi được và được đếm lư�
   await game.locator("#play").click();
   await play;
 });
+
+test("PWA: manifest + service worker + trang offline", async ({ page, request }) => {
+  const manifest = await (await request.get("/manifest.webmanifest")).json();
+  expect(manifest).toMatchObject({ short_name: "Game Hub", display: "standalone" });
+  expect(manifest.icons.some((i: { purpose?: string }) => i.purpose === "maskable")).toBe(true);
+  expect((await request.get("/icons/icon-512.png")).headers()["content-type"]).toContain("image/png");
+
+  await page.goto("/");
+  const scope = await page.evaluate(async () => (await navigator.serviceWorker.ready).scope);
+  expect(scope).toBe("http://localhost:3000/");
+  expect(await (await request.get("/offline.html")).text()).toContain("Mất kết nối");
+});

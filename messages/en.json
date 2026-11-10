@@ -463,5 +463,9 @@
     },
     "guests": "{n} guests",
     "note": "Days use Vietnam time. Guest plays (no wallet) are counted from this release on; avg play time covers rounds with a saved score."
+  },
+  "pwa": {
+    "install": "Install Game Hub",
+    "iosHelp": "On iPhone/iPad: tap Safari's Share button (square with an arrow) → \"Add to Home Screen\"."
   }
 }
