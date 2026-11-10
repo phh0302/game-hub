@@ -12,7 +12,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const t = await getTranslations("leaderboard");
   const game = await loadGame(slug, await getLocale());
-  return { title: `${t("title")} ${game.name} – Game Hub` };
+  return {
+    title: `${t("title")} ${game.name} – Game Hub`,
+    alternates: { canonical: `/games/${game.slug}/leaderboard` },
+    openGraph: { images: [{ url: `/api/og?game=${game.slug}`, width: 1200, height: 630, alt: game.name }] },
+  };
 }
 
 export default async function LeaderboardPage({ params }: Props) {

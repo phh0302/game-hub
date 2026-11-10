@@ -79,7 +79,11 @@
       "SESSION_NOT_STARTED": "Điểm không được ghi nhận: không bắt đầu được lượt chơi trên máy chủ (thử tải lại trang)."
     },
     "notSavedLateLogin": "Bạn đạt {score} điểm, nhưng ván này bắt đầu trước khi kết nối ví nên không được lưu. Ván sau sẽ được tính!",
-    "dismiss": "Đóng"
+    "dismiss": "Đóng",
+    "notSavedTime": "Bạn hoàn thành trong {score}. Kết nối ví để lưu thành tích lần sau!",
+    "savedTime": "Đã lưu thời gian {score}. Kỷ lục của bạn: {best} · hạng #{rank}",
+    "newBestTime": "Kỷ lục mới: {score}! Bạn đang hạng #{rank}",
+    "notSavedLateLoginTime": "Bạn hoàn thành trong {score}, nhưng ván này bắt đầu trước khi kết nối ví nên không được lưu. Ván sau sẽ được tính!"
   },
   "leaderboard": {
     "title": "Bảng xếp hạng",
@@ -402,5 +406,16 @@
     "code": "Mã lỗi: {digest}",
     "retry": "Thử lại",
     "home": "Về trang chủ"
+  },
+  "share": {
+    "share": "Chia sẻ",
+    "shareScore": "Khoe điểm",
+    "copied": "Đã copy link",
+    "copyPrompt": "Copy link này để chia sẻ:",
+    "gameText": "Chơi {game} miễn phí trên Game Hub!",
+    "scoreText": "Mình đạt {score} điểm ở {game} trên Game Hub – vào thách đấu nào!",
+    "scoreTextTime": "Mình hoàn thành {game} trong {score} trên Game Hub – bạn nhanh hơn không?",
+    "ogScore": "Thách đấu: {score} điểm ở {game}",
+    "ogScoreTime": "Thách đấu: hoàn thành {game} trong {score}"
   }
 }

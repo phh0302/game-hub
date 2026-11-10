@@ -79,7 +79,11 @@
       "SESSION_NOT_STARTED": "Score not recorded: the round couldn't be started on the server (try reloading the page)."
     },
     "notSavedLateLogin": "You scored {score}, but this round started before you connected your wallet, so it wasn't saved. Your next round will count!",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "notSavedTime": "You finished in {score}. Connect your wallet to save your time next round!",
+    "savedTime": "Saved time {score}. Your best: {best} · rank #{rank}",
+    "newBestTime": "New record: {score}! You're rank #{rank}",
+    "notSavedLateLoginTime": "You finished in {score}, but this round started before you connected your wallet so it wasn't saved. Next round counts!"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -402,5 +406,16 @@
     "code": "Error code: {digest}",
     "retry": "Try again",
     "home": "Back to home"
+  },
+  "share": {
+    "share": "Share",
+    "shareScore": "Share score",
+    "copied": "Link copied",
+    "copyPrompt": "Copy this link to share:",
+    "gameText": "Play {game} for free on Game Hub!",
+    "scoreText": "I scored {score} in {game} on Game Hub – can you beat it?",
+    "scoreTextTime": "I finished {game} in {score} on Game Hub – can you go faster?",
+    "ogScore": "Challenge: {score} points in {game}",
+    "ogScoreTime": "Challenge: finish {game} in {score}"
   }
 }

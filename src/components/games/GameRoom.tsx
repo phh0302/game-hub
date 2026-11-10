@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LeaderboardPanel } from "@/components/leaderboard/LeaderboardPanel";
 import { ReportGameButton } from "@/components/reports/ReportGameButton";
+import { ShareButton } from "./ShareButton";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { displayName } from "@/lib/format";
 import { formatScore, type ScoreFormat } from "@/lib/score-format";
@@ -72,6 +73,10 @@ function GamePlayer({
   /** Lượt chơi hiện tại: Promise<sessionId | null> (null = không lưu điểm được) */
   const sessionRef = useRef<Promise<string | null> | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
+  /** Điểm ván vừa xong – dùng cho nút "Khoe điểm" */
+  const [lastScore, setLastScore] = useState<{ value: number; format: ScoreFormat } | null>(null);
+  /** Bảng tính theo thời gian dùng câu "hoàn thành trong 0:42,7" thay vì "đạt X điểm" */
+  const msg = useCallback((key: string, format: ScoreFormat = scoreFormat) => (format === "duration_ms" ? `${key}Time` : key), [scoreFormat]);
 
   const canSubmitScore = Boolean(user && !user.isGuest);
   const fmt = useCallback(
@@ -134,6 +139,7 @@ function GamePlayer({
       const score = Math.floor(Number(payload.score));
       if (!Number.isFinite(score) || score < 0) return;
       const leaderboard = typeof payload.leaderboard === "string" ? payload.leaderboard : "default";
+      setLastScore({ value: score, format: scoreFormat });
 
       const pending = sessionRef.current;
       sessionRef.current = null;
@@ -142,8 +148,8 @@ function GamePlayer({
         report(
           canSubmitScore
             ? // Kết nối ví khi ván đang chơi dở → ván này không có lượt chơi phía server
-              { saved: false, kind: "info", code: "STARTED_BEFORE_LOGIN", text: t("notSavedLateLogin", { score: fmt(score) }) }
-            : { saved: false, kind: "info", code: "NOT_SIGNED_IN", text: t("notSaved", { score: fmt(score) }) },
+              { saved: false, kind: "info", code: "STARTED_BEFORE_LOGIN", text: t(msg("notSavedLateLogin"), { score: fmt(score) }) }
+            : { saved: false, kind: "info", code: "NOT_SIGNED_IN", text: t(msg("notSaved"), { score: fmt(score) }) },
         );
         return;
       }
@@ -164,8 +170,8 @@ function GamePlayer({
           saved: true,
           kind: "success",
           text: res.isNewBest
-            ? t("newBest", { score: fmt(res.score.value, res.format), rank })
-            : t("saved", { score: fmt(res.score.value, res.format), best: fmt(res.best, res.format), rank }),
+            ? t(msg("newBest", res.format), { score: fmt(res.score.value, res.format), rank })
+            : t(msg("saved", res.format), { score: fmt(res.score.value, res.format), best: fmt(res.best, res.format), rank }),
           data: { score: res.score.value, best: res.best, rank: res.rank, isNewBest: res.isNewBest },
         });
         onScoreSaved();
@@ -174,7 +180,7 @@ function GamePlayer({
         report({ saved: false, kind: "error", code, text: errorText(code) });
       }
     },
-    [canSubmitScore, slug, t, fmt, onScoreSaved, errorText, report],
+    [canSubmitScore, slug, t, fmt, msg, scoreFormat, onScoreSaved, errorText, report],
   );
 
   // Luôn dùng handler mới nhất mà không phải gỡ/gắn lại listener
@@ -280,7 +286,10 @@ function GamePlayer({
       </div>
 
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <ReportGameButton slug={slug} />
+        <div className="flex flex-wrap items-start gap-2">
+          <ShareButton slug={slug} gameName={gameName} score={lastScore} />
+          <ReportGameButton slug={slug} />
+        </div>
         <button
           type="button"
           onClick={() => void wrapRef.current?.requestFullscreen?.()}
