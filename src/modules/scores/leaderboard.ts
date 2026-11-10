@@ -65,7 +65,7 @@ export async function getTopEntries(board: Leaderboard, period: Period, limit = 
       WHERE s."leaderboardId" = ${board.id} AND s."createdAt" >= ${since} ${untilFilter}
       ORDER BY s."userId", s.value ${dir}, s."createdAt" ASC
     ) b
-    JOIN "User" u ON u.id = b."userId" AND u."deletedAt" IS NULL
+    JOIN "User" u ON u.id = b."userId" AND u."deletedAt" IS NULL AND u."suspendedAt" IS NULL
     LEFT JOIN LATERAL (
       SELECT ai."providerUserId" FROM "AuthIdentity" ai
       WHERE ai."userId" = u.id AND ai.provider = 'WALLET'
@@ -96,6 +96,7 @@ export async function getUserRank(board: Leaderboard, userId: string, period: Pe
     WITH best AS (
       SELECT DISTINCT ON (s."userId") s."userId", s.value AS best, s."createdAt" AS "achievedAt"
       FROM "Score" s
+      JOIN "User" u ON u.id = s."userId" AND u."deletedAt" IS NULL AND u."suspendedAt" IS NULL
       WHERE s."leaderboardId" = ${board.id} AND s."createdAt" >= ${since} ${untilFilter}
       ORDER BY s."userId", s.value ${dir}, s."createdAt" ASC
     )

@@ -95,6 +95,22 @@ Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản
 > Bản build chạy ở domain R2 (khác hub) nên tự cô lập với cookie đăng nhập của hub – đây là lý do không phục vụ game của developer từ chính domain hub.
 > Nhắc developer nhúng SDK bằng đường dẫn đầy đủ `https://<domain-hub>/sdk/gamehub-sdk.js`.
 
+## 3c. Chống spam + theo dõi lỗi (Upstash Redis, Sentry) – miễn phí
+
+**Upstash Redis** (rate limit dùng chung cho mọi server – trên Vercel mỗi request có thể chạy ở server khác nhau):
+
+1. Vercel → project → tab **Storage** → **Create Database** → **Upstash for Redis** → region **Singapore** (`ap-southeast-1`), gói **Free**
+2. **Connect Project** → chọn project, tick Production / Preview / Development → Vercel tự tạo `KV_REST_API_URL` và `KV_REST_API_TOKEN`
+   (tạo ở <https://console.upstash.com> cũng được: copy **REST URL** / **REST Token** vào `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`)
+
+**Sentry** (gửi email khi web có lỗi, kèm vị trí lỗi):
+
+1. <https://sentry.io> → đăng ký gói **Developer** (miễn phí) → **Create Project** → nền tảng **Next.js** → đặt tên `game-hub`
+2. Bỏ qua bước cài wizard (hub tự gửi lỗi, không cần thư viện) → **Settings → Projects → game-hub → Client Keys (DSN)** → copy **DSN**
+3. Vercel → **Environment Variables** → `SENTRY_DSN` = DSN vừa copy (chỉ cần cho Production)
+
+**Redeploy** để nhận biến mới. Kiểm tra: `https://<tên>.vercel.app/api/v1/health` → có `"rateLimit":"redis"`.
+
 ## 4. Kiểm tra sau khi deploy
 
 | Kiểm tra | Mong đợi |

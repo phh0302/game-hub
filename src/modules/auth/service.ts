@@ -109,6 +109,7 @@ export async function verifyWalletLogin(
       include: userWithIdentities,
     });
     if (user.deletedAt) throw new ApiError(403, "ACCOUNT_DISABLED", "Tài khoản đã bị khóa");
+    if (user.suspendedAt) throw new ApiError(403, "ACCOUNT_SUSPENDED", user.suspendReason ?? "Tài khoản đã bị khóa");
   } else {
     user = await prisma.user.create({
       data: {

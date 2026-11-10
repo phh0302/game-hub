@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireRegisteredUser();
     const studio = await requireMyStudio(user.id);
-    rateLimit(`dev-game:${user.id}`, 20, 60 * 60_000);
+    await rateLimit(`dev-game:${user.id}`, 20, 60 * 60_000);
     const input = devGameCreateSchema.parse(await readJson(req));
     return ok({ game: await createStudioGame(studio, user.id, input, await resolveLocale(req)) }, { status: 201 });
   });

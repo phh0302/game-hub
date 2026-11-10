@@ -116,7 +116,7 @@
 - [x] Checklist kiểm thử thủ công: `docs/TEST_CHECKLIST.md`
 - [ ] Chạy checklist thủ công với MetaMask (đăng nhập, chơi, nộp điểm, admin, bảo mật)
 - [ ] Kiểm tra trên điện thoại (trình duyệt trong app MetaMask)
-- Hạn chế đã biết (làm sau): đăng xuất chưa thu hồi JWT ngay (hết hạn sau 7 ngày) · rate limit lưu trong bộ nhớ (nhiều server cần Redis) · ảnh đại diện là link ngoài (Phase 10 chuyển sang upload)
+- Hạn chế đã biết (làm sau): ảnh đại diện là link ngoài (chuyển sang upload) · ~~thu hồi JWT~~, ~~rate limit Redis~~ → xong ở Phase 9b
 
 ## Phase 9 – Deploy
 - [x] CI GitHub Actions: cài thư viện → kiểm tra schema → TypeScript → unit test → build production → npm audit (xanh)
@@ -131,6 +131,15 @@
 - Lưu ý: Vercel Hobby chỉ cho phi thương mại → lên Pro khi bật quảng cáo / thu tiền
 
 ---
+
+## Phase 9b – Gia cố trước khi mời người dùng thật
+- [x] Bảng phiên đăng nhập `AuthSession` (id nằm trong JWT): đăng xuất thu hồi phiên ngay, nút **Đăng xuất mọi thiết bị** ở trang hồ sơ
+- [x] Admin khóa / mở khóa tài khoản (tìm theo ví hoặc tên): thu hồi mọi phiên, chặn đăng nhập, ẩn điểm khỏi bảng xếp hạng
+- [x] Rate limit dùng chung qua Upstash Redis (REST, không cần thư viện), lỗi Redis → tạm đếm trong bộ nhớ
+- [x] Theo dõi lỗi Sentry: lỗi API, lỗi trang (`onRequestError`), lỗi trình duyệt (`error.tsx`) – không cần thư viện `@sentry/*`
+- [x] Trang báo lỗi thân thiện song ngữ (`error.tsx`, `global-error.tsx`)
+- [ ] Tạo Upstash Redis + Sentry, nhập biến môi trường trên Vercel (`docs/DEPLOY.md` mục 3c)
+- Lưu ý: người đang đăng nhập bằng phiên cũ (trước bản này) phải kết nối ví lại 1 lần
 
 ## Phase 10 – Nền tảng cho developer
 - [x] Đăng ký làm developer → tạo Studio (trang `/developer`)

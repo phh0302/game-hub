@@ -26,7 +26,33 @@ export function ProfileView() {
       <h1 className="font-display text-3xl font-bold">{t("title")}</h1>
       <ProfileForm user={user} />
       <Achievements />
+      <Security />
     </div>
+  );
+}
+
+/** Đăng xuất mọi thiết bị: dùng khi nghi lộ phiên đăng nhập hoặc đăng nhập trên máy lạ */
+function Security() {
+  const t = useTranslations("profile");
+  const { logout } = useAuth();
+  const [busy, setBusy] = useState(false);
+  return (
+    <section className="rounded-xl border border-line bg-surface p-5">
+      <h2 className="mb-1 font-display text-xl font-semibold">{t("security")}</h2>
+      <p className="mb-3 text-sm text-muted">{t("logoutAllHint")}</p>
+      <button
+        type="button"
+        disabled={busy}
+        onClick={async () => {
+          if (!window.confirm(t("logoutAllConfirm"))) return;
+          setBusy(true);
+          await logout({ allDevices: true });
+        }}
+        className="rounded-lg border border-neon-pink/50 px-4 py-2 text-sm font-semibold text-neon-pink hover:bg-neon-pink/10 disabled:opacity-60"
+      >
+        {t("logoutAll")}
+      </button>
+    </section>
   );
 }
 

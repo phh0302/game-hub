@@ -47,7 +47,9 @@
       "INVALID_SIGNATURE": "Invalid signature, please try again.",
       "INVALID_MESSAGE": "The sign-in message is invalid or expired.",
       "RATE_LIMITED": "Too many attempts, please wait a moment.",
-      "UNKNOWN": "Something went wrong, please try again."
+      "UNKNOWN": "Something went wrong, please try again.",
+      "ACCOUNT_SUSPENDED": "Your account has been suspended. Contact an admin if you think this is a mistake.",
+      "ACCOUNT_DISABLED": "This account has been disabled."
     },
     "developer": "Developer"
   },
@@ -119,7 +121,11 @@
       "usernameTaken": "That name is already taken.",
       "invalid": "Invalid details: the name may be reserved (admin, system…) or the avatar is not an https:// link.",
       "unknown": "Something went wrong, please try again."
-    }
+    },
+    "security": "Security",
+    "logoutAllHint": "Sign out of every browser and device using this account (including this one). Use it if you signed in on an unfamiliar device or suspect a leak.",
+    "logoutAll": "Sign out everywhere",
+    "logoutAllConfirm": "Sign out of all devices? You will need to sign with your wallet again."
   },
   "admin": {
     "title": "Admin",
@@ -370,5 +376,31 @@
   "terms": {
     "version": "Version",
     "back": "← Back to Developer"
+  },
+  "adminUsers": {
+    "title": "Users",
+    "placeholder": "Wallet address 0x… or username",
+    "search": "Search",
+    "suspended": "Suspended",
+    "stats": "Joined {created} · Last login {lastLogin} · {sessions} active sessions · {scores} saved scores",
+    "suspendedInfo": "Suspended {date} · Reason: {reason}",
+    "suspend": "Suspend account",
+    "unsuspend": "Unsuspend",
+    "reasonPrompt": "Reason for suspending {name} (optional):",
+    "hint": "Suspending signs the user out everywhere immediately, blocks new logins and hides their scores from leaderboards. Unsuspending shows the scores again.",
+    "errors": {
+      "generic": "Error: {code}",
+      "USER_NOT_FOUND": "User not found (enter the full wallet address or exact username).",
+      "CANNOT_SUSPEND_ADMIN": "Admin accounts cannot be suspended.",
+      "CANNOT_SUSPEND_SELF": "You cannot suspend yourself.",
+      "VALIDATION_ERROR": "Invalid input."
+    }
+  },
+  "errorPage": {
+    "title": "Something went wrong",
+    "description": "This page hit an unexpected problem. The error has been logged – please try again.",
+    "code": "Error code: {digest}",
+    "retry": "Try again",
+    "home": "Back to home"
   }
 }

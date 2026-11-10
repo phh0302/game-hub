@@ -7,7 +7,7 @@ import { createReport, reportCreateSchema } from "@/modules/reports/service";
 export async function POST(req: Request, { params }: { params: Promise<{ slug: string }> }) {
   return handle(async () => {
     const user = await requireRegisteredUser();
-    rateLimit(`report:${user.id}`, 10, 60 * 60_000);
+    await rateLimit(`report:${user.id}`, 10, 60 * 60_000);
     const { slug } = await params;
     const input = reportCreateSchema.parse(await readJson(req));
     return ok({ report: await createReport(user.id, slug, input) }, { status: 201 });

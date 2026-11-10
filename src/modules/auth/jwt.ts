@@ -8,6 +8,8 @@ export const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 ngày
 export type SessionPayload = {
   sub: string; // userId
   role: "USER" | "ADMIN";
+  /** Id phiên trong bảng AuthSession (claim jti) – server kiểm tra phiên còn hiệu lực */
+  sid?: string;
 };
 
 function secret() {
@@ -19,9 +21,9 @@ function secret() {
 }
 
 export async function signSession(payload: SessionPayload) {
-  return new SignJWT({ role: payload.role })
-    .setProtectedHeader({ alg: "HS256" })
-    .setSubject(payload.sub)
+  const jwt = new SignJWT({ role: payload.role }).setProtectedHeader({ alg: "HS256" }).setSubject(payload.sub);
+  if (payload.sid) jwt.setJti(payload.sid);
+  return jwt
     .setIssuedAt()
     .setExpirationTime(`${SESSION_MAX_AGE}s`)
     .sign(secret());
@@ -32,7 +34,11 @@ export async function verifySession(token: string | undefined): Promise<SessionP
   try {
     const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
     if (typeof payload.sub !== "string") return null;
-    return { sub: payload.sub, role: payload.role === "ADMIN" ? "ADMIN" : "USER" };
+    return {
+      sub: payload.sub,
+      role: payload.role === "ADMIN" ? "ADMIN" : "USER",
+      sid: typeof payload.jti === "string" ? payload.jti : undefined,
+    };
   } catch {
     return null;
   }

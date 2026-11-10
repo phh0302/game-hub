@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
+import { reportError } from "./monitoring";
 
 /**
  * Lỗi nghiệp vụ trả về cho client.
@@ -40,7 +41,7 @@ export async function handle(fn: () => Promise<Response>): Promise<Response> {
       if (err.code === "P2025") return errorResponse(404, "NOT_FOUND", "Không tìm thấy dữ liệu");
       if (err.code === "P2003") return errorResponse(400, "INVALID_REFERENCE", "Dữ liệu liên kết không tồn tại");
     }
-    console.error("[api] Lỗi không mong muốn:", err);
+    await reportError(err, { tags: { area: "api" } });
     return errorResponse(500, "INTERNAL_ERROR", "Lỗi máy chủ");
   }
 }

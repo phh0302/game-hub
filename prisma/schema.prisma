@@ -44,6 +44,9 @@ model User {
   updatedAt   DateTime  @updatedAt
   lastLoginAt DateTime?
   deletedAt   DateTime?
+  /// Admin khóa tài khoản: không đăng nhập được, mọi phiên đăng nhập bị thu hồi
+  suspendedAt   DateTime?
+  suspendReason String?
 
   identities    AuthIdentity[]
   studioMembers StudioMember[]
@@ -51,6 +54,24 @@ model User {
   scores        Score[]
   events        Event[]
   reports       GameReport[]
+  authSessions  AuthSession[]
+}
+
+/// Phiên đăng nhập (id nằm trong JWT dưới dạng jti) → đăng xuất / khóa tài khoản có hiệu lực ngay
+model AuthSession {
+  id         String    @id @default(cuid())
+  userId     String
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  lastSeenAt DateTime?
+  userAgent  String?
+  ip         String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
 }
 
 /// Một cách đăng nhập của user. 1 user có thể có nhiều ví / nhiều cách đăng nhập.

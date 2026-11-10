@@ -12,7 +12,7 @@ export async function POST(req: Request) {
   return handle(async () => {
     const user = await requireRegisteredUser();
     assertTermsAccepted(await requireMyStudio(user.id));
-    rateLimit(`upload:${user.id}`, 30, 60 * 60_000);
+    await rateLimit(`upload:${user.id}`, 30, 60 * 60_000);
     const input = uploadRequestSchema.parse(await readJson(req));
     return ok({ upload: await createUploadTicket(user.id, input) });
   });

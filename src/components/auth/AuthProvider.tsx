@@ -25,6 +25,8 @@ export type AuthErrorCode =
   | "INVALID_SIGNATURE"
   | "INVALID_MESSAGE"
   | "RATE_LIMITED"
+  | "ACCOUNT_SUSPENDED"
+  | "ACCOUNT_DISABLED"
   | "UNKNOWN";
 
 type AuthStatus = "idle" | "connecting" | "signing";
@@ -34,14 +36,22 @@ type AuthContextValue = {
   status: AuthStatus;
   error: AuthErrorCode | null;
   login: () => Promise<void>;
-  logout: () => Promise<void>;
+  /** allDevices: thu hồi mọi phiên đăng nhập của tài khoản (đăng xuất mọi thiết bị) */
+  logout: (opts?: { allDevices?: boolean }) => Promise<void>;
   setUser: (user: AuthUser | null) => void;
   clearError: () => void;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const KNOWN_API_ERRORS: AuthErrorCode[] = ["NONCE_INVALID", "INVALID_SIGNATURE", "INVALID_MESSAGE", "RATE_LIMITED"];
+const KNOWN_API_ERRORS: AuthErrorCode[] = [
+  "NONCE_INVALID",
+  "INVALID_SIGNATURE",
+  "INVALID_MESSAGE",
+  "RATE_LIMITED",
+  "ACCOUNT_SUSPENDED",
+  "ACCOUNT_DISABLED",
+];
 
 async function postJson<T>(url: string, body?: unknown): Promise<T> {
   const res = await fetch(url, {
@@ -84,8 +94,9 @@ export function AuthProvider({
   const [status, setStatus] = useState<AuthStatus>("idle");
   const [error, setError] = useState<AuthErrorCode | null>(null);
 
-  const logout = useCallback(async () => {
-    await fetch(`${API}/auth/logout`, { method: "POST" }).catch(() => undefined);
+  const logout = useCallback(async (opts?: { allDevices?: boolean }) => {
+    const all = opts?.allDevices === true ? "?all=1" : "";
+    await fetch(`${API}/auth/logout${all}`, { method: "POST" }).catch(() => undefined);
     setUser(null);
     router.refresh();
   }, [router]);
