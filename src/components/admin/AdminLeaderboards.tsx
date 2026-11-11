@@ -81,17 +81,15 @@ function emptyForm(): Form {
 export function AdminLeaderboards({ games }: { games: GameOption[] }) {
   const t = useTranslations("adminBoards");
   const locale = useLocale();
-  const [gameId, setGameId] = useState("");
+  const [picked, setPicked] = useState("");
+  // Chưa chọn thì lấy game đầu tiên – tính trực tiếp, không dùng effect (effect có thể ghi đè lựa chọn của admin)
+  const gameId = picked || games[0]?.id || "";
   const [boards, setBoards] = useState<Board[] | null>(null);
   const [form, setForm] = useState<Form | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const date = new Intl.DateTimeFormat(locale === "vi" ? "vi-VN" : "en-US", { dateStyle: "short", timeStyle: "short" });
   const num = new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US");
-
-  useEffect(() => {
-    if (!gameId && games[0]) setGameId(games[0].id);
-  }, [games, gameId]);
 
   const errText = useCallback(
     (err: unknown) => {
@@ -176,7 +174,7 @@ export function AdminLeaderboards({ games }: { games: GameOption[] }) {
       <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-3">
         <h2 className="font-display text-lg font-semibold">{t("title")}</h2>
         <div className="flex flex-wrap items-center gap-2">
-          <select aria-label={t("game")} value={gameId} onChange={(e) => setGameId(e.target.value)} className={inputCls}>
+          <select aria-label={t("game")} value={gameId} onChange={(e) => setPicked(e.target.value)} className={inputCls}>
             {games.map((g) => (
               <option key={g.id} value={g.id}>
                 {gameName(g)}
