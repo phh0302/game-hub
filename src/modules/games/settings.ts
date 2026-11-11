@@ -30,6 +30,11 @@ export const leaderboardSettingsSchema = z
      * quá số giây này (trừ hao độ trễ mạng) → chặn gửi thời gian giả siêu ngắn
      */
     timedScoreSlackSeconds: z.number().nonnegative().max(60).optional(),
+    /**
+     * Giải đấu "ăn theo" bảng khác: mỗi điểm hợp lệ nộp vào bảng có key này (thường "default")
+     * trong thời gian giải diễn ra cũng được ghi vào bảng này → tổ chức giải mà KHÔNG cần sửa game
+     */
+    mirrorOf: z.string().max(50).optional(),
   })
   .passthrough();
 

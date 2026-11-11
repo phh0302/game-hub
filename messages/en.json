@@ -83,7 +83,8 @@
     "notSavedTime": "You finished in {score}. Connect your wallet to save your time next round!",
     "savedTime": "Saved time {score}. Your best: {best} · rank #{rank}",
     "newBestTime": "New record: {score}! You're rank #{rank}",
-    "notSavedLateLoginTime": "You finished in {score}, but this round started before you connected your wallet so it wasn't saved. Next round counts!"
+    "notSavedLateLoginTime": "You finished in {score}, but this round started before you connected your wallet so it wasn't saved. Next round counts!",
+    "tournamentRank": "Live event: rank #{rank}"
   },
   "leaderboard": {
     "title": "Leaderboard",
@@ -98,7 +99,13 @@
     "you": "You",
     "loginHint": "Connect your wallet to appear on the leaderboard.",
     "viewAll": "View full leaderboard",
-    "playToRank": "Play to climb the ranks"
+    "playToRank": "Play to climb the ranks",
+    "boards": "Choose a leaderboard",
+    "main": "Main board",
+    "eventStarts": "Starts {when}",
+    "eventEnds": "Live · ends {when}",
+    "eventOpen": "Live now",
+    "eventEnded": "Event ended – final results"
   },
   "profile": {
     "title": "My profile",
@@ -467,5 +474,61 @@
   "pwa": {
     "install": "Install Game Hub",
     "iosHelp": "On iPhone/iPad: tap Safari's Share button (square with an arrow) → \"Add to Home Screen\"."
+  },
+  "adminBoards": {
+    "title": "Leaderboards & events",
+    "game": "Choose a game",
+    "create": "New board / event",
+    "nameVi": "Name (Vietnamese)",
+    "nameEn": "Name (English, optional)",
+    "namePlaceholder": "e.g. Lunar New Year Cup",
+    "key": "Board key",
+    "kind": "Type",
+    "kindEvent": "Event – takes scores from the main board",
+    "kindSeparate": "Separate board – the game submits to this key",
+    "startsAt": "Starts",
+    "endsAt": "Ends",
+    "order": "Order",
+    "orderDesc": "Higher is better",
+    "orderAsc": "Lower is better",
+    "maxScore": "Max score (empty = no limit)",
+    "maxScorePerSecond": "Max points/second",
+    "eventHint": "Every valid score on the main board during the event also goes into the event board – no game changes needed. Anti-cheat rules follow the main board.",
+    "separateHint": "The game must call GameHub.gameOver(score, { leaderboard: \"{key}\" }) for scores to land here.",
+    "editHint": "Changing times or rules keeps existing scores. Empty time = no limit.",
+    "save": "Save",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "endNow": "End now",
+    "delete": "Delete",
+    "confirmDelete": "Delete board \"{name}\"? It disappears from the game page (scores stay in the database).",
+    "created": "Leaderboard created.",
+    "saved": "Saved.",
+    "ended": "Event ended.",
+    "deleted": "Board deleted.",
+    "loading": "Loading…",
+    "main": "Main board",
+    "always": "Always open",
+    "hint": "Events show on the game page from 14 days before they start until 30 days after they end. No entry fees; prize events need a legal check first.",
+    "status": {
+      "UPCOMING": "Upcoming",
+      "OPEN": "Open",
+      "ENDED": "Ended"
+    },
+    "col": {
+      "board": "Board",
+      "status": "Status",
+      "time": "Time",
+      "players": "Players (scores)",
+      "actions": "Actions"
+    },
+    "errors": {
+      "generic": "Error: {code}",
+      "BOARD_KEY_TAKEN": "This key already exists for the game.",
+      "VALIDATION_ERROR": "Invalid input (check the key and times).",
+      "DEFAULT_BOARD": "The main board can't be deleted.",
+      "MIRROR_CHAIN": "The source board can't be an event.",
+      "LEADERBOARD_NOT_FOUND": "Leaderboard not found."
+    }
   }
 }

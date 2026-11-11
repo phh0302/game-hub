@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { AdminReports } from "./AdminReports";
+import { AdminLeaderboards } from "./AdminLeaderboards";
 import { AdminStats } from "./AdminStats";
 import { AdminUsers } from "./AdminUsers";
 
@@ -98,6 +99,7 @@ export function AdminDashboard() {
       <AdminStats />
       <AdminReports />
       <AdminUsers />
+      <AdminLeaderboards games={games ?? []} />
 
       <CreateGameForm categories={categories} run={run} />
 

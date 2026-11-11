@@ -14,7 +14,15 @@ import { formatScore, type ScoreFormat } from "@/lib/score-format";
 const PROTOCOL = "gamehub";
 const PROTOCOL_VERSION = 1;
 
-type SubmitResult = { isNewBest: boolean; best: number; rank: number | null; score: { value: number }; format?: ScoreFormat };
+type SubmitResult = {
+  isNewBest: boolean;
+  best: number;
+  rank: number | null;
+  score: { value: number };
+  format?: ScoreFormat;
+  /** Giải đấu đang diễn ra cũng nhận điểm này */
+  tournaments?: { key: string; rank: number | null }[];
+};
 type Toast = { kind: "success" | "info" | "error"; text: string };
 
 export function GameRoom({
@@ -168,12 +176,14 @@ function GamePlayer({
           json: { sessionId, score, leaderboard },
         });
         const rank = res.rank ?? "–";
+        const main = res.isNewBest
+          ? t(msg("newBest", res.format), { score: fmt(res.score.value, res.format), rank })
+          : t(msg("saved", res.format), { score: fmt(res.score.value, res.format), best: fmt(res.best, res.format), rank });
+        const event = res.tournaments?.find((x) => x.rank !== null);
         report({
           saved: true,
           kind: "success",
-          text: res.isNewBest
-            ? t(msg("newBest", res.format), { score: fmt(res.score.value, res.format), rank })
-            : t(msg("saved", res.format), { score: fmt(res.score.value, res.format), best: fmt(res.best, res.format), rank }),
+          text: event ? `${main} · ${t("tournamentRank", { rank: event.rank! })}` : main,
           data: { score: res.score.value, best: res.best, rank: res.rank, isNewBest: res.isNewBest },
         });
         onScoreSaved();

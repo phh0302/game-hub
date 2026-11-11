@@ -76,7 +76,7 @@
 - [x] `GET /api/v1/games/[slug]`, `GET /api/v1/categories`
 - [x] Admin: `GET/POST /api/v1/admin/games`, `PATCH/DELETE /api/v1/admin/games/[id]` (DELETE = lưu trữ, không xóa cứng)
 - [x] Admin phiên bản: thêm, duyệt/từ chối, đặt làm bản đang chạy (`.../versions`, `.../versions/[id]`, `.../activate`)
-- [ ] Admin: tạo bảng xếp hạng / giải đấu mới cho game
+- [x] Admin: tạo bảng xếp hạng / giải đấu mới cho game (giải ăn theo bảng chính hoặc bảng riêng; trang game có nút chuyển bảng)
 
 ## Phase 5 – Điểm số & Leaderboard
 - [x] `POST /api/v1/games/[slug]/sessions` – bắt đầu lượt chơi (gắn phiên bản game)
