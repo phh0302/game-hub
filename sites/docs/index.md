@@ -1,5 +1,6 @@
 ---
 layout: home
+title: Đăng game lên Game Hub
 
 hero:
   name: Monlabs Docs
