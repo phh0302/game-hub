@@ -11,6 +11,7 @@ Liên kết: Game Hub `https://play.monlabs.fun`, tài liệu `https://docs.monl
 
 Project Vercel `monlabs` (cùng tài khoản với Game Hub) nối với repo `game-hub`, nhánh `main`:
 - Root Directory: `sites/monlabs` · Application Preset: Other (không build)
+- Không build bản Preview; bản chính chỉ build khi `sites/monlabs` thay đổi (`scripts/vercel-ignore-build.sh`)
 - Tên miền: `monlabs.fun` (chính), `www.monlabs.fun` → chuyển 308 về `monlabs.fun`
 - DNS ở Cloudflare (tài khoản Anbinh3785): CNAME `@` và `www` → giá trị Vercel đưa ở Settings → Domains, **Proxy tắt (DNS only)**
 
