@@ -123,7 +123,13 @@ Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản
 | F12 → Application → Cookies → `gh_session` | HttpOnly ✓, **Secure ✓**, SameSite Lax ✓ |
 | Mở `https://<tên>.vercel.app/uploads/games/2048/1.0.0/index.html`, Console gõ `document.cookie` | `SecurityError` (game bị ép sandbox) |
 
-## 5. Gắn domain riêng (khi có)
+## 5. Gắn domain riêng
+
+Đang dùng: **`https://play.monlabs.fun`** (project `game-hub`), landing page `https://monlabs.fun` (project `monlabs`, xem `sites/monlabs/README.md`).
+DNS của `monlabs.fun` ở Cloudflare: CNAME `play` → giá trị Vercel đưa ở Settings → Domains, **Proxy tắt (DNS only)** để Vercel tự cấp https.
+Khi đổi domain: sửa `NEXT_PUBLIC_APP_URL` → Redeploy, thêm domain vào **CORS của R2** (bước 3b) – nếu không upload sẽ lỗi.
+
+Cách làm cho domain khác:
 
 1. Vercel → **Settings → Domains** → thêm domain (vd `gamehub.vn`) → làm theo hướng dẫn trỏ DNS
 2. Sửa `NEXT_PUBLIC_APP_URL` = `https://gamehub.vn` → **Redeploy**

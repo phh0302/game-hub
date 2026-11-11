@@ -127,7 +127,7 @@
 - [x] Tạo database Neon (region Singapore), chạy `migrate deploy` + seed production
 - [x] Tạo project Vercel, nhập biến môi trường, deploy, chuyển Function Region sang Singapore
 - [x] Kiểm tra sau deploy (health, đăng nhập ví, chơi, admin, cookie Secure, sandbox game)
-- [ ] Gắn domain riêng (domain phải khớp `NEXT_PUBLIC_APP_URL` / SIWE); domain riêng cho game (vd `games.<domain>`)
+- [x] Gắn domain riêng: Game Hub ở `play.monlabs.fun`, landing page `monlabs.fun` (`sites/monlabs`) · còn: `docs.monlabs.fun`, domain riêng cho file game (vd `cdn.monlabs.fun` thay cho `r2.dev`)
 - Lưu ý: Vercel Hobby chỉ cho phi thương mại → lên Pro khi bật quảng cáo / thu tiền
 
 ---
