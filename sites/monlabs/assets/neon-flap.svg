@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b0b1c"/>
+      <stop offset="1" stop-color="#160d2a"/>
+    </linearGradient>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="320" height="180" fill="url(#sky)"/>
+  <g filter="url(#glow)" fill="#11111f" stroke-width="2">
+    <rect x="170" y="-2" width="34" height="62" stroke="#22e3ff"/>
+    <rect x="170" y="118" width="34" height="50" stroke="#ff3ec8"/>
+    <rect x="262" y="-2" width="34" height="34" stroke="#22e3ff"/>
+    <rect x="262" y="92" width="34" height="76" stroke="#ff3ec8"/>
+  </g>
+  <rect y="166" width="320" height="14" fill="#11111f"/>
+  <rect y="166" width="320" height="2" fill="#b6ff3b"/>
+  <g filter="url(#glow)" transform="translate(112 86) rotate(-14)">
+    <circle r="13" fill="#b6ff3b"/>
+    <circle cx="5" cy="-4" r="3" fill="#07070f"/>
+    <path d="M11 1L20 4L11 7Z" fill="#ff3ec8"/>
+  </g>
+  <text x="24" y="44" font-family="Arial, sans-serif" font-size="26" font-weight="800" fill="#ecebff">FLAP</text>
+</svg>
