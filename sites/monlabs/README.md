@@ -15,4 +15,4 @@ Project Vercel `monlabs` (cùng tài khoản với Game Hub) nối với repo `g
 - Tên miền: `monlabs.fun` (chính), `www.monlabs.fun` → chuyển 308 về `monlabs.fun`
 - DNS ở Cloudflare (tài khoản Anbinh3785): CNAME `@` và `www` → giá trị Vercel đưa ở Settings → Domains, **Proxy tắt (DNS only)**
 
-Tên miền con: `play.monlabs.fun` → project `game-hub` (CNAME `play`, DNS only); `docs.monlabs.fun` – chưa làm.
+Tên miền con: `play.monlabs.fun` → project `game-hub` (CNAME `play`, DNS only); `docs.monlabs.fun` → project `monlabs-docs` (CNAME `docs`, DNS only).

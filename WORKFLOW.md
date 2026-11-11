@@ -161,7 +161,7 @@
 - [x] Game Hub chuyển sang `play.monlabs.fun` (`NEXT_PUBLIC_APP_URL`, CORS R2)
 - [x] Tắt bản Preview trên Vercel (`vercel.json` + `scripts/vercel-ignore-build.sh`): Preview dùng chung database thật; mỗi project chỉ build khi phần của nó thay đổi
 - [x] Trang tài liệu cho developer (`sites/docs`, VitePress, 8 trang tiếng Việt), project Vercel `monlabs-docs`, CI có bước build docs
-- [ ] Gắn `docs.monlabs.fun` (CNAME `docs` ở Cloudflare)
+- [x] Gắn `docs.monlabs.fun` (CNAME `docs` ở Cloudflare)
 - [ ] Bản tiếng Anh cho trang docs
 
 ## Phase 10 – Nền tảng cho developer
