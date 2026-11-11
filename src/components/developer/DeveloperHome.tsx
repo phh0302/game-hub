@@ -26,7 +26,7 @@ type DevGame = {
   stats: { sessions: number; players: number; scores: number };
 };
 
-const SDK_DOCS_URL = "https://github.com/phh0302/game-hub/blob/main/docs/GAME_SDK.md";
+const SDK_DOCS_URL = "https://docs.monlabs.fun/sdk";
 
 export function DeveloperHome() {
   const t = useTranslations("developer");

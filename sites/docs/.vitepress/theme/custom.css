@@ -1,0 +1,38 @@
+/* Màu thương hiệu Monlabs: xanh neon + hồng neon, nền mực tím (giống monlabs.fun và Game Hub) */
+:root {
+  --vp-c-brand-1: #0891b2;
+  --vp-c-brand-2: #0e7490;
+  --vp-c-brand-3: #0891b2;
+  --vp-c-brand-soft: rgb(8 145 178 / 0.14);
+  --vp-home-hero-name-color: transparent;
+  --vp-home-hero-name-background: linear-gradient(90deg, #0891b2, #db2777);
+  --vp-button-brand-bg: #0891b2;
+  --vp-button-brand-hover-bg: #0e7490;
+  --vp-font-family-base: "Be Vietnam Pro", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  --vp-c-bg: #08070d;
+  --vp-c-bg-alt: #0e0c16;
+  --vp-c-bg-elv: #12101c;
+  --vp-c-bg-soft: #12101c;
+  --vp-c-divider: #2b2740;
+  --vp-c-gutter: #08070d;
+  --vp-c-text-1: #efedfb;
+  --vp-c-text-2: #a29fbf;
+  --vp-c-brand-1: #22e3ff;
+  --vp-c-brand-2: #5eebff;
+  --vp-c-brand-3: #22e3ff;
+  --vp-c-brand-soft: rgb(34 227 255 / 0.14);
+  --vp-home-hero-name-background: linear-gradient(90deg, #22e3ff, #ff3ec8);
+  --vp-button-brand-text: #08070d;
+  --vp-button-brand-bg: #22e3ff;
+  --vp-button-brand-hover-text: #08070d;
+  --vp-button-brand-hover-bg: #5eebff;
+  --vp-code-block-bg: #0c0b14;
+}
+
+.VPHero .image-src {
+  max-width: 180px;
+  border-radius: 40px;
+}
