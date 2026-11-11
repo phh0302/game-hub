@@ -126,7 +126,7 @@
 - [x] Hướng dẫn từng bước: `docs/DEPLOY.md`
 - [x] Tạo database Neon (region Singapore), chạy `migrate deploy` + seed production
 - [x] Tạo project Vercel, nhập biến môi trường, deploy, chuyển Function Region sang Singapore
-- [ ] Kiểm tra sau deploy (health, đăng nhập ví, chơi, admin, cookie Secure, sandbox game)
+- [x] Kiểm tra sau deploy (health, đăng nhập ví, chơi, admin, cookie Secure, sandbox game)
 - [ ] Gắn domain riêng (domain phải khớp `NEXT_PUBLIC_APP_URL` / SIWE); domain riêng cho game (vd `games.<domain>`)
 - Lưu ý: Vercel Hobby chỉ cho phi thương mại → lên Pro khi bật quảng cáo / thu tiền
 
@@ -138,7 +138,7 @@
 - [x] Rate limit dùng chung qua Upstash Redis (REST, không cần thư viện), lỗi Redis → tạm đếm trong bộ nhớ
 - [x] Theo dõi lỗi Sentry: lỗi API, lỗi trang (`onRequestError`), lỗi trình duyệt (`error.tsx`) – không cần thư viện `@sentry/*`
 - [x] Trang báo lỗi thân thiện song ngữ (`error.tsx`, `global-error.tsx`)
-- [ ] Tạo Upstash Redis + Sentry, nhập biến môi trường trên Vercel (`docs/DEPLOY.md` mục 3c)
+- [x] Tạo Upstash Redis + Sentry, nhập biến môi trường trên Vercel (`docs/DEPLOY.md` mục 3c)
 - Lưu ý: người đang đăng nhập bằng phiên cũ (trước bản này) phải kết nối ví lại 1 lần
 
 ## Phase 9c – Nội dung & thu hút người chơi
@@ -148,13 +148,13 @@
 - [x] SEO: `sitemap.xml`, `robots.txt`, metadata Open Graph cho trang chủ / game / bảng xếp hạng
 - [x] Trang Quản trị có mục **Thống kê** (7/30/90 ngày): lượt chơi, người chơi, người dùng mới, điểm, biểu đồ theo ngày, bảng theo game
 - [x] Đếm lượt chơi của khách chưa kết nối ví (`play.anonymous`) – cần cho thống kê và chia doanh thu quảng cáo sau này
-- [ ] Thử chia sẻ link game lên Facebook / Zalo (chỉ chạy trên bản deploy, link localhost không xem trước được)
+- [x] Thử chia sẻ link game lên Facebook / Zalo (chỉ chạy trên bản deploy, link localhost không xem trước được)
 
 ## Phase 9d – Hoàn thiện trải nghiệm
 - [x] Upload ảnh đại diện: tự cắt vuông 256x256 trên trình duyệt, server kiểm tra đúng chủ, ≤ 1MB, đúng chữ ký PNG/JPG/WEBP; bỏ link ảnh ngoài
 - [x] Test trình duyệt tự động (Playwright) trong CI – job `e2e`: ví MetaMask giả lập, đăng nhập, chơi Lật thẻ lưu điểm, hồ sơ + ảnh đại diện, đăng xuất mọi thiết bị, chặn trang quản trị, thống kê, khóa/mở khóa, sandbox game, ảnh chia sẻ, sitemap, PWA (10+ test, chạy `npm run test:e2e`)
 - [x] PWA: cài Game Hub lên màn hình chính (manifest, icon thường + maskable, nút **Cài Game Hub** ở chân trang, hướng dẫn riêng cho iPhone), service worker cache file tĩnh + trang `offline.html` khi mất mạng
-- [ ] Thử cài app trên điện thoại thật (Android Chrome + iPhone Safari) sau khi deploy – cần https
+- [x] Thử cài app trên điện thoại thật (Android Chrome + iPhone Safari) sau khi deploy – cần https
 
 ## Phase 10 – Nền tảng cho developer
 - [x] Đăng ký làm developer → tạo Studio (trang `/developer`)
@@ -168,7 +168,7 @@
 - [x] Thống kê cho developer: lượt chơi, người chơi, điểm đã lưu
 - [x] Tài liệu: quy trình đăng game + yêu cầu `.zip` (`docs/GAME_SDK.md`), cấu hình R2 (`docs/DEPLOY.md` mục 3b)
 - [x] Thử toàn bộ luồng trên máy: tạo studio → tạo game → upload `.zip` → chơi thử → admin duyệt → phát hành (09/11/2026)
-- [ ] Tạo bucket R2 + biến môi trường trên Vercel, thử upload trên production
+- [x] Tạo bucket R2 + biến môi trường trên Vercel, thử upload trên production
 - [x] Báo cáo vi phạm game (`GameReport`): nút ⚑ Báo cáo dưới game (5 lý do, mỗi người 1 báo cáo đang mở/game), mục **Báo cáo vi phạm** ở trang Quản trị (Chờ xử lý / Đã xử lý / Bỏ qua + ghi chú)
 - [x] Điều khoản người đăng game `/terms/developer` (có phiên bản): bắt buộc tick khi tạo studio; đổi phiên bản → chủ studio phải đồng ý lại mới tạo game / upload được *(bản nháp – nên nhờ luật sư xem lại)*
 - [x] Thành viên studio: chủ studio thêm bằng địa chỉ ví (tối đa 20), xóa thành viên, chuyển quyền chủ; thành viên tự rời studio
