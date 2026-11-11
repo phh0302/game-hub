@@ -15,5 +15,5 @@ Mỗi trang là 1 file `.md`; mục lục bên trái khai báo ở `themeConfig.
 ## Deploy (Vercel)
 
 Project Vercel `monlabs-docs` nối repo `game-hub`, nhánh `main`:
-- Root Directory: `sites/docs` · Framework Preset: VitePress (build `vitepress build`, output `.vitepress/dist`)
+- Root Directory: `sites/docs` · cấu hình build trong `sites/docs/vercel.json` (output `.vitepress/dist`)
 - Tên miền `docs.monlabs.fun` – DNS ở Cloudflare: CNAME `docs` → giá trị Vercel đưa, **Proxy tắt (DNS only)**
