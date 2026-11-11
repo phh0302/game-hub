@@ -7,9 +7,11 @@ Trang giới thiệu Monlabs. Trang tĩnh (HTML + CSS + JS thuần), không cầ
 
 Liên kết: Game Hub `https://play.monlabs.fun`, tài liệu `https://docs.monlabs.fun`.
 
-## Deploy (Cloudflare Pages)
+## Deploy (Vercel)
 
-Project Cloudflare Pages `monlabs` nối với repo `game-hub`, nhánh `main`:
-- Root directory: `sites/monlabs` · Build command: để trống · Build output directory: `.`
-- Build watch paths → Include: `sites/monlabs/*` (chỉ deploy lại khi trang này đổi)
-- Custom domain: `monlabs.fun` và `www.monlabs.fun`
+Project Vercel `monlabs` (cùng tài khoản với Game Hub) nối với repo `game-hub`, nhánh `main`:
+- Root Directory: `sites/monlabs` · Application Preset: Other (không build)
+- Tên miền: `monlabs.fun` (chính), `www.monlabs.fun` → chuyển 308 về `monlabs.fun`
+- DNS ở Cloudflare (tài khoản Anbinh3785): CNAME `@` và `www` → giá trị Vercel đưa ở Settings → Domains, **Proxy tắt (DNS only)**
+
+Tên miền con: `play.monlabs.fun` → project `game-hub` (CNAME `play`, DNS only); `docs.monlabs.fun` – chưa làm.
