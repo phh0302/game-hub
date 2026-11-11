@@ -1,7 +1,7 @@
 # docs.monlabs.fun – tài liệu cho developer
 
 Trang tài liệu đăng game lên Game Hub, viết bằng [VitePress](https://vitepress.dev) (Markdown → trang tĩnh).
-Hiện chỉ có tiếng Việt; tiếng Anh sẽ thêm ở thư mục `en/` và mục `locales` trong `.vitepress/config.mts`.
+Tiếng Việt ở gốc, tiếng Anh trong thư mục `en/` – **cùng tên file** với bản tiếng Việt để nút đổi ngôn ngữ chuyển đúng trang. Thêm trang mới thì thêm cả 2 bản và cả 2 sidebar (`themeConfig` và `locales.en.themeConfig`).
 
 ```bash
 cd sites/docs

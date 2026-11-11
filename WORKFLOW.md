@@ -162,7 +162,7 @@
 - [x] Tắt bản Preview trên Vercel (`vercel.json` + `scripts/vercel-ignore-build.sh`): Preview dùng chung database thật; mỗi project chỉ build khi phần của nó thay đổi
 - [x] Trang tài liệu cho developer (`sites/docs`, VitePress, 8 trang tiếng Việt), project Vercel `monlabs-docs`, CI có bước build docs
 - [x] Gắn `docs.monlabs.fun` (CNAME `docs` ở Cloudflare)
-- [ ] Bản tiếng Anh cho trang docs
+- [x] Bản tiếng Anh cho trang docs (docs.monlabs.fun/en, nút đổi ngôn ngữ)
 
 ## Phase 10 – Nền tảng cho developer
 - [x] Đăng ký làm developer → tạo Studio (trang `/developer`)

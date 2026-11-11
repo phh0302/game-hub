@@ -2,8 +2,8 @@ import { defineConfig } from "vitepress";
 
 const HUB = "https://play.monlabs.fun";
 
-// Tài liệu cho developer đăng game lên Game Hub. Hiện chỉ có tiếng Việt;
-// tiếng Anh sẽ thêm vào `locales.en` (thư mục /en/) sau.
+// Tài liệu cho developer đăng game lên Game Hub: tiếng Việt ở gốc, tiếng Anh ở /en/
+// (cùng tên file để nút đổi ngôn ngữ chuyển đúng trang).
 export default defineConfig({
   lang: "vi-VN",
   title: "Monlabs Docs",
@@ -23,6 +23,60 @@ export default defineConfig({
     ["meta", { property: "og:site_name", content: "Monlabs Docs" }],
     ["meta", { property: "og:image", content: `${HUB}/api/og?locale=vi` }],
   ],
+  locales: {
+    root: { label: "Tiếng Việt", lang: "vi-VN" },
+    en: {
+      label: "English",
+      lang: "en-US",
+      description: "How to publish an HTML5 game on Game Hub: preparing files, the Game Hub SDK, leaderboards and review.",
+      themeConfig: {
+        nav: [
+          { text: "Guide", link: "/en/bat-dau", activeMatch: "^/en/(bat-dau|chuan-bi-zip|moi-truong|studio)" },
+          { text: "SDK", link: "/en/sdk", activeMatch: "^/en/(sdk|bang-xep-hang|giao-thuc)" },
+          { text: "Game Hub", link: HUB },
+          { text: "monlabs.fun", link: "https://monlabs.fun" },
+        ],
+        sidebar: [
+          {
+            text: "Guide",
+            items: [
+              { text: "Getting started", link: "/en/bat-dau" },
+              { text: "Prepare the .zip", link: "/en/chuan-bi-zip" },
+              { text: "Runtime environment", link: "/en/moi-truong" },
+              { text: "Studio & review", link: "/en/studio" },
+            ],
+          },
+          {
+            text: "Reference",
+            items: [
+              { text: "Game Hub SDK", link: "/en/sdk" },
+              { text: "Leaderboards & anti-cheat", link: "/en/bang-xep-hang" },
+              { text: "postMessage protocol", link: "/en/giao-thuc" },
+              { text: "Terms", link: "/en/dieu-khoan" },
+            ],
+          },
+        ],
+        outline: { level: [2, 3], label: "On this page" },
+        docFooter: { prev: "Previous", next: "Next" },
+        returnToTopLabel: "Back to top",
+        sidebarMenuLabel: "Menu",
+        darkModeSwitchLabel: "Appearance",
+        lightModeSwitchTitle: "Switch to light theme",
+        darkModeSwitchTitle: "Switch to dark theme",
+        langMenuLabel: "Language",
+        notFound: {
+          title: "PAGE NOT FOUND",
+          quote: "This page doesn't exist or has moved.",
+          linkLabel: "Go to home",
+          linkText: "Go to home",
+        },
+        footer: {
+          message: `Questions? Send a report right on the game page at <a href="${HUB}">Game Hub</a>.`,
+          copyright: "© 2026 Monlabs",
+        },
+      },
+    },
+  },
   themeConfig: {
     logo: "/logo.png",
     siteTitle: "Monlabs Docs",
@@ -69,6 +123,20 @@ export default defineConfig({
     search: {
       provider: "local",
       options: {
+        locales: {
+          en: {
+            translations: {
+              button: { buttonText: "Search", buttonAriaLabel: "Search" },
+              modal: {
+                displayDetails: "Show details",
+                resetButtonTitle: "Clear query",
+                backButtonTitle: "Close",
+                noResultsText: "No results for",
+                footer: { selectText: "select", navigateText: "navigate", closeText: "close" },
+              },
+            },
+          },
+        },
         translations: {
           button: { buttonText: "Tìm kiếm", buttonAriaLabel: "Tìm kiếm" },
           modal: {
