@@ -43,14 +43,18 @@ test("admin tạo giải đấu ăn theo bảng chính → điểm người chơ
   await boards.getByLabel("Chọn game").selectOption({ label: "Lật thẻ" });
   await expect(boards.getByText("Bảng chính")).toBeVisible();
   await boards.getByRole("button", { name: "+ Tạo bảng / giải" }).click();
-  await boards.getByLabel("Tên (tiếng Việt)").fill("Giải e2e");
-  await expect(boards.getByLabel("Mã bảng")).toHaveValue("giai-e2e");
+  // Tên riêng mỗi lần chạy (lần chạy lại của CI không đụng giải của lần trước)
+  const n = Date.now() % 100_000;
+  const name = `Giải e2e ${n}`;
+  const key = `giai-e2e-${n}`;
+  await boards.getByLabel("Tên (tiếng Việt)").fill(name);
+  await expect(boards.getByLabel("Mã bảng")).toHaveValue(key);
   // Bắt đầu ngay để nhận điểm luôn
   await boards.getByLabel("Bắt đầu").fill("2020-01-01T00:00");
   await boards.getByRole("button", { name: "Tạo bảng / giải", exact: true }).click();
   await expect(boards.getByText("Đã tạo bảng xếp hạng.")).toBeVisible();
-  const row = boards.getByRole("row", { name: /Giải e2e/ });
-  await expect(row).toContainText("giai-e2e ← default");
+  const row = boards.getByRole("row", { name: new RegExp(name) });
+  await expect(row).toContainText(`${key} ← default`);
   await expect(row).toContainText("Đang mở");
 
   // Người chơi nộp điểm vào bảng chính → tự có mặt trong giải
@@ -66,16 +70,18 @@ test("admin tạo giải đấu ăn theo bảng chính → điểm người chơ
     await new Promise((r) => setTimeout(r, 4_000));
     return post("/api/v1/games/memory/scores", { sessionId, score: 5_000 });
   });
-  expect(result.tournaments).toEqual([{ key: "giai-e2e", rank: 1 }]);
+  expect(result.tournaments).toContainEqual({ key, rank: 1 });
 
   const list = await (await player.request.get("/api/v1/games/memory/leaderboards")).json();
-  expect(list.leaderboards.map((b: { key: string }) => b.key)).toEqual(["default", "giai-e2e"]);
-  const top = await (await player.request.get("/api/v1/games/memory/leaderboard?board=giai-e2e")).json();
+  const keys = list.leaderboards.map((b: { key: string }) => b.key);
+  expect(keys[0]).toBe("default");
+  expect(keys).toContain(key);
+  const top = await (await player.request.get(`/api/v1/games/memory/leaderboard?board=${key}`)).json();
   expect(top.entries[0].displayName).toBe("e2e_player");
 
   // Trang game có nút chuyển sang bảng giải
   await player.reload();
-  await player.getByRole("tab", { name: "Giải e2e" }).click();
+  await player.getByRole("tab", { name }).click();
   await expect(player.getByRole("region", { name: "Bảng xếp hạng" })).toContainText("e2e_player");
   await ctx.close();
 

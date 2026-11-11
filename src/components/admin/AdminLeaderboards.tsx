@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { formatScore, type ScoreFormat } from "@/lib/score-format";
@@ -101,13 +101,17 @@ export function AdminLeaderboards({ games }: { games: GameOption[] }) {
     [t],
   );
 
+  // Chỉ nhận kết quả của lần tải mới nhất (đổi game nhanh không bị danh sách game cũ ghi đè)
+  const latest = useRef(0);
   const load = useCallback(async () => {
     if (!gameId) return;
+    const req = ++latest.current;
     setBoards(null);
     try {
-      setBoards((await apiFetch<{ leaderboards: Board[] }>(`/admin/games/${gameId}/leaderboards`)).leaderboards);
+      const data = await apiFetch<{ leaderboards: Board[] }>(`/admin/games/${gameId}/leaderboards`);
+      if (req === latest.current) setBoards(data.leaderboards);
     } catch (err) {
-      setMessage({ ok: false, text: errText(err) });
+      if (req === latest.current) setMessage({ ok: false, text: errText(err) });
     }
   }, [gameId, errText]);
 
