@@ -140,7 +140,9 @@ jobs:
         run: npm run build
 
       - name: Cài trình duyệt Chromium
-        run: npx playwright install --with-deps chromium
+        # Máy chạy GitHub đã có sẵn gần hết thư viện hệ thống; khi kho apt của Ubuntu lỗi mạng
+        # thì vẫn cài trình duyệt (không kèm thư viện) thay vì làm hỏng cả job
+        run: npx playwright install --with-deps chromium || npx playwright install chromium
 
       - name: Chạy test trình duyệt
         run: npx playwright test
