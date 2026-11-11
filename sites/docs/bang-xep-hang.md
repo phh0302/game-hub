@@ -42,6 +42,15 @@ GameHub.gameOver(Math.round(performance.now() - startedAt)); // vd 42700 = 42,7 
 
 Admin đặt bảng ở chế độ "thấp là tốt" và hiển thị dạng thời gian → hub hiện `0:42,7` thay vì `42.700 điểm`. Máy chủ cũng từ chối thời gian **ngắn hơn** thời gian nó đo được quá vài giây, nên không gửi được thời gian giả.
 
+## Giải đấu {#giai-dau}
+
+Admin có thể mở **giải đấu có thời hạn** cho game của bạn (vd "Giải Tết 2027", từ 20/1 đến 5/2) trong trang quản trị. Có 2 loại:
+
+- **Giải đấu nhận điểm từ bảng chính** (thường dùng): mọi điểm hợp lệ người chơi đạt ở bảng `default` trong thời gian giải sẽ tự vào bảng giải. **Bạn không phải sửa gì trong game.** Thứ tự, cách hiển thị và luật chống gian lận lấy theo bảng chính.
+- **Bảng riêng**: điểm chỉ vào bảng này khi game gửi đúng mã bảng, vd `GameHub.gameOver(score, { leaderboard: "che-do-kho" })`. Hợp với chế độ chơi khác (màn khó, thử thách hằng ngày…). Admin sẽ báo bạn mã bảng.
+
+Trên trang game, người chơi thấy nút chuyển giữa bảng chính và các giải từ 14 ngày trước khi giải bắt đầu đến 30 ngày sau khi kết thúc. Khi điểm vào giải, hub tự báo thêm "Giải đang diễn ra: hạng #N".
+
 ## Người chơi chưa kết nối ví
 
 Vẫn chơi được bình thường, nhưng điểm không lưu: `init` trả về `canSubmitScore: false`, và `scoreResult` trả về `saved: false` với mã `NOT_SIGNED_IN`. Nếu người chơi kết nối ví **giữa ván**, ván đó vẫn không được lưu (mã `STARTED_BEFORE_LOGIN`) – ván sau mới được tính.

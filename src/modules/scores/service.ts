@@ -93,6 +93,18 @@ export async function submitScore(userId: string, slug: string, input: z.infer<t
   });
   const previousBest = board.order === "ASC" ? previous._min.value : previous._max.value;
 
+  // Giải đấu đang diễn ra "ăn theo" bảng này (settings.mirrorOf = key bảng) → điểm cũng được ghi vào đó,
+  // nếu hợp lệ theo luật riêng của giải
+  const mirrors = (
+    await prisma.leaderboard.findMany({
+      where: { gameId: game.id, deletedAt: null, settings: { path: ["mirrorOf"], equals: board.key } },
+    })
+  ).filter(
+    (m) =>
+      isBoardOpen(m, now) &&
+      !checkScore({ score: input.score, durationSeconds }, { ...game.parsedSettings, ...readLeaderboardSettings(m.settings) }),
+  );
+
   // Khóa lượt chơi (chỉ thành công 1 lần) rồi mới ghi điểm – chống nộp trùng khi gửi song song
   const score = await prisma.$transaction(async (tx) => {
     const closed = await tx.gameSession.updateMany({
@@ -101,7 +113,7 @@ export async function submitScore(userId: string, slug: string, input: z.infer<t
     });
     if (closed.count !== 1) throw new ApiError(409, "SESSION_ENDED", "Lượt chơi này đã nộp điểm");
 
-    return tx.score.create({
+    const created = await tx.score.create({
       data: {
         userId,
         gameId: game.id,
@@ -111,6 +123,20 @@ export async function submitScore(userId: string, slug: string, input: z.infer<t
         durationSeconds,
       },
     });
+    if (mirrors.length) {
+      await tx.score.createMany({
+        data: mirrors.map((m) => ({
+          userId,
+          gameId: game.id,
+          leaderboardId: m.id,
+          sessionId: session.id,
+          value: BigInt(input.score),
+          durationSeconds,
+        })),
+        skipDuplicates: true,
+      });
+    }
+    return created;
   });
 
   const value = toNumber(score.value);
@@ -122,15 +148,20 @@ export async function submitScore(userId: string, slug: string, input: z.infer<t
     type: "score.submit",
     userId,
     gameId: game.id,
-    data: { sessionId: session.id, leaderboard: board.key, value, durationSeconds },
+    data: { sessionId: session.id, leaderboard: board.key, value, durationSeconds, mirrors: mirrors.map((m) => m.key) },
   });
 
   const ranking = await getUserRank(board, userId, "all");
+  // Hạng trong các giải đấu vừa nhận điểm (hub hiện thêm "Giải …: hạng #N")
+  const tournaments = await Promise.all(
+    mirrors.map(async (m) => ({ key: m.key, rank: (await getUserRank(m, userId, "all"))?.rank ?? null })),
+  );
   return {
     score: { id: score.id, value, durationSeconds, leaderboard: board.key },
     format: limits.format ?? "number",
     isNewBest,
     best: ranking?.score ?? value,
     rank: ranking?.rank ?? null,
+    tournaments,
   };
 }

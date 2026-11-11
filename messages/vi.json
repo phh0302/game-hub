@@ -83,7 +83,8 @@
     "notSavedTime": "Bạn hoàn thành trong {score}. Kết nối ví để lưu thành tích lần sau!",
     "savedTime": "Đã lưu thời gian {score}. Kỷ lục của bạn: {best} · hạng #{rank}",
     "newBestTime": "Kỷ lục mới: {score}! Bạn đang hạng #{rank}",
-    "notSavedLateLoginTime": "Bạn hoàn thành trong {score}, nhưng ván này bắt đầu trước khi kết nối ví nên không được lưu. Ván sau sẽ được tính!"
+    "notSavedLateLoginTime": "Bạn hoàn thành trong {score}, nhưng ván này bắt đầu trước khi kết nối ví nên không được lưu. Ván sau sẽ được tính!",
+    "tournamentRank": "Giải đang diễn ra: hạng #{rank}"
   },
   "leaderboard": {
     "title": "Bảng xếp hạng",
@@ -98,7 +99,13 @@
     "you": "Bạn",
     "loginHint": "Kết nối ví để xuất hiện trên bảng xếp hạng.",
     "viewAll": "Xem bảng xếp hạng đầy đủ",
-    "playToRank": "Chơi để leo hạng"
+    "playToRank": "Chơi để leo hạng",
+    "boards": "Chọn bảng xếp hạng",
+    "main": "Bảng chính",
+    "eventStarts": "Giải bắt đầu {when}",
+    "eventEnds": "Đang diễn ra · kết thúc {when}",
+    "eventOpen": "Đang diễn ra",
+    "eventEnded": "Giải đã kết thúc – kết quả cuối cùng"
   },
   "profile": {
     "title": "Hồ sơ của tôi",
@@ -467,5 +474,61 @@
   "pwa": {
     "install": "Cài Game Hub lên máy",
     "iosHelp": "Trên iPhone/iPad: bấm nút Chia sẻ (ô vuông có mũi tên) ở Safari → chọn \"Thêm vào Màn hình chính\"."
+  },
+  "adminBoards": {
+    "title": "Bảng xếp hạng & giải đấu",
+    "game": "Chọn game",
+    "create": "Tạo bảng / giải",
+    "nameVi": "Tên (tiếng Việt)",
+    "nameEn": "Tên (tiếng Anh, không bắt buộc)",
+    "namePlaceholder": "vd Giải Tết 2027",
+    "key": "Mã bảng",
+    "kind": "Loại",
+    "kindEvent": "Giải đấu – nhận điểm từ bảng chính",
+    "kindSeparate": "Bảng riêng – game tự gửi điểm vào mã này",
+    "startsAt": "Bắt đầu",
+    "endsAt": "Kết thúc",
+    "order": "Thứ tự",
+    "orderDesc": "Cao là tốt",
+    "orderAsc": "Thấp là tốt",
+    "maxScore": "Điểm tối đa (để trống = không giới hạn)",
+    "maxScorePerSecond": "Điểm/giây tối đa",
+    "eventHint": "Mọi điểm hợp lệ người chơi đạt ở bảng chính trong thời gian giải sẽ tự vào bảng giải – không cần sửa game. Luật chống gian lận lấy theo bảng chính.",
+    "separateHint": "Game phải gọi GameHub.gameOver(score, { leaderboard: \"{key}\" }) thì điểm mới vào bảng này.",
+    "editHint": "Đổi thời gian hoặc luật không làm mất điểm đã có. Để trống thời gian = không giới hạn.",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "edit": "Sửa",
+    "endNow": "Kết thúc ngay",
+    "delete": "Xóa",
+    "confirmDelete": "Xóa bảng \"{name}\"? Bảng biến mất khỏi trang game (điểm vẫn được giữ trong database).",
+    "created": "Đã tạo bảng xếp hạng.",
+    "saved": "Đã lưu.",
+    "ended": "Đã kết thúc giải.",
+    "deleted": "Đã xóa bảng.",
+    "loading": "Đang tải…",
+    "main": "Bảng chính",
+    "always": "Luôn mở",
+    "hint": "Giải đấu hiện ở trang game từ 14 ngày trước khi bắt đầu đến 30 ngày sau khi kết thúc. Không thu phí tham gia; giải có thưởng cần kiểm tra pháp lý trước.",
+    "status": {
+      "UPCOMING": "Sắp diễn ra",
+      "OPEN": "Đang mở",
+      "ENDED": "Đã kết thúc"
+    },
+    "col": {
+      "board": "Bảng",
+      "status": "Trạng thái",
+      "time": "Thời gian",
+      "players": "Người chơi (điểm)",
+      "actions": "Thao tác"
+    },
+    "errors": {
+      "generic": "Lỗi: {code}",
+      "BOARD_KEY_TAKEN": "Mã bảng này đã có trong game.",
+      "VALIDATION_ERROR": "Thông tin không hợp lệ (kiểm tra mã bảng và thời gian).",
+      "DEFAULT_BOARD": "Không xóa được bảng chính.",
+      "MIRROR_CHAIN": "Bảng nguồn không được là giải đấu.",
+      "LEADERBOARD_NOT_FOUND": "Không tìm thấy bảng xếp hạng."
+    }
   }
 }
