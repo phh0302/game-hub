@@ -154,3 +154,23 @@ jobs:
             playwright-report/
             test-results/
           retention-days: 7
+
+  # Trang tài liệu docs.monlabs.fun (VitePress): build phải chạy và không có link hỏng
+  docs:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: sites/docs
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Cài VitePress
+        run: npm install --no-audit --no-fund
+
+      - name: Build trang tài liệu
+        run: npm run build

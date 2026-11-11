@@ -1,5 +1,8 @@
 # Game Hub SDK v1 – Hướng dẫn tích hợp game
 
+> **Bản chính thức cho developer: https://docs.monlabs.fun** (mã nguồn ở `sites/docs`).
+> Khi sửa hướng dẫn, sửa ở `sites/docs` trước; file này giữ làm ghi chú kỹ thuật nội bộ.
+
 Tài liệu cho developer muốn đưa game HTML5 lên Game Hub.
 
 ## 1. Đăng game lên hub
@@ -38,7 +41,7 @@ Hub nhúng game trong `iframe` có `sandbox="allow-scripts allow-pointer-lock"`:
 
 ```html
 <!-- Dùng ĐƯỜNG DẪN ĐẦY ĐỦ tới hub: bản build được phục vụ từ kho lưu trữ (domain khác hub) -->
-<script src="https://<domain-cua-hub>/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
 <!-- Hub chạy trên máy (localhost): <script src="http://localhost:3000/sdk/gamehub-sdk.js"></script> -->
 ```
 
