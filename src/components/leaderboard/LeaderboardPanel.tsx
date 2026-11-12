@@ -70,7 +70,8 @@ export function LeaderboardPanel({
     apiFetch<{ leaderboards: BoardInfo[] }>(`/games/${slug}/leaderboards`)
       .then((r) => setBoards(r.leaderboards))
       .catch(() => setBoards([]));
-  }, [slug, refreshKey]);
+    // Tải lại khi đổi ngôn ngữ để tên giải đấu theo ngôn ngữ mới
+  }, [slug, refreshKey, locale]);
 
   const current = boards.find((b) => b.key === boardKey);
   // Giải đấu có thời hạn → xếp hạng cả giải, không chia hôm nay / tuần
@@ -86,7 +87,7 @@ export function LeaderboardPanel({
     } catch {
       setState("error");
     }
-  }, [slug, boardKey, effectivePeriod, limit]);
+  }, [slug, boardKey, effectivePeriod, limit, locale]);
 
   useEffect(() => {
     void load();
