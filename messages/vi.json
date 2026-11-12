@@ -332,7 +332,7 @@
     "logEmpty": "Chưa có tin nhắn nào – game chưa tải SDK hoặc chưa gọi GameHub.init()."
   },
   "report": {
-    "button": "⚑ Báo cáo",
+    "button": "Báo cáo",
     "title": "Báo cáo game này",
     "thanks": "Cảm ơn bạn! Admin sẽ xem xét báo cáo sớm.",
     "close": "Đóng",

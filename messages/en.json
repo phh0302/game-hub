@@ -332,7 +332,7 @@
     "logEmpty": "No messages yet – the game hasn't loaded the SDK or called GameHub.init()."
   },
   "report": {
-    "button": "⚑ Report",
+    "button": "Report",
     "title": "Report this game",
     "thanks": "Thank you! An admin will review your report soon.",
     "close": "Close",
