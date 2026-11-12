@@ -40,7 +40,7 @@ test("admin tạo giải đấu ăn theo bảng chính → điểm người chơ
   await page.goto("/admin");
 
   const boards = page.locator("section", { has: page.getByRole("heading", { name: "Bảng xếp hạng & giải đấu" }) }).last();
-  await boards.getByLabel("Chọn game").selectOption({ label: "Lật thẻ" });
+  await boards.getByLabel("Chọn game").selectOption({ label: "Lật thẻ (memory)" });
   await expect(boards.getByText("Bảng chính")).toBeVisible();
   await boards.getByRole("button", { name: "+ Tạo bảng / giải" }).click();
   // Tên riêng mỗi lần chạy (lần chạy lại của CI không đụng giải của lần trước)
@@ -86,7 +86,7 @@ test("admin tạo giải đấu ăn theo bảng chính → điểm người chơ
   await ctx.close();
 
   await page.reload();
-  await boards.getByLabel("Chọn game").selectOption({ label: "Lật thẻ" });
+  await boards.getByLabel("Chọn game").selectOption({ label: "Lật thẻ (memory)" });
   await expect(row).toContainText("1 (1)");
   page.once("dialog", (d) => void d.accept());
   await row.getByRole("button", { name: "Xóa" }).click();
