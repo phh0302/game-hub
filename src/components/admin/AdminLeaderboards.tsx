@@ -177,7 +177,7 @@ export function AdminLeaderboards({ games }: { games: GameOption[] }) {
           <select aria-label={t("game")} value={gameId} onChange={(e) => setPicked(e.target.value)} className={inputCls}>
             {games.map((g) => (
               <option key={g.id} value={g.id}>
-                {gameName(g)}
+                {gameName(g)} ({g.slug})
               </option>
             ))}
           </select>
