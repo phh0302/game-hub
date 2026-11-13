@@ -41,8 +41,14 @@ test("Platform API: game ngoài hub đăng nhập khách / ví, nộp điểm, b
     slug: "e2e-tap-rush",
     translations: [{ locale: "vi", name: "E2E Tap Rush" }],
   });
-  expect(game.status).toBe(201);
-  const gameId = game.data.game.id;
+  let gameId = game.data?.game?.id;
+  if (game.status === 409) {
+    // Lần chạy lại (retry) – game đã tạo ở lần trước
+    const list = await hubApi<{ games: { id: string; slug: string }[] }>(page, "/developer/games");
+    gameId = list.data.games.find((g) => g.slug === "e2e-tap-rush")!.id;
+  } else {
+    expect(game.status).toBe(201);
+  }
 
   await page.goto(`/developer/games/${gameId}`);
   await page.getByLabel("Domain được gọi API (mỗi dòng 1 domain)").fill(GAME_ORIGIN);
@@ -70,7 +76,10 @@ test("Platform API: game ngoài hub đăng nhập khách / ví, nộp điểm, b
   // Đăng nhập ví (SIWE ghi domain của game)
   await game2.getByRole("button", { name: "Đăng xuất" }).click();
   await game2.getByRole("button", { name: "Đăng nhập ví" }).click();
-  await expect(game2.getByTestId("player")).toHaveText("e2e_player");
+  // Ghép cả dòng trạng thái để lỗi (nếu có) hiện ngay trong báo cáo test
+  await expect
+    .poll(async () => `${await game2.getByTestId("player").textContent()} | ${await game2.getByTestId("status").textContent()}`)
+    .toContain("e2e_player |");
   await game2.getByRole("button", { name: "Bắt đầu" }).click();
   for (let i = 0; i < 7; i++) await game2.getByRole("button", { name: "BẤM!" }).click();
   await expect(game2.getByTestId("result")).toContainText("Đã lưu 7 điểm", { timeout: 20_000 });
