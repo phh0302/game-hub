@@ -195,7 +195,9 @@
       "rejected": "Đã từ chối phiên bản.",
       "activated": "Đã đổi phiên bản đang chạy.",
       "versionAdded": "Đã thêm phiên bản (chờ duyệt).",
-      "gameCreated": "Đã tạo game."
+      "gameCreated": "Đã tạo game.",
+      "rulesSaved": "Đã lưu luật của game.",
+      "archived": "Đã lưu trữ game."
     },
     "errors": {
       "load": "Không tải được dữ liệu ({code}).",
@@ -208,7 +210,18 @@
       "CATEGORY_NOT_FOUND": "Thể loại không tồn tại.",
       "FORBIDDEN": "Bạn không có quyền admin."
     },
-    "preview": "Chơi thử"
+    "preview": "Chơi thử",
+    "rules": {
+      "minPlaySeconds": "Thời gian chơi tối thiểu (giây)",
+      "maxSessionHours": "Lượt chơi dài tối đa (giờ)",
+      "save": "Lưu luật",
+      "hint": "Ván ngắn hơn thời gian tối thiểu bị từ chối điểm; lượt mở quá số giờ tối đa thì hết hạn. Luật điểm tối đa / điểm mỗi giây sửa ở mục Bảng xếp hạng."
+    },
+    "archive": {
+      "button": "Lưu trữ game",
+      "confirmText": "Game sẽ biến mất khỏi hub và trang admin; điểm vẫn được giữ trong database.",
+      "confirm": "Xác nhận lưu trữ"
+    }
   },
   "notFound": {
     "title": "Không tìm thấy trang",
