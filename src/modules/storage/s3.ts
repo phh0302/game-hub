@@ -43,12 +43,16 @@ export const s3StorageDriver: StorageDriver = {
   name: "s3",
 
   async put(key, body, contentType) {
-    const res = await s3().client.fetch(objectUrl(key), {
+    // Sao chép sang Uint8Array<ArrayBuffer> – kiểu body mà fetch chấp nhận
+    const bytes = new Uint8Array(body);
+    // Ký trước rồi tự gửi với body là Uint8Array: client.fetch() gửi body dạng stream (không có
+    // Content-Length) và R2 từ chối với 411 MissingContentLength
+    const signed = await s3().client.sign(objectUrl(key), {
       method: "PUT",
-      // Sao chép sang Uint8Array<ArrayBuffer> – kiểu body mà fetch chấp nhận
-      body: new Uint8Array(body),
+      body: bytes,
       headers: { "Content-Type": contentType, "Cache-Control": "public, max-age=31536000, immutable" },
     });
+    const res = await fetch(signed.url, { method: "PUT", headers: signed.headers, body: bytes });
     await ensureOk(res, `PUT ${key}`);
   },
 
