@@ -130,9 +130,9 @@ test("Webhook: ping có chữ ký, score.submitted, lỗi thì gửi lại; số
     // ── Số liệu: 2 điểm, 2 lượt chơi, 1 người chơi hôm nay ──
     await page.reload();
     const totals = page.getByTestId("usage-totals");
-    await expect(totals.getByRole("button", { name: /Điểm đã lưu/ })).toContainText(/\b2\b/);
-    await expect(totals.getByRole("button", { name: /Lượt chơi/ })).toContainText(/\b2\b/);
-    await expect(totals.getByRole("button", { name: /Người chơi/ })).toContainText(/\b1\b/);
+    await expect(totals.getByRole("button", { name: /Điểm đã lưu/ })).toHaveText(/\D2$/);
+    await expect(totals.getByRole("button", { name: /Lượt chơi/ })).toHaveText(/\D2$/);
+    await expect(totals.getByRole("button", { name: /Người chơi/ })).toHaveText(/\D1$/);
     await api.dispose();
   } finally {
     await new Promise<void>((r) => receiver.close(() => r()));
