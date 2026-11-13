@@ -67,10 +67,11 @@ export async function getMyScores(userId: string, locale: string) {
       _min: { value: true },
       _count: { _all: true },
     }),
+    // Lấy dư để còn đủ 20 lượt sau khi gộp bản sao của giải đấu
     prisma.score.findMany({
-      where: { userId },
+      where: { userId, leaderboard: { deletedAt: null } },
       orderBy: { createdAt: "desc" },
-      take: 20,
+      take: 60,
       include: {
         leaderboard: { select: { key: true, settings: true } },
         game: { select: { slug: true, thumbnailKey: true, translations: true } },
@@ -79,7 +80,8 @@ export async function getMyScores(userId: string, locale: string) {
   ]);
 
   const boards = await prisma.leaderboard.findMany({
-    where: { id: { in: groups.map((g) => g.leaderboardId) } },
+    // Bảng đã xóa (vd giải đấu đã gỡ) không hiện trong thành tích
+    where: { id: { in: groups.map((g) => g.leaderboardId) }, deletedAt: null },
     include: { game: { select: { slug: true, thumbnailKey: true, translations: true } } },
   });
   const boardById = new Map(boards.map((b) => [b.id, b]));
@@ -105,9 +107,23 @@ export async function getMyScores(userId: string, locale: string) {
     ];
   });
 
+  // 1 ván vào cả bảng chính lẫn giải đấu → chỉ hiện 1 dòng (dòng của bảng chính)
+  const isMirror = (settings: unknown) => Boolean(readLeaderboardSettings(settings).mirrorOf);
+  const seen = new Set<string>();
+  const plays = [...recent]
+    .sort((a, b) => Number(isMirror(a.leaderboard.settings)) - Number(isMirror(b.leaderboard.settings)))
+    .filter((s) => {
+      const id = s.sessionId;
+      if (seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    })
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 20);
+
   return {
     bests,
-    recent: recent.map((s) => ({
+    recent: plays.map((s) => ({
       id: s.id,
       value: toNumber(s.value),
       durationSeconds: s.durationSeconds,
