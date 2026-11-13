@@ -45,7 +45,7 @@ const top = await GameHub.leaderboard({ period: "week", limit: 10 });
 | `GameHub.login()` / `GameHub.login({ guest: true })` | `Promise<player>` – lưu token trong trình duyệt, lần sau tự đăng nhập |
 | `GameHub.logout()` | Thu hồi token ngay trên máy chủ |
 | `GameHub.me()` | `Promise<{ player, best } \| null>` |
-| `GameHub.gameStart()` | Mở 1 lượt chơi |
+| `GameHub.gameStart()` | Mở 1 lượt chơi → `Promise<sessionId \| null>` (dùng khi máy chủ của game tự nộp điểm, xem [Server API](/server-api)) |
 | `GameHub.gameOver(score, { leaderboard? })` | `Promise<{ saved, code, message, … }>` – cũng phát sự kiện `scoreResult` |
 | `GameHub.leaderboard({ board?, period?, limit? })` | Top người chơi + hạng của bạn (`me`) |
 | `GameHub.leaderboards()` | Bảng chính + các [giải đấu](/bang-xep-hang#giai-dau) đang hiển thị |

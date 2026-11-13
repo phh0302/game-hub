@@ -324,7 +324,11 @@
       "ZIP_COMPRESSED_INVALID": "Corrupted or invalid .br/.gz file: {detail}",
       "INVALID_ORIGIN": "Invalid domain – use https://your-domain.com without a path; http only for localhost.",
       "TOO_MANY_KEYS": "Key limit reached for this type (5 publishable, 2 secret) – revoke an old key first.",
-      "API_KEY_NOT_FOUND": "Key not found."
+      "API_KEY_NOT_FOUND": "Key not found.",
+      "INVALID_WEBHOOK_URL": "The webhook URL must be https and must not point to localhost or a private network.",
+      "WEBHOOK_NOT_SET": "Save a webhook URL first.",
+      "DELIVERY_NOT_FOUND": "Delivery not found.",
+      "DELIVERY_SUCCEEDED": "This event was already delivered."
     },
     "agreePrefix": "I have read and agree to the",
     "termsLink": "Developer Terms",
@@ -384,7 +388,51 @@
         "score_rejected": "Score rejected",
         "score_deleted": "Score deleted",
         "player_ban": "Player banned",
-        "player_unban": "Player unbanned"
+        "player_unban": "Player unbanned",
+        "platform_webhook": "Webhook changed",
+        "platform_webhook_rotate": "Webhook secret rotated",
+        "webhook_failed": "Webhook delivery failed"
+      }
+    },
+    "usage": {
+      "title": "Platform API usage",
+      "range": "Time range",
+      "days": "{n} days",
+      "metrics": {
+        "activePlayers": "Players",
+        "sessions": "Plays",
+        "scores": "Scores saved",
+        "rejected": "Scores rejected",
+        "apiCalls": "API calls"
+      },
+      "chartHint": "{metric} per day – hover a bar for details",
+      "chartLabel": "{metric} per day, last {days} days",
+      "note": "Days are in UTC. Players = distinct accounts that started a play (on the hub and outside it)."
+    },
+    "webhook": {
+      "title": "Webhook",
+      "intro": "Your game server receives a score.submitted event for every new score (JSON POST, HMAC-SHA256 signed in the x-monlabs-signature header). Failed deliveries are retried after 1 min, 5 min, 30 min, 2 h and 12 h.",
+      "url": "Webhook URL",
+      "urlHint": "Must be https and must not point to a private network. Clear it and save to turn the webhook off.",
+      "save": "Save webhook",
+      "saved": "Webhook saved.",
+      "disabled": "Webhook turned off.",
+      "test": "Send test",
+      "testOk": "Delivered.",
+      "testFail": "Delivery failed: {error}",
+      "rotate": "Rotate signing secret",
+      "rotated": "Signing secret rotated – the old one no longer works.",
+      "secretTitle": "Webhook signing secret – copy it now, it won't be shown again:",
+      "secretHint": "Use it on your server to verify signatures (see the \"Server API\" docs).",
+      "secretKept": "Signing secret in use:",
+      "deliveries": "Recent deliveries",
+      "attempts": "{n} attempts",
+      "retry": "Retry",
+      "status": {
+        "SUCCEEDED": "delivered (HTTP {code})",
+        "FAILED": "failed – {error}",
+        "QUEUED": "queued",
+        "RETRYING": "error ({error}), retrying at {at}"
       }
     }
   },

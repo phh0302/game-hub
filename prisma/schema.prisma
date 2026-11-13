@@ -196,6 +196,9 @@ model Game {
   publishedAt      DateTime?
   /// Domain được gọi Client API (/api/p1) khi game chạy ngoài hub, vd "https://mygame.io"
   allowedOrigins   String[]   @default([])
+  /// Webhook của project (Platform API): URL https nhận sự kiện + khóa ký HMAC
+  webhookUrl       String?
+  webhookSecret    String?
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   deletedAt        DateTime?
@@ -213,6 +216,7 @@ model Game {
   apiKeys        ApiKey[]
   bans           ProjectBan[]
   usage          UsageDaily[]
+  webhooks       WebhookDelivery[]
 
   @@index([status, sortOrder])
   @@index([studioId])
@@ -472,4 +476,31 @@ model UsageDaily {
   game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@id([gameId, day])
+}
+
+enum WebhookStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+}
+
+/// 1 lần gửi sự kiện tới webhook của project – lỗi thì tự gửi lại theo lịch (tối đa 6 lần)
+model WebhookDelivery {
+  id             String        @id @default(cuid())
+  gameId         String
+  /// vd "score.submitted", "ping"
+  event          String
+  payload        Json
+  status         WebhookStatus @default(PENDING)
+  attempts       Int           @default(0)
+  nextAttemptAt  DateTime?
+  lastStatusCode Int?
+  lastError      String?
+  createdAt      DateTime      @default(now())
+  deliveredAt    DateTime?
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([status, nextAttemptAt])
+  @@index([gameId, createdAt])
 }

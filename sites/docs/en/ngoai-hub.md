@@ -45,7 +45,7 @@ It's fine to put it in your game's code: the key **only works on the domains you
 | `GameHub.login()` / `GameHub.login({ guest: true })` | `Promise<player>` – the token is kept in the browser for next time |
 | `GameHub.logout()` | Revokes the token on the server immediately |
 | `GameHub.me()` | `Promise<{ player, best } \| null>` |
-| `GameHub.gameStart()` | Opens a run |
+| `GameHub.gameStart()` | Opens a run → `Promise<sessionId \| null>` (for games whose server submits scores, see [Server API](/en/server-api)) |
 | `GameHub.gameOver(score, { leaderboard? })` | `Promise<{ saved, code, message, … }>` – also emits `scoreResult` |
 | `GameHub.leaderboard({ board?, period?, limit? })` | Top players + your rank (`me`) |
 | `GameHub.leaderboards()` | Main board + visible [events](/en/bang-xep-hang#giai-dau) |
