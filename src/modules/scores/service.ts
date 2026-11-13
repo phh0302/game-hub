@@ -5,7 +5,7 @@ import { ApiError } from "@/lib/api";
 import { toNumber } from "@/lib/format";
 import { logEvent } from "@/modules/events/service";
 import { getPlayableGame } from "@/modules/games/service";
-import { readLeaderboardSettings } from "@/modules/games/settings";
+import { readLeaderboardSettings, type GameSettings } from "@/modules/games/settings";
 import { boardKeySchema, getLeaderboardByKey, getUserRank, isBoardOpen } from "./leaderboard";
 import { checkScore, type ScoreRuleError } from "./rules";
 
@@ -30,9 +30,20 @@ export const submitScoreSchema = z.object({
   leaderboard: boardKeySchema,
 });
 
+/** Game tối thiểu cần để mở lượt / nộp điểm (game trên hub hoặc project của Client API) */
+export type ScoringGame = {
+  id: string;
+  currentVersionId: string | null;
+  currentVersion?: { version: string } | null;
+  parsedSettings: GameSettings;
+};
+
 /** Bắt đầu 1 lượt chơi – gắn với phiên bản game đang chạy */
 export async function startSession(userId: string, slug: string) {
-  const game = await getPlayableGame(slug);
+  return startSessionForGame(userId, await getPlayableGame(slug));
+}
+
+export async function startSessionForGame(userId: string, game: ScoringGame, source: "hub" | "api" = "hub") {
   const session = await prisma.gameSession.create({
     data: { userId, gameId: game.id, gameVersionId: game.currentVersionId },
   });
@@ -40,7 +51,7 @@ export async function startSession(userId: string, slug: string) {
     type: "session.start",
     userId,
     gameId: game.id,
-    data: { sessionId: session.id, version: game.currentVersion?.version ?? null },
+    data: { sessionId: session.id, version: game.currentVersion?.version ?? null, source },
   });
   return { sessionId: session.id, startedAt: session.startedAt };
 }
@@ -51,7 +62,10 @@ export async function startSession(userId: string, slug: string) {
  * bảng xếp hạng đang mở, điểm nằm trong giới hạn cho phép.
  */
 export async function submitScore(userId: string, slug: string, input: z.infer<typeof submitScoreSchema>) {
-  const game = await getPlayableGame(slug);
+  return submitScoreForGame(userId, await getPlayableGame(slug), input);
+}
+
+export async function submitScoreForGame(userId: string, game: ScoringGame, input: z.infer<typeof submitScoreSchema>) {
   const board = await getLeaderboardByKey(game.id, input.leaderboard);
   const now = new Date();
 

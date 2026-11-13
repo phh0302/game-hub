@@ -10,6 +10,25 @@ import { isCrossSiteWrite } from "@/modules/auth/csrf";
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Client API cho game chạy trên domain riêng: không dùng cookie (key + token trong header)
+  // → không cần chống CSRF; trả lời preflight CORS tại đây
+  if (pathname.startsWith("/api/p1/")) {
+    if (req.method === "OPTIONS") {
+      const origin = req.headers.get("origin");
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          ...(origin && origin !== "null" ? { "Access-Control-Allow-Origin": origin } : {}),
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "content-type, authorization, x-gamehub-key",
+          "Access-Control-Max-Age": "600",
+          Vary: "Origin",
+        },
+      });
+    }
+    return NextResponse.next();
+  }
+
   if (pathname.startsWith("/api/")) {
     const blocked = isCrossSiteWrite({
       method: req.method,

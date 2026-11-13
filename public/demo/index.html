@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tap Rush – Monlabs Platform API demo</title>
+    <style>
+      :root { color-scheme: dark; --bg: #07070f; --surface: #12121f; --line: #2a2a45; --ink: #f2f2ff; --muted: #9a9ac0; --neon: #22e3ff; --pink: #ff3ec8; --lime: #b6ff3b; }
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--ink); font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; display: grid; place-items: start center; padding: 24px 16px; }
+      main { width: min(560px, 100%); display: grid; gap: 16px; }
+      h1 { margin: 0; font-size: 28px; }
+      p { margin: 0; color: var(--muted); }
+      .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; display: grid; gap: 12px; }
+      .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+      button { font: inherit; border-radius: 10px; border: 1px solid var(--line); background: transparent; color: var(--ink); padding: 8px 14px; cursor: pointer; }
+      button.primary { background: linear-gradient(90deg, var(--neon), var(--pink)); color: #07070f; border: 0; font-weight: 700; }
+      button:disabled { opacity: 0.5; cursor: default; }
+      #tap { width: 100%; height: 160px; font-size: 32px; font-weight: 800; }
+      .big { font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+      .ok { color: var(--lime); } .err { color: var(--pink); }
+      ol { margin: 0; padding-left: 22px; } li { font-variant-numeric: tabular-nums; }
+      code { color: var(--neon); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Tap Rush</h1>
+        <p>Bấm càng nhiều càng tốt trong 10 giây. Game mẫu chạy ngoài Game Hub bằng <code>Monlabs Platform API</code>.</p>
+      </header>
+
+      <section class="card">
+        <div class="row">
+          <strong>Người chơi:</strong> <span id="player" data-testid="player">…</span>
+        </div>
+        <div class="row">
+          <button id="login-wallet">Đăng nhập ví</button>
+          <button id="login-guest">Chơi khách</button>
+          <button id="logout" hidden>Đăng xuất</button>
+        </div>
+        <p id="status" data-testid="status"></p>
+      </section>
+
+      <section class="card">
+        <div class="row" style="justify-content: space-between">
+          <span>Thời gian: <span class="big" id="time">10.0</span>s</span>
+          <span>Điểm: <span class="big" id="score" data-testid="score">0</span></span>
+        </div>
+        <button id="start" class="primary">Bắt đầu</button>
+        <button id="tap" disabled>BẤM!</button>
+        <p id="result" data-testid="result"></p>
+      </section>
+
+      <section class="card">
+        <strong>Bảng xếp hạng</strong>
+        <ol id="board" data-testid="board"></ol>
+      </section>
+    </main>
+
+    <script>
+      // ?key=pk_live_… (bắt buộc) · ?api=https://play.monlabs.fun (địa chỉ hub, mặc định = nơi tải trang)
+      var params = new URLSearchParams(location.search);
+      var apiBase = params.get("api") || location.origin;
+      var sdk = document.createElement("script");
+      sdk.src = apiBase.replace(/\/+$/, "") + "/sdk/gamehub-sdk.js";
+      sdk.onload = start;
+      document.head.appendChild(sdk);
+
+      var $ = function (id) { return document.getElementById(id); };
+      var score = 0, timer = null, endsAt = 0;
+
+      function show(el, text, ok) {
+        el.textContent = text;
+        el.className = ok === undefined ? "" : ok ? "ok" : "err";
+      }
+
+      function renderPlayer(data) {
+        var p = data && data.player;
+        show($("player"), p ? p.displayName + (p.isGuest ? " (khách)" : "") : "chưa đăng nhập");
+        $("login-wallet").hidden = !!p;
+        $("login-guest").hidden = !!p;
+        $("logout").hidden = !p;
+      }
+
+      function loadBoard() {
+        return GameHub.leaderboard({ limit: 10 }).then(function (r) {
+          $("board").innerHTML = "";
+          r.entries.forEach(function (e) {
+            var li = document.createElement("li");
+            li.textContent = e.displayName + " – " + e.score;
+            $("board").appendChild(li);
+          });
+          if (!r.entries.length) $("board").innerHTML = "<li>Chưa có ai – hãy là người đầu tiên!</li>";
+        });
+      }
+
+      function fail(err) {
+        show($("status"), "Lỗi: " + ((err && (err.code || err.message)) || err), false);
+      }
+
+      function start() {
+        var key = params.get("key");
+        if (!key) return show($("status"), "Thiếu ?key=pk_live_… trong địa chỉ trang", false);
+        GameHub.on("init", renderPlayer);
+        GameHub.init({ projectKey: key, apiBase: apiBase })
+          .then(function (data) {
+            show($("status"), "Đã kết nối project: " + data.project.name, true);
+            return loadBoard();
+          })
+          .catch(fail);
+
+        $("login-wallet").onclick = function () { GameHub.login().catch(fail); };
+        $("login-guest").onclick = function () { GameHub.login({ guest: true }).catch(fail); };
+        $("logout").onclick = function () { GameHub.logout(); };
+
+        $("start").onclick = function () {
+          score = 0;
+          show($("score"), "0");
+          show($("result"), "");
+          $("start").disabled = true;
+          $("tap").disabled = false;
+          GameHub.gameStart();
+          endsAt = Date.now() + 10000;
+          timer = setInterval(tick, 100);
+        };
+        $("tap").onclick = function () {
+          score += 1;
+          show($("score"), String(score));
+        };
+      }
+
+      function tick() {
+        var left = Math.max(0, endsAt - Date.now());
+        $("time").textContent = (left / 1000).toFixed(1);
+        if (left > 0) return;
+        clearInterval(timer);
+        $("tap").disabled = true;
+        $("start").disabled = false;
+        GameHub.gameOver(score).then(function (r) {
+          show($("result"), r.message, r.saved);
+          return loadBoard();
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -198,21 +198,21 @@ Kế hoạch chi tiết (lý do, thiết kế, bảng giá): tài liệu **Kế 
 Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp hạng, lượt chơi, luật chống gian lận); dữ liệu chỉ **thêm mới**; API `/api/v1` và SDK v1 trong hub **giữ nguyên**.
 
 ### Cần chốt trước khi làm 12a
-- [ ] Người chơi 1 ví dùng chung mọi project (đề xuất) hay tách riêng theo project
-- [ ] Tên sản phẩm PaaS và địa chỉ bảng điều khiển (`play.monlabs.fun/developer` hay `console.monlabs.fun`)
-- [ ] Chỉ đăng nhập ví, hay thêm chơi khách có điểm cho game không làm Web3
-- [ ] Bảng giá Free / Pro / Business, hay miễn phí hoàn toàn giai đoạn đầu
+- [x] Người chơi 1 ví dùng chung mọi project
+- [x] Tên tạm "Monlabs Play API", bảng điều khiển giữ ở `play.monlabs.fun/developer` (đổi sau được)
+- [x] Có chơi khách (có điểm, giới hạn tạo tài khoản khách theo IP)
+- [x] Bảng giá: dùng phương án Free / Pro / Business trong kế hoạch (áp dụng ở 12c)
 
 ### Phase 12a – MVP: game chạy được trên domain riêng
-- [ ] Migration: `ApiKey` (publishable / secret, lưu bản băm, thu hồi được), `Game.allowedOrigins`, `Game.hosting` (HUB / EXTERNAL), `AuthSession.gameId`
-- [ ] Trang Developer: tạo project ngoài hub, khai báo domain được phép, tạo / thu hồi publishable key
-- [ ] Client API `/api/p1`: CORS đúng domain đã khai báo (không dùng `*`), xác thực key + `Origin`, giới hạn tần suất theo project và theo người chơi
-- [ ] Đăng nhập SIWE trên domain của game (domain lấy từ `Origin`, phải nằm trong `allowedOrigins`) → token người chơi ngắn hạn, chỉ dùng cho đúng project
-- [ ] Bắt đầu / nộp lượt, đọc bảng xếp hạng & giải đấu qua Client API, dùng lại luật chống gian lận hiện tại
-- [ ] SDK v2 chế độ độc lập (`GameHub.init({ projectKey })`, `login()`, `logout()`, `me()`, `leaderboard()`, `gameOver()` trả Promise); không có `projectKey` thì chạy như SDK v1
-- [ ] Trang demo trên domain khác (vd `demo.monlabs.fun`) dùng SDK v2
-- [ ] Test tự động: key sai / bị thu hồi, domain lạ, key project A gọi project B, token hết hạn, game trong hub vẫn chạy
-- [ ] Docs: mục "Dùng ngoài Game Hub" (vi + en)
+- [x] Migration: `ApiKey` (publishable / secret, lưu bản băm, thu hồi được), `Game.allowedOrigins`, `AuthSession.gameId` – bỏ `Game.hosting`: mọi game (cả game trên hub) đều gắn key được, game nháp dùng API trên domain riêng mà không hiện trên hub
+- [x] Trang Developer: mục **Platform API** ở mỗi game – khai báo domain, tạo / thu hồi publishable key (xác nhận ngay trên trang), đoạn mã nhúng
+- [x] Client API `/api/p1`: xác thực key + `Origin` nằm trong domain đã khai báo, CORS không dùng cookie, giới hạn tần suất theo project / người chơi / IP
+- [x] Đăng nhập SIWE trên domain của game → token người chơi (audience riêng, gắn `AuthSession.gameId`) chỉ dùng cho đúng project, không dùng được làm phiên hub; chơi khách
+- [x] Bắt đầu / nộp lượt, đọc bảng xếp hạng & giải đấu qua Client API, dùng lại luật chống gian lận hiện tại
+- [x] SDK v2 chế độ độc lập (`GameHub.init({ projectKey })`, `login()`, `logout()`, `me()`, `leaderboard()`, `leaderboards()`, `gameOver()` trả Promise); không có `projectKey` thì chạy như SDK v1
+- [x] Game mẫu Tap Rush `/demo/index.html?key=…&api=…` dùng SDK v2 (chưa gắn domain riêng `demo.monlabs.fun`)
+- [x] Test tự động: unit test domain; e2e chơi khách + ví từ domain khác, key sai, domain chưa khai báo, token người chơi không dùng được trên hub, thu hồi key; test hub cũ vẫn chạy
+- [x] Docs: trang "Dùng ngoài Game Hub (Platform API)" (vi + en)
 - [ ] Chạy lại toàn bộ test plan Game Hub sau khi xong 12a
 
 ### Phase 12b – Server API & số liệu
@@ -250,7 +250,7 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 | 8–9 | Kiểm thử + deploy | 0.5–1 ngày | Xong phần code + CI; chờ chạy checklist & tạo Neon/Vercel |
 | 10 | Nền tảng developer | 3–4 ngày | Xong phần lõi; chờ cấu hình R2 |
 | 11 | Kiếm tiền | tùy hướng chọn | |
-| 12a | PaaS – game chạy trên domain riêng | 4–6 ngày | Chờ chốt 4 quyết định |
+| 12a | PaaS – game chạy trên domain riêng | 4–6 ngày | Xong code; chờ chạy lại test plan |
 | 12b | PaaS – Server API, số liệu, webhook | 3–4 ngày | |
 | 12c | PaaS – gói & hạn mức | 2–3 ngày | |
 | 12d | PaaS – thu tiền | tùy cổng thanh toán | |

@@ -34,6 +34,8 @@ export async function verifySession(token: string | undefined): Promise<SessionP
   try {
     const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"] });
     if (typeof payload.sub !== "string") return null;
+    // Token người chơi của Client API (có audience) KHÔNG dùng được làm phiên đăng nhập hub
+    if (payload.aud !== undefined) return null;
     return {
       sub: payload.sub,
       role: payload.role === "ADMIN" ? "ADMIN" : "USER",
@@ -52,4 +54,38 @@ export function sessionCookieOptions() {
     path: "/",
     maxAge: SESSION_MAX_AGE,
   };
+}
+
+// ───────────── Token người chơi của Client API (/api/p1) ─────────────
+
+/** Audience riêng → token này không bao giờ được chấp nhận làm cookie phiên của hub và ngược lại */
+export const PLAYER_TOKEN_AUDIENCE = "gamehub-p1";
+export const PLAYER_TOKEN_MAX_AGE = 60 * 60 * 24 * 7; // 7 ngày
+
+export type PlayerTokenPayload = {
+  sub: string; // userId
+  sid: string; // id AuthSession
+  gid: string; // id game (project) – token chỉ dùng được cho đúng game này
+};
+
+export async function signPlayerToken(payload: PlayerTokenPayload) {
+  return new SignJWT({ gid: payload.gid })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(payload.sub)
+    .setJti(payload.sid)
+    .setAudience(PLAYER_TOKEN_AUDIENCE)
+    .setIssuedAt()
+    .setExpirationTime(`${PLAYER_TOKEN_MAX_AGE}s`)
+    .sign(secret());
+}
+
+export async function verifyPlayerToken(token: string | undefined | null): Promise<PlayerTokenPayload | null> {
+  if (!token) return null;
+  try {
+    const { payload } = await jwtVerify(token, secret(), { algorithms: ["HS256"], audience: PLAYER_TOKEN_AUDIENCE });
+    if (typeof payload.sub !== "string" || typeof payload.jti !== "string" || typeof payload.gid !== "string") return null;
+    return { sub: payload.sub, sid: payload.jti, gid: payload.gid };
+  } catch {
+    return null;
+  }
 }
