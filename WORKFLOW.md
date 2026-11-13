@@ -191,6 +191,49 @@
 - [ ] Giải đấu có nhà tài trợ (dùng `Leaderboard` có thời gian) – không thu phí tham gia
 - [ ] Kiểm tra pháp lý (Nghị định 147/2024, đăng ký khuyến mại) trước khi thu tiền thật
 
+## Phase 12 – Platform as a Service (PaaS)
+Bán **backend cho game web**: developer giữ game trên domain riêng nhưng dùng đăng nhập ví, bảng xếp hạng chống gian lận và giải đấu của Monlabs. Game Hub trở thành khách hàng đầu tiên của chính nền tảng.
+Kế hoạch chi tiết (lý do, thiết kế, bảng giá): tài liệu **Kế hoạch: Game Hub thành PaaS**.
+
+Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp hạng, lượt chơi, luật chống gian lận); dữ liệu chỉ **thêm mới**; API `/api/v1` và SDK v1 trong hub **giữ nguyên**.
+
+### Cần chốt trước khi làm 12a
+- [ ] Người chơi 1 ví dùng chung mọi project (đề xuất) hay tách riêng theo project
+- [ ] Tên sản phẩm PaaS và địa chỉ bảng điều khiển (`play.monlabs.fun/developer` hay `console.monlabs.fun`)
+- [ ] Chỉ đăng nhập ví, hay thêm chơi khách có điểm cho game không làm Web3
+- [ ] Bảng giá Free / Pro / Business, hay miễn phí hoàn toàn giai đoạn đầu
+
+### Phase 12a – MVP: game chạy được trên domain riêng
+- [ ] Migration: `ApiKey` (publishable / secret, lưu bản băm, thu hồi được), `Game.allowedOrigins`, `Game.hosting` (HUB / EXTERNAL), `AuthSession.gameId`
+- [ ] Trang Developer: tạo project ngoài hub, khai báo domain được phép, tạo / thu hồi publishable key
+- [ ] Client API `/api/p1`: CORS đúng domain đã khai báo (không dùng `*`), xác thực key + `Origin`, giới hạn tần suất theo project và theo người chơi
+- [ ] Đăng nhập SIWE trên domain của game (domain lấy từ `Origin`, phải nằm trong `allowedOrigins`) → token người chơi ngắn hạn, chỉ dùng cho đúng project
+- [ ] Bắt đầu / nộp lượt, đọc bảng xếp hạng & giải đấu qua Client API, dùng lại luật chống gian lận hiện tại
+- [ ] SDK v2 chế độ độc lập (`GameHub.init({ projectKey })`, `login()`, `logout()`, `me()`, `leaderboard()`, `gameOver()` trả Promise); không có `projectKey` thì chạy như SDK v1
+- [ ] Trang demo trên domain khác (vd `demo.monlabs.fun`) dùng SDK v2
+- [ ] Test tự động: key sai / bị thu hồi, domain lạ, key project A gọi project B, token hết hạn, game trong hub vẫn chạy
+- [ ] Docs: mục "Dùng ngoài Game Hub" (vi + en)
+- [ ] Chạy lại toàn bộ test plan Game Hub sau khi xong 12a
+
+### Phase 12b – Server API & số liệu
+- [ ] Secret key + Server API `/api/s1`: đọc / xuất điểm, xóa điểm gian lận, cấm người chơi trong project, tạo giải đấu
+- [ ] Chế độ "máy chủ xác nhận": game có backend tự nộp điểm bằng secret key, tắt nộp điểm từ trình duyệt
+- [ ] `UsageDaily` (lượt gọi API, lượt chơi, điểm, người chơi hoạt động) + bảng điều khiển số liệu cho developer
+- [ ] Webhook `score.submitted` ký HMAC, tự gửi lại khi lỗi
+- [ ] Tài liệu API dạng OpenAPI
+- [ ] Nhật ký (`Event`) cho tạo / thu hồi key, đổi domain, điểm bị từ chối – developer tra cứu được
+
+### Phase 12c – Gói & hạn mức (chưa thu tiền)
+- [ ] Bảng `Plan` + gói của studio; áp hạn mức theo gói (người chơi hoạt động / tháng, lần nộp điểm / tháng, số project, giải đấu)
+- [ ] Cảnh báo 80% / 100%; hết hạn mức thì vẫn chơi được nhưng ngừng lưu điểm, SDK báo rõ
+- [ ] Admin gán gói bằng tay cho khách beta
+- [ ] Trang giới thiệu PaaS + bảng giá trên monlabs.fun
+
+### Phase 12d – Thu tiền
+- [ ] Cổng thanh toán: Stripe (quốc tế), VNPay / MoMo (Việt Nam), hóa đơn
+- [ ] Điều khoản dịch vụ & chính sách dữ liệu cho khách PaaS; kiểm tra pháp lý trước khi thu tiền thật
+- [ ] Trang trạng thái (status page), cam kết thời gian hoạt động cho gói Business
+
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking
@@ -207,3 +250,7 @@
 | 8–9 | Kiểm thử + deploy | 0.5–1 ngày | Xong phần code + CI; chờ chạy checklist & tạo Neon/Vercel |
 | 10 | Nền tảng developer | 3–4 ngày | Xong phần lõi; chờ cấu hình R2 |
 | 11 | Kiếm tiền | tùy hướng chọn | |
+| 12a | PaaS – game chạy trên domain riêng | 4–6 ngày | Chờ chốt 4 quyết định |
+| 12b | PaaS – Server API, số liệu, webhook | 3–4 ngày | |
+| 12c | PaaS – gói & hạn mức | 2–3 ngày | |
+| 12d | PaaS – thu tiền | tùy cổng thanh toán | |
