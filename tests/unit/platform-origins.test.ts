@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { isOriginAllowed, normalizeOrigin } from "../../src/modules/platform/origins.ts";
+import { isOriginAllowed, normalizeOrigin, requestOrigin } from "../../src/modules/platform/origins.ts";
 
 test("normalizeOrigin: chuẩn hóa chữ hoa, dấu / cuối, giữ cổng", () => {
   assert.equal(normalizeOrigin("HTTPS://MyGame.io/"), "https://mygame.io");
@@ -37,4 +37,13 @@ test("isOriginAllowed: khớp tuyệt đối, không nhận subdomain / cổng k
   assert.equal(isOriginAllowed("http://localhost:3000", allowed), false);
   assert.equal(isOriginAllowed("null", allowed), false);
   assert.equal(isOriginAllowed(null, allowed), false);
+});
+
+test("requestOrigin: ưu tiên header Origin; GET cùng domain (không có Origin) dùng Sec-Fetch-Site", () => {
+  const url = "https://play.monlabs.fun/api/p1/project";
+  assert.equal(requestOrigin({ origin: "https://mygame.io", secFetchSite: "cross-site" }, url), "https://mygame.io");
+  assert.equal(requestOrigin({ origin: null, secFetchSite: "same-origin" }, url), "https://play.monlabs.fun");
+  assert.equal(requestOrigin({ origin: null, secFetchSite: "cross-site" }, url), null);
+  assert.equal(requestOrigin({ origin: null, secFetchSite: null }, url), null);
+  assert.equal(requestOrigin({ origin: "null", secFetchSite: "same-site" }, url), null);
 });

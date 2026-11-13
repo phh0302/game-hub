@@ -7,7 +7,7 @@ import { readGameSettings } from "@/modules/games/settings";
 import { verifyPlayerToken } from "@/modules/auth/jwt";
 import { userWithIdentities, type UserWithIdentities } from "@/modules/users/dto";
 import { hashApiKey, looksLikeApiKey } from "./keys";
-import { isOriginAllowed, normalizeOrigin } from "./origins";
+import { isOriginAllowed, normalizeOrigin, requestOrigin } from "./origins";
 
 export const API_KEY_HEADER = "x-gamehub-key";
 
@@ -39,7 +39,10 @@ export async function resolveProject(req: Request): Promise<ProjectContext> {
   if (game.deletedAt || game.status === GameStatus.SUSPENDED || game.status === GameStatus.ARCHIVED) {
     throw new ApiError(403, "PROJECT_DISABLED", "Game này đang bị khóa");
   }
-  const origin = req.headers.get("origin");
+  const origin = requestOrigin(
+    { origin: req.headers.get("origin"), secFetchSite: req.headers.get("sec-fetch-site") },
+    req.url,
+  );
   if (!isOriginAllowed(origin, game.allowedOrigins)) {
     throw new ApiError(403, "ORIGIN_NOT_ALLOWED", "Domain này chưa được khai báo cho game");
   }

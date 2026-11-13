@@ -32,3 +32,20 @@ export function isOriginAllowed(origin: string | null | undefined, allowed: read
   const normalized = normalizeOrigin(origin);
   return normalized !== null && allowed.includes(normalized);
 }
+
+/**
+ * Origin của trang gọi API. Trình duyệt KHÔNG gửi header Origin với GET cùng domain
+ * (game đặt ngay trên domain của hub) → khi đó dựa vào Sec-Fetch-Site (trình duyệt tự đặt,
+ * JS không sửa được) để lấy origin của chính request.
+ */
+export function requestOrigin(headers: { origin: string | null; secFetchSite: string | null }, requestUrl: string): string | null {
+  if (headers.origin && headers.origin !== "null") return headers.origin;
+  if (headers.secFetchSite === "same-origin") {
+    try {
+      return new URL(requestUrl).origin;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
