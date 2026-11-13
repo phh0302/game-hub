@@ -250,7 +250,7 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 | 8–9 | Kiểm thử + deploy | 0.5–1 ngày | Xong phần code + CI; chờ chạy checklist & tạo Neon/Vercel |
 | 10 | Nền tảng developer | 3–4 ngày | Xong phần lõi; chờ cấu hình R2 |
 | 11 | Kiếm tiền | tùy hướng chọn | |
-| 12a | PaaS – game chạy trên domain riêng | 4–6 ngày | Xong code; chờ chạy lại test plan |
+| 12a | PaaS – game chạy trên domain riêng | 4–6 ngày | Đã lên production (PR #23); chờ chạy lại test plan |
 | 12b | PaaS – Server API, số liệu, webhook | 3–4 ngày | |
 | 12c | PaaS – gói & hạn mức | 2–3 ngày | |
 | 12d | PaaS – thu tiền | tùy cổng thanh toán | |
