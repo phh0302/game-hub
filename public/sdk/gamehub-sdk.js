@@ -121,6 +121,8 @@
       PLAY_TOO_SHORT: "Điểm không được ghi nhận: ván chơi quá ngắn",
       SCORE_TOO_FAST: "Điểm không được ghi nhận: tốc độ ghi điểm bất thường",
       SCORE_INVALID: "Điểm nằm ngoài mức cho phép",
+      SERVER_SCORING_ONLY: "Game này nộp điểm qua máy chủ của game",
+      PLAYER_BANNED: "Tài khoản đã bị cấm trong game này",
       SESSION_NOT_STARTED: "Chưa gọi gameStart() nên không lưu được điểm",
       RATE_LIMITED: "Thao tác quá nhanh, thử lại sau",
       NETWORK: "Không kết nối được máy chủ",
@@ -135,6 +137,8 @@
       PLAY_TOO_SHORT: "Score not counted: the run was too short",
       SCORE_TOO_FAST: "Score not counted: abnormal scoring speed",
       SCORE_INVALID: "Score is outside the allowed range",
+      SERVER_SCORING_ONLY: "This game submits scores from its own server",
+      PLAYER_BANNED: "This account is banned in this game",
       SESSION_NOT_STARTED: "gameStart() was not called, so the score can't be saved",
       RATE_LIMITED: "Too many requests, try again later",
       NETWORK: "Can't reach the server",
@@ -311,7 +315,11 @@
       return initPromise;
     },
 
-    /** Gọi khi bắt đầu 1 ván mới (hub bắt đầu tính thời gian lượt chơi) */
+    /**
+     * Gọi khi bắt đầu 1 ván mới (hub bắt đầu tính thời gian lượt chơi).
+     * Chế độ độc lập: trả về Promise<sessionId | null> – game có máy chủ riêng gửi sessionId này
+     * cho máy chủ để nộp điểm qua Server API.
+     */
     gameStart: function () {
       if (project) {
         project.sessionPromise = project.player
@@ -324,7 +332,7 @@
               },
             )
           : Promise.resolve(null);
-        return;
+        return project.sessionPromise;
       }
       send("GAME_START", {});
     },

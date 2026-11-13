@@ -50,7 +50,7 @@ export async function handle(fn: () => Promise<Response>): Promise<Response> {
 const MAX_JSON_BYTES = 64 * 1024;
 
 /** Đọc body JSON an toàn (rỗng / sai định dạng → 400, quá lớn → 413) */
-export async function readJson(req: Request): Promise<unknown> {
+export async function readJson(req: Request, options: { optional?: boolean } = {}): Promise<unknown> {
   const declared = Number(req.headers.get("content-length") ?? 0);
   if (declared > MAX_JSON_BYTES) {
     throw new ApiError(413, "PAYLOAD_TOO_LARGE", "Dữ liệu gửi lên quá lớn");
@@ -65,6 +65,8 @@ export async function readJson(req: Request): Promise<unknown> {
   if (new TextEncoder().encode(text).byteLength > MAX_JSON_BYTES) {
     throw new ApiError(413, "PAYLOAD_TOO_LARGE", "Dữ liệu gửi lên quá lớn");
   }
+  // Body không bắt buộc (vd nút bấm không có dữ liệu) → coi như {}
+  if (options.optional && text.trim() === "") return {};
   try {
     return JSON.parse(text);
   } catch {

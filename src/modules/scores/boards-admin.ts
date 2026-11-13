@@ -119,7 +119,7 @@ function limitsJson(input: z.infer<typeof limitsSchema>, base: Record<string, un
   return out as Prisma.InputJsonObject;
 }
 
-export async function adminCreateBoard(gameId: string, input: z.infer<typeof boardCreateSchema>, actorId: string) {
+export async function adminCreateBoard(gameId: string, input: z.infer<typeof boardCreateSchema>, actorId: string | null) {
   await loadGame(gameId);
   const exists = await prisma.leaderboard.findUnique({ where: { gameId_key: { gameId, key: input.key } } });
   if (exists && !exists.deletedAt) throw new ApiError(409, "BOARD_KEY_TAKEN", "Mã bảng này đã có trong game");

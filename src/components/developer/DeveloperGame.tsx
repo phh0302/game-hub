@@ -18,6 +18,7 @@ import {
   type GameStatus,
   type VersionStatus,
 } from "./shared";
+import { PlatformLog } from "./PlatformLog";
 import { ApiIntegration } from "./ApiIntegration";
 
 type Version = {
@@ -42,6 +43,7 @@ type Game = {
   thumbnailUrl: string | null;
   versions: Version[];
   allowedOrigins: string[];
+  scoreSubmission: "client" | "server";
   stats: { sessions: number; players: number; scores: number };
 };
 
@@ -102,7 +104,8 @@ export function DeveloperGame({ gameId }: { gameId: string }) {
       <UploadVersion game={game} onDone={load} />
       <VersionList game={game} />
       <GameInfoForm game={game} onSaved={setGame} />
-      <ApiIntegration gameId={game.id} origins={game.allowedOrigins} />
+      <ApiIntegration gameId={game.id} origins={game.allowedOrigins} scoreSubmission={game.scoreSubmission} />
+      <PlatformLog gameId={game.id} />
     </div>
   );
 }

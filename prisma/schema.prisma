@@ -55,6 +55,7 @@ model User {
   events        Event[]
   reports       GameReport[]
   authSessions  AuthSession[]
+  projectBans   ProjectBan[]
 }
 
 /// Phiên đăng nhập (id nằm trong JWT dưới dạng jti) → đăng xuất / khóa tài khoản có hiệu lực ngay
@@ -210,6 +211,8 @@ model Game {
   events         Event[]
   reports        GameReport[]
   apiKeys        ApiKey[]
+  bans           ProjectBan[]
+  usage          UsageDaily[]
 
   @@index([status, sortOrder])
   @@index([studioId])
@@ -436,4 +439,37 @@ model ApiKey {
   game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
 
   @@index([gameId])
+}
+
+/// Người chơi bị cấm trong 1 project (game) – do developer cấm qua Server API.
+/// Không bắt đầu lượt / nộp điểm được cho game này; tài khoản ở game khác không ảnh hưởng.
+model ProjectBan {
+  gameId    String
+  userId    String
+  reason    String?
+  createdAt DateTime @default(now())
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, userId])
+  @@index([userId])
+}
+
+/// Số liệu dùng theo ngày (UTC) của mỗi project – cơ sở cho bảng số liệu và hạn mức gói (12c)
+model UsageDaily {
+  gameId   String
+  day      DateTime @db.Date
+  /// Lượt gọi Client API + Server API
+  apiCalls Int      @default(0)
+  /// Lượt chơi bắt đầu (mọi nguồn: hub, Client API)
+  sessions Int      @default(0)
+  /// Điểm được chấp nhận
+  scores   Int      @default(0)
+  /// Điểm bị luật chống gian lận từ chối
+  rejected Int      @default(0)
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@id([gameId, day])
 }

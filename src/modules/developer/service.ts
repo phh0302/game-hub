@@ -15,8 +15,10 @@ import { displayName } from "@/lib/format";
 import { primaryWallet } from "@/modules/users/dto";
 import { generateApiKey } from "@/modules/platform/keys";
 import { normalizeOrigin } from "@/modules/platform/origins";
+import { readGameSettings } from "@/modules/games/settings";
 import { DEVELOPER_TERMS_VERSION, isTermsUpToDate } from "./terms";
 import type {
+  ApiKeyCreateInput,
   MemberAddInput,
   DevGameCreateInput,
   DevGameUpdateInput,
@@ -195,6 +197,7 @@ function toDevGameDto(game: DevGame, locale: string, stats?: { sessions: number;
     currentVersionId: game.currentVersionId,
     publishedAt: game.publishedAt,
     allowedOrigins: game.allowedOrigins,
+    scoreSubmission: readGameSettings(game.settings).scoreSubmission,
     versions: game.versions.map((v) => ({
       id: v.id,
       version: v.version,
@@ -295,6 +298,13 @@ export async function updateStudioGame(
     }
     await prisma.game.update({ where: { id: game.id }, data: { allowedOrigins: origins as string[] } });
     await logEvent({ type: "platform.origins", userId, gameId: game.id, data: { origins: origins as string[] } });
+  }
+  if (input.scoreSubmission && input.scoreSubmission !== readGameSettings(game.settings).scoreSubmission) {
+    // Đọc lại settings mới nhất rồi chỉ đổi 1 key (giữ các luật admin đã đặt)
+    const fresh = await prisma.game.findUniqueOrThrow({ where: { id: game.id }, select: { settings: true } });
+    const settings = { ...((fresh.settings as Record<string, unknown>) ?? {}), scoreSubmission: input.scoreSubmission };
+    await prisma.game.update({ where: { id: game.id }, data: { settings: settings as Prisma.InputJsonObject } });
+    await logEvent({ type: "platform.scoring", userId, gameId: game.id, data: { scoreSubmission: input.scoreSubmission } });
   }
   return getStudioGame(studio.id, game.id, locale);
 }
@@ -404,8 +414,8 @@ export async function getPreviewableVersion(user: { id: string; role: string }, 
 
 // ───────────── Platform API: khóa của game ─────────────
 
-/** Tối đa số publishable key đang hoạt động / game (đủ để xoay vòng khóa) */
-const MAX_ACTIVE_KEYS = 5;
+/** Tối đa số khóa đang hoạt động / game (đủ để xoay vòng khóa) */
+const MAX_ACTIVE_KEYS = { PUBLISHABLE: 5, SECRET: 2 } as const;
 
 function apiKeyDto(k: { id: string; kind: string; prefix: string; createdAt: Date; lastUsedAt: Date | null; revokedAt: Date | null }) {
   return { id: k.id, kind: k.kind, prefix: k.prefix, createdAt: k.createdAt, lastUsedAt: k.lastUsedAt, revokedAt: k.revokedAt };
@@ -417,17 +427,18 @@ export async function listGameApiKeys(studio: Studio, gameId: string) {
   return keys.map(apiKeyDto);
 }
 
-/** Tạo publishable key – khóa đầy đủ chỉ trả về đúng 1 lần này */
-export async function createGameApiKey(studio: Studio, userId: string, gameId: string) {
+/** Tạo khóa – khóa đầy đủ chỉ trả về đúng 1 lần này */
+export async function createGameApiKey(studio: Studio, userId: string, gameId: string, input: ApiKeyCreateInput) {
   assertTermsAccepted(studio);
   const game = await findStudioGame(studio.id, gameId);
-  const active = await prisma.apiKey.count({ where: { gameId: game.id, kind: "PUBLISHABLE", revokedAt: null } });
-  if (active >= MAX_ACTIVE_KEYS) {
-    throw new ApiError(409, "TOO_MANY_KEYS", `Tối đa ${MAX_ACTIVE_KEYS} khóa đang dùng – thu hồi khóa cũ trước`);
+  const max = MAX_ACTIVE_KEYS[input.kind];
+  const active = await prisma.apiKey.count({ where: { gameId: game.id, kind: input.kind, revokedAt: null } });
+  if (active >= max) {
+    throw new ApiError(409, "TOO_MANY_KEYS", `Tối đa ${max} khóa loại này đang dùng – thu hồi khóa cũ trước`);
   }
-  const { key, keyHash, prefix } = generateApiKey("PUBLISHABLE");
-  const row = await prisma.apiKey.create({ data: { gameId: game.id, kind: "PUBLISHABLE", prefix, keyHash, createdById: userId } });
-  await logEvent({ type: "platform.key.create", userId, gameId: game.id, data: { keyId: row.id, prefix } });
+  const { key, keyHash, prefix } = generateApiKey(input.kind);
+  const row = await prisma.apiKey.create({ data: { gameId: game.id, kind: input.kind, prefix, keyHash, createdById: userId } });
+  await logEvent({ type: "platform.key.create", userId, gameId: game.id, data: { keyId: row.id, prefix, kind: input.kind } });
   return { key, apiKey: apiKeyDto(row) };
 }
 
@@ -436,4 +447,42 @@ export async function revokeGameApiKey(studio: Studio, userId: string, gameId: s
   const res = await prisma.apiKey.updateMany({ where: { id: keyId, gameId: game.id, revokedAt: null }, data: { revokedAt: new Date() } });
   if (res.count !== 1) throw new ApiError(404, "API_KEY_NOT_FOUND", "Không tìm thấy khóa");
   await logEvent({ type: "platform.key.revoke", userId, gameId: game.id, data: { keyId } });
+}
+
+/** Loại sự kiện developer xem được trong nhật ký Platform API của game */
+const AUDIT_EVENT_TYPES = [
+  "platform.key.create",
+  "platform.key.revoke",
+  "platform.origins",
+  "platform.scoring",
+  "score.rejected",
+  "score.deleted",
+  "player.ban",
+  "player.unban",
+];
+const AUDIT_PAGE = 30;
+
+/** Nhật ký: tạo / thu hồi key, đổi domain, điểm bị từ chối, điểm bị xóa, cấm người chơi */
+export async function listGameAuditEvents(studio: Studio, gameId: string, cursor?: string) {
+  const game = await findStudioGame(studio.id, gameId);
+  const rows = await prisma.event.findMany({
+    where: { gameId: game.id, type: { in: AUDIT_EVENT_TYPES } },
+    include: { user: { include: { identities: true } } },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    take: AUDIT_PAGE + 1,
+    ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+  });
+  const page = rows.slice(0, AUDIT_PAGE);
+  return {
+    events: page.map((e) => ({
+      id: e.id,
+      type: e.type,
+      createdAt: e.createdAt,
+      data: e.data,
+      user: e.user
+        ? { id: e.user.id, displayName: displayName({ id: e.user.id, username: e.user.username, walletAddress: primaryWallet(e.user) }) }
+        : null,
+    })),
+    nextCursor: rows.length > AUDIT_PAGE ? page[page.length - 1]!.id : null,
+  };
 }

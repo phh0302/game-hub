@@ -323,7 +323,7 @@
       "FORBIDDEN": "You don't have permission to do this.",
       "ZIP_COMPRESSED_INVALID": "Corrupted or invalid .br/.gz file: {detail}",
       "INVALID_ORIGIN": "Invalid domain – use https://your-domain.com without a path; http only for localhost.",
-      "TOO_MANY_KEYS": "Up to 5 active keys – revoke an old key first.",
+      "TOO_MANY_KEYS": "Key limit reached for this type (5 publishable, 2 secret) – revoke an old key first.",
       "API_KEY_NOT_FOUND": "Key not found."
     },
     "agreePrefix": "I have read and agree to the",
@@ -355,7 +355,37 @@
       "cancel": "Cancel",
       "keyRevoked": "Key revoked.",
       "snippetTitle": "Add to your game",
-      "snippetLogin": "wallet sign-in; pass guest: true for guest play"
+      "snippetLogin": "wallet sign-in; pass guest: true for guest play",
+      "createSecretKey": "Create secret key",
+      "kindPublishable": "publishable",
+      "kindSecret": "secret",
+      "newSecretHint": "Use the secret key only on your game server (Server API /api/s1). NEVER ship it in browser code – revoke it immediately if it leaks.",
+      "scoring": "Accept scores from",
+      "scoringClient": "The player's browser (SDK)",
+      "scoringServer": "Only the game server (Server API + secret key)",
+      "scoringHint": "Choose \"only the game server\" when your backend validates each run: scores sent from the browser are rejected (SERVER_SCORING_ONLY) and your server submits them with POST /api/s1/scores.",
+      "saveScoring": "Save score source",
+      "scoringSaved": "Score source saved.",
+      "serverSnippetTitle": "Submit scores from your game server",
+      "serverSnippetComment": "Runs on your server (Node.js) – the game gets sessionId from GameHub.gameStart()"
+    },
+    "log": {
+      "title": "Platform API log",
+      "refresh": "Reload",
+      "empty": "No events yet.",
+      "more": "Load more",
+      "scoringClient": "from browser",
+      "scoringServer": "server only",
+      "types": {
+        "platform_key_create": "Key created",
+        "platform_key_revoke": "Key revoked",
+        "platform_origins": "Domains changed",
+        "platform_scoring": "Score source changed",
+        "score_rejected": "Score rejected",
+        "score_deleted": "Score deleted",
+        "player_ban": "Player banned",
+        "player_unban": "Player unbanned"
+      }
     }
   },
   "preview": {
