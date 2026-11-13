@@ -8,6 +8,8 @@ import { getPlayableGame } from "@/modules/games/service";
 import { readLeaderboardSettings, type GameSettings } from "@/modules/games/settings";
 import { boardKeySchema, getLeaderboardByKey, getUserRank, isBoardOpen } from "./leaderboard";
 import { checkScore, type ScoreRuleError } from "./rules";
+import { assertNotBanned } from "@/modules/platform/bans";
+import { trackUsage } from "@/modules/platform/usage";
 
 const REJECT_STATUS: Record<ScoreRuleError, number> = {
   SESSION_EXPIRED: 410,
@@ -44,6 +46,7 @@ export async function startSession(userId: string, slug: string) {
 }
 
 export async function startSessionForGame(userId: string, game: ScoringGame, source: "hub" | "api" = "hub") {
+  await assertNotBanned(game.id, userId);
   const session = await prisma.gameSession.create({
     data: { userId, gameId: game.id, gameVersionId: game.currentVersionId },
   });
@@ -53,6 +56,7 @@ export async function startSessionForGame(userId: string, game: ScoringGame, sou
     gameId: game.id,
     data: { sessionId: session.id, version: game.currentVersion?.version ?? null, source },
   });
+  await trackUsage(game.id, "sessions");
   return { sessionId: session.id, startedAt: session.startedAt };
 }
 
@@ -65,7 +69,20 @@ export async function submitScore(userId: string, slug: string, input: z.infer<t
   return submitScoreForGame(userId, await getPlayableGame(slug), input);
 }
 
-export async function submitScoreForGame(userId: string, game: ScoringGame, input: z.infer<typeof submitScoreSchema>) {
+/**
+ * `via`: "client" = trình duyệt (hub / SDK), "server" = máy chủ của game qua Server API (secret key).
+ * Game bật chế độ "máy chủ xác nhận" (scoreSubmission = "server") chỉ nhận điểm từ máy chủ.
+ */
+export async function submitScoreForGame(
+  userId: string,
+  game: ScoringGame,
+  input: z.infer<typeof submitScoreSchema>,
+  via: "client" | "server" = "client",
+) {
+  if (via === "client" && game.parsedSettings.scoreSubmission === "server") {
+    throw new ApiError(403, "SERVER_SCORING_ONLY", "Game này chỉ nhận điểm do máy chủ của game gửi");
+  }
+  await assertNotBanned(game.id, userId);
   const board = await getLeaderboardByKey(game.id, input.leaderboard);
   const now = new Date();
 
@@ -95,8 +112,9 @@ export async function submitScoreForGame(userId: string, game: ScoringGame, inpu
       type: "score.rejected",
       userId,
       gameId: game.id,
-      data: { sessionId: session.id, leaderboard: board.key, reason: rejected, value: input.score, durationSeconds },
+      data: { sessionId: session.id, leaderboard: board.key, reason: rejected, value: input.score, durationSeconds, via },
     });
+    await trackUsage(game.id, "rejected");
     throw new ApiError(REJECT_STATUS[rejected], rejected, REJECT_MESSAGE[rejected]);
   }
 
@@ -162,8 +180,9 @@ export async function submitScoreForGame(userId: string, game: ScoringGame, inpu
     type: "score.submit",
     userId,
     gameId: game.id,
-    data: { sessionId: session.id, leaderboard: board.key, value, durationSeconds, mirrors: mirrors.map((m) => m.key) },
+    data: { sessionId: session.id, leaderboard: board.key, value, durationSeconds, mirrors: mirrors.map((m) => m.key), via },
   });
+  await trackUsage(game.id, "scores");
 
   const ranking = await getUserRank(board, userId, "all");
   // Hạng trong các giải đấu vừa nhận điểm (hub hiện thêm "Giải …: hạng #N")

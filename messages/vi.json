@@ -323,7 +323,7 @@
       "FORBIDDEN": "Bạn không có quyền làm việc này.",
       "ZIP_COMPRESSED_INVALID": "File nén .br/.gz bị hỏng hoặc không đúng định dạng: {detail}",
       "INVALID_ORIGIN": "Domain không hợp lệ – dạng https://ten-mien.com, không có đường dẫn; http chỉ cho localhost.",
-      "TOO_MANY_KEYS": "Tối đa 5 key đang dùng – hãy thu hồi key cũ trước.",
+      "TOO_MANY_KEYS": "Đã đủ số key loại này đang dùng (5 publishable, 2 secret) – hãy thu hồi key cũ trước.",
       "API_KEY_NOT_FOUND": "Không tìm thấy key."
     },
     "agreePrefix": "Tôi đã đọc và đồng ý với",
@@ -355,7 +355,37 @@
       "cancel": "Hủy",
       "keyRevoked": "Đã thu hồi key.",
       "snippetTitle": "Nhúng vào game",
-      "snippetLogin": "đăng nhập ví; thêm guest: true để chơi khách"
+      "snippetLogin": "đăng nhập ví; thêm guest: true để chơi khách",
+      "createSecretKey": "Tạo secret key",
+      "kindPublishable": "publishable",
+      "kindSecret": "secret",
+      "newSecretHint": "Secret key chỉ dùng trên máy chủ của game (Server API /api/s1). KHÔNG đưa vào code chạy trên trình duyệt – lộ key thì thu hồi ngay.",
+      "scoring": "Nhận điểm từ",
+      "scoringClient": "Trình duyệt của người chơi (SDK)",
+      "scoringServer": "Chỉ máy chủ của game (Server API + secret key)",
+      "scoringHint": "Chọn \"chỉ máy chủ\" khi game có backend tự kiểm tra ván chơi: điểm gửi từ trình duyệt bị từ chối (SERVER_SCORING_ONLY), máy chủ nộp điểm bằng POST /api/s1/scores.",
+      "saveScoring": "Lưu cách nhận điểm",
+      "scoringSaved": "Đã lưu cách nhận điểm.",
+      "serverSnippetTitle": "Nộp điểm từ máy chủ của game",
+      "serverSnippetComment": "Chạy trên máy chủ (Node.js) – sessionId do game lấy từ GameHub.gameStart()"
+    },
+    "log": {
+      "title": "Nhật ký Platform API",
+      "refresh": "Tải lại",
+      "empty": "Chưa có sự kiện nào.",
+      "more": "Xem thêm",
+      "scoringClient": "nhận từ trình duyệt",
+      "scoringServer": "chỉ nhận từ máy chủ",
+      "types": {
+        "platform_key_create": "Tạo key",
+        "platform_key_revoke": "Thu hồi key",
+        "platform_origins": "Đổi domain",
+        "platform_scoring": "Đổi cách nhận điểm",
+        "score_rejected": "Điểm bị từ chối",
+        "score_deleted": "Điểm bị xóa",
+        "player_ban": "Cấm người chơi",
+        "player_unban": "Bỏ cấm người chơi"
+      }
     }
   },
   "preview": {

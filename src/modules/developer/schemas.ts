@@ -31,7 +31,13 @@ export const devGameUpdateSchema = devGameCreateSchema
   .extend({
     /** Domain được gọi Client API khi game chạy ngoài hub (Platform API) */
     allowedOrigins: z.array(z.string().trim().max(200)).max(10).optional(),
+    /** Ai được nộp điểm: trình duyệt (SDK) hay chỉ máy chủ của game (Server API) */
+    scoreSubmission: z.enum(["client", "server"]).optional(),
   });
+
+export const apiKeyCreateSchema = z.object({ kind: z.enum(["PUBLISHABLE", "SECRET"]).default("PUBLISHABLE") });
+
+export const devEventsQuerySchema = z.object({ cursor: z.string().max(50).optional() });
 
 export const uploadRequestSchema = z.object({
   kind: z.enum(["build", "image"]),
@@ -50,5 +56,6 @@ export type StudioCreateInput = z.infer<typeof studioCreateSchema>;
 export type MemberAddInput = z.infer<typeof memberAddSchema>;
 export type DevGameCreateInput = z.infer<typeof devGameCreateSchema>;
 export type DevGameUpdateInput = z.infer<typeof devGameUpdateSchema>;
+export type ApiKeyCreateInput = z.infer<typeof apiKeyCreateSchema>;
 export type UploadRequestInput = z.infer<typeof uploadRequestSchema>;
 export type DevVersionCreateInput = z.infer<typeof devVersionCreateSchema>;

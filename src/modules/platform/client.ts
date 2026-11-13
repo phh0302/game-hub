@@ -8,6 +8,7 @@ import { verifyPlayerToken } from "@/modules/auth/jwt";
 import { userWithIdentities, type UserWithIdentities } from "@/modules/users/dto";
 import { hashApiKey, looksLikeApiKey } from "./keys";
 import { isOriginAllowed, normalizeOrigin, requestOrigin } from "./origins";
+import { trackUsage } from "./usage";
 
 export const API_KEY_HEADER = "x-gamehub-key";
 
@@ -47,6 +48,7 @@ export async function resolveProject(req: Request): Promise<ProjectContext> {
     throw new ApiError(403, "ORIGIN_NOT_ALLOWED", "Domain này chưa được khai báo cho game");
   }
   await rateLimit(`p1:${game.id}`, PROJECT_LIMIT_PER_MINUTE, 60_000);
+  await trackUsage(game.id, "apiCalls");
 
   if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > LAST_USED_INTERVAL_MS) {
     await prisma.apiKey.update({ where: { id: row.id }, data: { lastUsedAt: new Date() } }).catch(() => undefined);

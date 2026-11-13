@@ -12,6 +12,11 @@ export const gameSettingsSchema = z
     minPlaySeconds: z.number().int().min(0).max(3600).default(0),
     /** Lượt chơi bắt đầu quá số giờ này thì không nhận điểm */
     maxSessionHours: z.number().positive().max(72).default(6),
+    /**
+     * Ai được nộp điểm: "client" = trình duyệt qua SDK (mặc định);
+     * "server" = chỉ máy chủ của game qua Server API (secret key) – chặn nộp điểm từ trình duyệt
+     */
+    scoreSubmission: z.enum(["client", "server"]).default("client"),
   })
   .passthrough();
 
@@ -46,6 +51,7 @@ export const gameSettingsInputSchema = z
   .object({
     minPlaySeconds: z.number().int().min(0).max(3600).optional(),
     maxSessionHours: z.number().positive().max(72).optional(),
+    scoreSubmission: z.enum(["client", "server"]).optional(),
   })
   .passthrough();
 
