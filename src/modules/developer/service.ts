@@ -241,7 +241,7 @@ export async function listStudioGames(studioId: string, locale: string) {
   return games.map((g) => toDevGameDto(g, locale, stats.get(g.id)));
 }
 
-async function findStudioGame(studioId: string, gameId: string) {
+export async function findStudioGame(studioId: string, gameId: string) {
   const game = await prisma.game.findUnique({ where: { id: gameId }, include: devGameInclude });
   if (!game || game.deletedAt || game.studioId !== studioId) {
     throw new ApiError(404, "GAME_NOT_FOUND", "Không tìm thấy game");
@@ -459,6 +459,9 @@ const AUDIT_EVENT_TYPES = [
   "score.deleted",
   "player.ban",
   "player.unban",
+  "platform.webhook",
+  "platform.webhook.rotate",
+  "webhook.failed",
 ];
 const AUDIT_PAGE = 30;
 

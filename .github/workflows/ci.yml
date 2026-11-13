@@ -122,6 +122,8 @@ jobs:
       ADMIN_WALLETS: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
       STORAGE_DRIVER: local
       NEXT_TELEMETRY_DISABLED: "1"
+      # Test webhook gửi tới máy nhận chạy cùng máy (127.0.0.1) – production KHÔNG bật
+      WEBHOOK_ALLOW_PRIVATE: "1"
     steps:
       - uses: actions/checkout@v5
 

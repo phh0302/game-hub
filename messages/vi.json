@@ -324,7 +324,11 @@
       "ZIP_COMPRESSED_INVALID": "File nén .br/.gz bị hỏng hoặc không đúng định dạng: {detail}",
       "INVALID_ORIGIN": "Domain không hợp lệ – dạng https://ten-mien.com, không có đường dẫn; http chỉ cho localhost.",
       "TOO_MANY_KEYS": "Đã đủ số key loại này đang dùng (5 publishable, 2 secret) – hãy thu hồi key cũ trước.",
-      "API_KEY_NOT_FOUND": "Không tìm thấy key."
+      "API_KEY_NOT_FOUND": "Không tìm thấy key.",
+      "INVALID_WEBHOOK_URL": "URL webhook phải là https và không trỏ vào localhost / mạng nội bộ.",
+      "WEBHOOK_NOT_SET": "Hãy lưu URL webhook trước.",
+      "DELIVERY_NOT_FOUND": "Không tìm thấy lần gửi này.",
+      "DELIVERY_SUCCEEDED": "Sự kiện này đã gửi thành công."
     },
     "agreePrefix": "Tôi đã đọc và đồng ý với",
     "termsLink": "Điều khoản dành cho người đăng game",
@@ -384,7 +388,51 @@
         "score_rejected": "Điểm bị từ chối",
         "score_deleted": "Điểm bị xóa",
         "player_ban": "Cấm người chơi",
-        "player_unban": "Bỏ cấm người chơi"
+        "player_unban": "Bỏ cấm người chơi",
+        "platform_webhook": "Đổi webhook",
+        "platform_webhook_rotate": "Đổi khóa ký webhook",
+        "webhook_failed": "Webhook gửi thất bại"
+      }
+    },
+    "usage": {
+      "title": "Số liệu Platform API",
+      "range": "Khoảng thời gian",
+      "days": "{n} ngày",
+      "metrics": {
+        "activePlayers": "Người chơi",
+        "sessions": "Lượt chơi",
+        "scores": "Điểm đã lưu",
+        "rejected": "Điểm bị từ chối",
+        "apiCalls": "Lượt gọi API"
+      },
+      "chartHint": "Số {metric} mỗi ngày – trỏ vào cột để xem chi tiết",
+      "chartLabel": "Biểu đồ {metric} theo ngày, {days} ngày gần nhất",
+      "note": "Tính theo ngày UTC. Người chơi = số tài khoản khác nhau có bắt đầu lượt chơi (cả trên hub và ngoài hub)."
+    },
+    "webhook": {
+      "title": "Webhook",
+      "intro": "Máy chủ của game nhận sự kiện score.submitted mỗi khi có điểm mới (POST JSON, ký HMAC-SHA256 ở header x-monlabs-signature). Lỗi thì tự gửi lại sau 1 phút, 5 phút, 30 phút, 2 giờ, 12 giờ.",
+      "url": "URL nhận webhook",
+      "urlHint": "Phải là https và không trỏ vào mạng nội bộ. Để trống rồi lưu để tắt webhook.",
+      "save": "Lưu webhook",
+      "saved": "Đã lưu webhook.",
+      "disabled": "Đã tắt webhook.",
+      "test": "Gửi thử",
+      "testOk": "Gửi thành công.",
+      "testFail": "Gửi lỗi: {error}",
+      "rotate": "Đổi khóa ký",
+      "rotated": "Đã đổi khóa ký – khóa cũ hết hiệu lực.",
+      "secretTitle": "Khóa ký webhook – sao chép ngay, sẽ không hiện lại:",
+      "secretHint": "Dùng khóa này ở máy chủ để kiểm tra chữ ký (xem docs \"Server API\").",
+      "secretKept": "Khóa ký đang dùng:",
+      "deliveries": "Lần gửi gần đây",
+      "attempts": "{n} lần thử",
+      "retry": "Gửi lại",
+      "status": {
+        "SUCCEEDED": "thành công (HTTP {code})",
+        "FAILED": "thất bại – {error}",
+        "QUEUED": "đang chờ gửi",
+        "RETRYING": "lỗi ({error}), gửi lại lúc {at}"
       }
     }
   },

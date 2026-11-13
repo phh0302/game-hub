@@ -6,7 +6,7 @@ const KEY_PREFIX: Record<ApiKeyKind, string> = { PUBLISHABLE: "pk_live_", SECRET
 const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 /** Chuỗi ngẫu nhiên base62 (không lệch phân bố: bỏ byte ≥ 248) */
-function randomBase62(length: number) {
+export function randomBase62(length: number) {
   let out = "";
   while (out.length < length) {
     for (const b of randomBytes(length * 2)) {

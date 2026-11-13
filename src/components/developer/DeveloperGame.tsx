@@ -19,6 +19,8 @@ import {
   type VersionStatus,
 } from "./shared";
 import { PlatformLog } from "./PlatformLog";
+import { UsageStats } from "./UsageStats";
+import { WebhookSettings } from "./WebhookSettings";
 import { ApiIntegration } from "./ApiIntegration";
 
 type Version = {
@@ -105,6 +107,8 @@ export function DeveloperGame({ gameId }: { gameId: string }) {
       <VersionList game={game} />
       <GameInfoForm game={game} onSaved={setGame} />
       <ApiIntegration gameId={game.id} origins={game.allowedOrigins} scoreSubmission={game.scoreSubmission} />
+      <UsageStats gameId={game.id} />
+      <WebhookSettings gameId={game.id} />
       <PlatformLog gameId={game.id} />
     </div>
   );

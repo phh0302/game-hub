@@ -10,6 +10,7 @@ import { boardKeySchema, getLeaderboardByKey, getUserRank, isBoardOpen } from ".
 import { checkScore, type ScoreRuleError } from "./rules";
 import { assertNotBanned } from "@/modules/platform/bans";
 import { trackUsage } from "@/modules/platform/usage";
+import { enqueueWebhook } from "@/modules/platform/webhooks";
 
 const REJECT_STATUS: Record<ScoreRuleError, number> = {
   SESSION_EXPIRED: 410,
@@ -183,6 +184,18 @@ export async function submitScoreForGame(
     data: { sessionId: session.id, leaderboard: board.key, value, durationSeconds, mirrors: mirrors.map((m) => m.key), via },
   });
   await trackUsage(game.id, "scores");
+
+  await enqueueWebhook(game.id, "score.submitted", {
+    scoreId: score.id,
+    sessionId: session.id,
+    playerId: userId,
+    leaderboard: board.key,
+    value,
+    durationSeconds,
+    isNewBest,
+    tournaments: mirrors.map((m) => m.key),
+    via,
+  });
 
   const ranking = await getUserRank(board, userId, "all");
   // Hạng trong các giải đấu vừa nhận điểm (hub hiện thêm "Giải …: hạng #N")

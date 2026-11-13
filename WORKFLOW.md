@@ -216,12 +216,13 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 - [ ] Chạy lại toàn bộ test plan Game Hub sau khi xong 12a
 
 ### Phase 12b – Server API & số liệu
-- [ ] Secret key + Server API `/api/s1`: đọc / xuất điểm, xóa điểm gian lận, cấm người chơi trong project, tạo giải đấu
-- [ ] Chế độ "máy chủ xác nhận": game có backend tự nộp điểm bằng secret key, tắt nộp điểm từ trình duyệt
-- [ ] `UsageDaily` (lượt gọi API, lượt chơi, điểm, người chơi hoạt động) + bảng điều khiển số liệu cho developer
-- [ ] Webhook `score.submitted` ký HMAC, tự gửi lại khi lỗi
-- [ ] Tài liệu API dạng OpenAPI
-- [ ] Nhật ký (`Event`) cho tạo / thu hồi key, đổi domain, điểm bị từ chối – developer tra cứu được
+- [x] Secret key + Server API `/api/s1`: đọc / xuất điểm, xóa điểm gian lận, cấm người chơi trong project, tạo giải đấu
+- [x] Chế độ "máy chủ xác nhận": game có backend tự nộp điểm bằng secret key, tắt nộp điểm từ trình duyệt
+- [x] `UsageDaily` (lượt gọi API, lượt chơi, điểm, người chơi hoạt động) + bảng điều khiển số liệu cho developer
+- [x] Webhook `score.submitted` ký HMAC, tự gửi lại khi lỗi (gửi kèm sự kiện mới + cron hằng ngày + nút Gửi lại)
+- [x] Tài liệu API dạng OpenAPI (`/openapi.json`) + trang docs "Server API & webhook" (vi + en)
+- [x] Nhật ký (`Event`) cho tạo / thu hồi key, đổi domain, điểm bị từ chối – developer tra cứu được
+- [ ] Đặt `CRON_SECRET` trên Vercel (người dùng làm – xem docs/DEPLOY.md)
 
 ### Phase 12c – Gói & hạn mức (chưa thu tiền)
 - [ ] Bảng `Plan` + gói của studio; áp hạn mức theo gói (người chơi hoạt động / tháng, lần nộp điểm / tháng, số project, giải đấu)
@@ -251,6 +252,6 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 | 10 | Nền tảng developer | 3–4 ngày | Xong phần lõi; chờ cấu hình R2 |
 | 11 | Kiếm tiền | tùy hướng chọn | |
 | 12a | PaaS – game chạy trên domain riêng | 4–6 ngày | Đã lên production (PR #23); chờ chạy lại test plan |
-| 12b | PaaS – Server API, số liệu, webhook | 3–4 ngày | |
+| 12b | PaaS – Server API, số liệu, webhook | 3–4 ngày | Xong code (PR #26 + webhook/số liệu); chờ test trên production |
 | 12c | PaaS – gói & hạn mức | 2–3 ngày | |
 | 12d | PaaS – thu tiền | tùy cổng thanh toán | |
