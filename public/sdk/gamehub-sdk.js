@@ -239,6 +239,14 @@
       });
   }
 
+  /** personal_sign chuẩn MetaMask: thông điệp UTF-8 mã hóa hex "0x…" */
+  function utf8ToHex(text) {
+    var bytes = new TextEncoder().encode(text);
+    var out = "0x";
+    for (var i = 0; i < bytes.length; i++) out += (bytes[i] < 16 ? "0" : "") + bytes[i].toString(16);
+    return out;
+  }
+
   function walletLogin() {
     var eth = global.ethereum;
     if (!eth || !eth.request) return Promise.reject({ code: "NO_WALLET", message: "MetaMask not found" });
@@ -254,7 +262,7 @@
         return api("POST", "/auth/nonce", { address: address, chainId: parseInt(chainHex, 16) || 1 });
       })
       .then(function (res) {
-        return eth.request({ method: "personal_sign", params: [res.message, address] }).then(function (signature) {
+        return eth.request({ method: "personal_sign", params: [utf8ToHex(res.message), address] }).then(function (signature) {
           return api("POST", "/auth/verify", { message: res.message, signature: signature });
         });
       });
