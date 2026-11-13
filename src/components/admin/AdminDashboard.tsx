@@ -30,6 +30,8 @@ type AdminGame = {
   translations: { locale: string; name: string }[];
   categories: { category: { slug: string } }[];
   versions: AdminVersion[];
+  /** JSON luật chống gian lận của game (minPlaySeconds, maxSessionHours…) */
+  settings: unknown;
   _count: { sessions: number; scores: number };
 };
 
@@ -291,7 +293,92 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
         </form>
         <p className="mt-2 text-xs text-muted">{t("storageHint")}</p>
       </div>
+
+      <GameRulesAndArchive game={game} run={run} />
     </section>
+  );
+}
+
+/** Luật chống gian lận của game + lưu trữ game (xác nhận ngay trên trang, không dùng hộp thoại trình duyệt) */
+function GameRulesAndArchive({ game, run }: { game: AdminGame; run: Run }) {
+  const t = useTranslations("admin");
+  const current = (game.settings ?? {}) as { minPlaySeconds?: number; maxSessionHours?: number };
+  const [minPlay, setMinPlay] = useState(String(current.minPlaySeconds ?? 0));
+  const [maxHours, setMaxHours] = useState(String(current.maxSessionHours ?? 6));
+  const [confirming, setConfirming] = useState(false);
+
+  return (
+    <div className="flex flex-wrap items-end justify-between gap-4 border-t border-line px-5 py-4">
+      <form
+        className="flex flex-wrap items-end gap-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          void run(
+            () =>
+              apiFetch(`/admin/games/${game.id}`, {
+                method: "PATCH",
+                json: { settings: { minPlaySeconds: Number(minPlay), maxSessionHours: Number(maxHours) } },
+              }),
+            t("ok.rulesSaved"),
+          );
+        }}
+      >
+        <Field label={t("rules.minPlaySeconds")}>
+          <input
+            type="number"
+            min={0}
+            max={3600}
+            step={1}
+            required
+            value={minPlay}
+            onChange={(e) => setMinPlay(e.target.value)}
+            className="w-28 rounded-lg border border-line bg-bg px-3 py-1.5 text-sm"
+          />
+        </Field>
+        <Field label={t("rules.maxSessionHours")}>
+          <input
+            type="number"
+            min={0.5}
+            max={72}
+            step={0.5}
+            required
+            value={maxHours}
+            onChange={(e) => setMaxHours(e.target.value)}
+            className="w-28 rounded-lg border border-line bg-bg px-3 py-1.5 text-sm"
+          />
+        </Field>
+        <button type="submit" className="rounded-lg border border-neon/60 px-4 py-1.5 text-sm font-semibold text-neon hover:bg-neon/10">
+          {t("rules.save")}
+        </button>
+        <p className="w-full text-xs text-muted">{t("rules.hint")}</p>
+      </form>
+
+      <div className="flex flex-wrap items-center gap-2">
+        {!confirming ? (
+          <button
+            type="button"
+            onClick={() => setConfirming(true)}
+            className="rounded-lg border border-neon-pink/50 px-4 py-1.5 text-sm text-neon-pink hover:bg-neon-pink/10"
+          >
+            {t("archive.button")}
+          </button>
+        ) : (
+          <>
+            <span className="text-xs text-neon-pink">{t("archive.confirmText")}</span>
+            <button
+              type="button"
+              onClick={() => void run(() => apiFetch(`/admin/games/${game.id}`, { method: "DELETE" }), t("ok.archived"))}
+              className="rounded-lg bg-neon-pink px-4 py-1.5 text-sm font-semibold text-bg"
+            >
+              {t("archive.confirm")}
+            </button>
+            <button type="button" onClick={() => setConfirming(false)} className="rounded-lg border border-line px-3 py-1.5 text-sm text-muted">
+              {t("cancel")}
+            </button>
+          </>
+        )}
+      </div>
+    </div>
   );
 }
 

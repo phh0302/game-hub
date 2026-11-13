@@ -195,7 +195,9 @@
       "rejected": "Version rejected.",
       "activated": "Live version changed.",
       "versionAdded": "Version added (pending review).",
-      "gameCreated": "Game created."
+      "gameCreated": "Game created.",
+      "rulesSaved": "Game rules saved.",
+      "archived": "Game archived."
     },
     "errors": {
       "load": "Couldn't load data ({code}).",
@@ -208,7 +210,18 @@
       "CATEGORY_NOT_FOUND": "Category does not exist.",
       "FORBIDDEN": "You are not an admin."
     },
-    "preview": "Playtest"
+    "preview": "Playtest",
+    "rules": {
+      "minPlaySeconds": "Minimum play time (seconds)",
+      "maxSessionHours": "Max session length (hours)",
+      "save": "Save rules",
+      "hint": "Runs shorter than the minimum are rejected; sessions open longer than the maximum expire. Max score / points per second rules are on the Leaderboards section."
+    },
+    "archive": {
+      "button": "Archive game",
+      "confirmText": "The game disappears from the hub and this page; scores stay in the database.",
+      "confirm": "Confirm archive"
+    }
   },
   "notFound": {
     "title": "Page not found",

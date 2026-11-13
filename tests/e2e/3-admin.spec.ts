@@ -93,3 +93,40 @@ test("admin tạo giải đấu ăn theo bảng chính → điểm người chơ
   await expect(boards.getByText("Đã xóa bảng.")).toBeVisible();
   await expect(row).toHaveCount(0);
 });
+
+test("admin: sửa luật của game rồi lưu trữ game ngay trên trang", async ({ page }) => {
+  await installWallet(page, "admin");
+  await page.goto("/");
+  await login(page, "admin");
+  await page.goto("/admin");
+
+  // Game tạm để lưu trữ (tạo qua API cho nhanh)
+  const created = await page.evaluate(async () => {
+    const r = await fetch("/api/v1/admin/games", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ slug: "e2e-luu-tru", status: "PUBLISHED", translations: [{ locale: "vi", name: "E2E lưu trữ" }] }),
+    });
+    return r.status;
+  });
+  expect([200, 201]).toContain(created);
+  await page.reload();
+
+  const card = page.locator("section", { has: page.getByRole("heading", { name: /E2E lưu trữ/ }) }).last();
+  await card.getByLabel("Thời gian chơi tối thiểu (giây)").fill("12");
+  await card.getByLabel("Lượt chơi dài tối đa (giờ)").fill("2");
+  await card.getByRole("button", { name: "Lưu luật" }).click();
+  await expect(page.getByRole("status").first()).toHaveText("Đã lưu luật của game.");
+
+  const settings = await page.evaluate(async () => {
+    const g = (await (await fetch("/api/v1/admin/games")).json()).games.find((x: { slug: string }) => x.slug === "e2e-luu-tru");
+    return g.settings;
+  });
+  expect(settings).toMatchObject({ minPlaySeconds: 12, maxSessionHours: 2 });
+
+  await card.getByRole("button", { name: "Lưu trữ game" }).click();
+  await card.getByRole("button", { name: "Xác nhận lưu trữ" }).click();
+  await expect(page.getByRole("status").first()).toHaveText("Đã lưu trữ game.");
+  await expect(page.getByRole("heading", { name: /E2E lưu trữ/ })).toHaveCount(0);
+  expect((await page.request.get("/games/e2e-luu-tru")).status()).toBe(404);
+});
