@@ -67,7 +67,7 @@ Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản
 ```json
 [
   {
-    "AllowedOrigins": ["https://gamehub-vn.vercel.app", "http://localhost:3000"],
+    "AllowedOrigins": ["https://play.monlabs.fun", "http://localhost:3000"],
     "AllowedMethods": ["PUT"],
     "AllowedHeaders": ["Content-Type"],
     "MaxAgeSeconds": 3600
