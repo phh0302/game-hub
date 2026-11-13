@@ -67,10 +67,14 @@ model AuthSession {
   lastSeenAt DateTime?
   userAgent  String?
   ip         String?
+  /// Phiên của Client API (game chạy trên domain riêng) chỉ dùng được cho đúng game này;
+  /// null = phiên đăng nhập trên chính Game Hub
+  gameId     String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, revokedAt])
+  @@index([gameId])
   @@index([expiresAt])
 }
 
@@ -189,6 +193,8 @@ model Game {
   /// Phiên bản đang chạy cho người chơi
   currentVersionId String?    @unique
   publishedAt      DateTime?
+  /// Domain được gọi Client API (/api/p1) khi game chạy ngoài hub, vd "https://mygame.io"
+  allowedOrigins   String[]   @default([])
   createdAt        DateTime   @default(now())
   updatedAt        DateTime   @updatedAt
   deletedAt        DateTime?
@@ -203,6 +209,7 @@ model Game {
   scores         Score[]
   events         Event[]
   reports        GameReport[]
+  apiKeys        ApiKey[]
 
   @@index([status, sortOrder])
   @@index([studioId])
@@ -404,4 +411,29 @@ model GameReport {
   @@index([status, createdAt])
   @@index([gameId, status])
   @@index([reporterId, gameId])
+}
+
+// ───────────────────────────── Platform (PaaS) ─────────────────────────────
+
+enum ApiKeyKind {
+  PUBLISHABLE // pk_… – dán vào game, công khai, luôn đi kèm kiểm tra domain
+  SECRET // sk_… – chỉ dùng trên máy chủ của developer (Phase 12b)
+}
+
+/// Khóa Client API / Server API của 1 game. Chỉ lưu bản băm SHA-256; khóa đầy đủ chỉ hiện 1 lần lúc tạo.
+model ApiKey {
+  id          String     @id @default(cuid())
+  gameId      String
+  kind        ApiKeyKind
+  /// Vài ký tự đầu để nhận diện trên giao diện (vd "pk_live_a1b2")
+  prefix      String
+  keyHash     String     @unique
+  createdById String?
+  createdAt   DateTime   @default(now())
+  lastUsedAt  DateTime?
+  revokedAt   DateTime?
+
+  game Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+
+  @@index([gameId])
 }

@@ -19,8 +19,14 @@ export const verifySchema = z.object({
   signature: z.string().regex(/^0x[0-9a-fA-F]+$/, "Chữ ký không hợp lệ"),
 });
 
+/**
+ * Domain / URI / câu chào trong thông điệp SIWE. Mặc định = domain của hub;
+ * Client API (/api/p1) truyền domain của game (đã kiểm tra nằm trong allowedOrigins).
+ */
+export type SiweTarget = { domain: string; uri: string; statement?: string };
+
 /** Bước 1: tạo nonce dùng 1 lần + thông điệp SIWE để ví ký */
-export async function createWalletChallenge(req: Request, input: z.infer<typeof challengeSchema>) {
+export async function createWalletChallenge(req: Request, input: z.infer<typeof challengeSchema>, target?: SiweTarget) {
   const address = getAddress(input.address); // chuẩn EIP-55 (checksum)
   const nonce = generateSiweNonce();
   const issuedAt = new Date();
@@ -35,7 +41,7 @@ export async function createWalletChallenge(req: Request, input: z.infer<typeof 
     where: { expiresAt: { lt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
   });
 
-  const { domain, uri } = expectedSiwe(req);
+  const { domain, uri } = target ?? expectedSiwe(req);
   return createSiweMessage({
     address,
     chainId: input.chainId,
@@ -43,7 +49,7 @@ export async function createWalletChallenge(req: Request, input: z.infer<typeof 
     uri,
     nonce,
     version: "1",
-    statement: SIWE_STATEMENT,
+    statement: target?.statement ?? SIWE_STATEMENT,
     issuedAt,
     expirationTime,
   });
@@ -53,6 +59,7 @@ export async function createWalletChallenge(req: Request, input: z.infer<typeof 
 export async function verifyWalletLogin(
   req: Request,
   input: z.infer<typeof verifySchema>,
+  target?: SiweTarget,
 ): Promise<UserWithIdentities> {
   const parsed = parseSiweMessage(input.message);
   if (!parsed.address || !parsed.nonce) {
@@ -60,7 +67,7 @@ export async function verifyWalletLogin(
   }
 
   // Domain, nonce, thời hạn của thông điệp
-  const { domain } = expectedSiwe(req);
+  const { domain } = target ?? expectedSiwe(req);
   if (!validateSiweMessage({ message: parsed, domain, nonce: parsed.nonce })) {
     throw new ApiError(401, "INVALID_MESSAGE", "Thông điệp đăng nhập sai domain hoặc đã hết hạn");
   }

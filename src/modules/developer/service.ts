@@ -13,6 +13,8 @@ import { IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_UPLOAD_BYTES } from "@/modules/upload
 import { extractBuild, ZipValidationError, type BuildFile } from "@/modules/uploads/zip";
 import { displayName } from "@/lib/format";
 import { primaryWallet } from "@/modules/users/dto";
+import { generateApiKey } from "@/modules/platform/keys";
+import { normalizeOrigin } from "@/modules/platform/origins";
 import { DEVELOPER_TERMS_VERSION, isTermsUpToDate } from "./terms";
 import type {
   MemberAddInput,
@@ -192,6 +194,7 @@ function toDevGameDto(game: DevGame, locale: string, stats?: { sessions: number;
     thumbnailUrl: assetUrl(game.thumbnailKey),
     currentVersionId: game.currentVersionId,
     publishedAt: game.publishedAt,
+    allowedOrigins: game.allowedOrigins,
     versions: game.versions.map((v) => ({
       id: v.id,
       version: v.version,
@@ -285,6 +288,14 @@ export async function updateStudioGame(
     categorySlugs: input.categorySlugs,
     thumbnailKey: input.thumbnailKey,
   });
+  if (input.allowedOrigins) {
+    const origins = [...new Set(input.allowedOrigins.filter((o) => o.trim()).map((o) => normalizeOrigin(o)))];
+    if (origins.some((o) => o === null)) {
+      throw new ApiError(400, "INVALID_ORIGIN", "Domain không hợp lệ (dạng https://ten-mien.com, http chỉ cho localhost)");
+    }
+    await prisma.game.update({ where: { id: game.id }, data: { allowedOrigins: origins as string[] } });
+    await logEvent({ type: "platform.origins", userId, gameId: game.id, data: { origins: origins as string[] } });
+  }
   return getStudioGame(studio.id, game.id, locale);
 }
 
@@ -389,4 +400,40 @@ export async function getPreviewableVersion(user: { id: string; role: string }, 
   const isMember = version.game.studio.members.some((m) => m.userId === user.id);
   if (user.role !== "ADMIN" && !isMember) return null;
   return version;
+}
+
+// ───────────── Platform API: khóa của game ─────────────
+
+/** Tối đa số publishable key đang hoạt động / game (đủ để xoay vòng khóa) */
+const MAX_ACTIVE_KEYS = 5;
+
+function apiKeyDto(k: { id: string; kind: string; prefix: string; createdAt: Date; lastUsedAt: Date | null; revokedAt: Date | null }) {
+  return { id: k.id, kind: k.kind, prefix: k.prefix, createdAt: k.createdAt, lastUsedAt: k.lastUsedAt, revokedAt: k.revokedAt };
+}
+
+export async function listGameApiKeys(studio: Studio, gameId: string) {
+  const game = await findStudioGame(studio.id, gameId);
+  const keys = await prisma.apiKey.findMany({ where: { gameId: game.id }, orderBy: { createdAt: "desc" } });
+  return keys.map(apiKeyDto);
+}
+
+/** Tạo publishable key – khóa đầy đủ chỉ trả về đúng 1 lần này */
+export async function createGameApiKey(studio: Studio, userId: string, gameId: string) {
+  assertTermsAccepted(studio);
+  const game = await findStudioGame(studio.id, gameId);
+  const active = await prisma.apiKey.count({ where: { gameId: game.id, kind: "PUBLISHABLE", revokedAt: null } });
+  if (active >= MAX_ACTIVE_KEYS) {
+    throw new ApiError(409, "TOO_MANY_KEYS", `Tối đa ${MAX_ACTIVE_KEYS} khóa đang dùng – thu hồi khóa cũ trước`);
+  }
+  const { key, keyHash, prefix } = generateApiKey("PUBLISHABLE");
+  const row = await prisma.apiKey.create({ data: { gameId: game.id, kind: "PUBLISHABLE", prefix, keyHash, createdById: userId } });
+  await logEvent({ type: "platform.key.create", userId, gameId: game.id, data: { keyId: row.id, prefix } });
+  return { key, apiKey: apiKeyDto(row) };
+}
+
+export async function revokeGameApiKey(studio: Studio, userId: string, gameId: string, keyId: string) {
+  const game = await findStudioGame(studio.id, gameId);
+  const res = await prisma.apiKey.updateMany({ where: { id: keyId, gameId: game.id, revokedAt: null }, data: { revokedAt: new Date() } });
+  if (res.count !== 1) throw new ApiError(404, "API_KEY_NOT_FOUND", "Không tìm thấy khóa");
+  await logEvent({ type: "platform.key.revoke", userId, gameId: game.id, data: { keyId } });
 }

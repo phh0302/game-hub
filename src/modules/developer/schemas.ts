@@ -25,7 +25,13 @@ export const devGameCreateSchema = z.object({
   thumbnailKey: z.string().trim().max(300).nullable().optional(),
 });
 
-export const devGameUpdateSchema = devGameCreateSchema.omit({ slug: true }).partial();
+export const devGameUpdateSchema = devGameCreateSchema
+  .omit({ slug: true })
+  .partial()
+  .extend({
+    /** Domain được gọi Client API khi game chạy ngoài hub (Platform API) */
+    allowedOrigins: z.array(z.string().trim().max(200)).max(10).optional(),
+  });
 
 export const uploadRequestSchema = z.object({
   kind: z.enum(["build", "image"]),

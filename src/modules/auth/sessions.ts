@@ -4,12 +4,17 @@ import { clientIp } from "@/lib/api";
 import { SESSION_MAX_AGE } from "./jwt";
 
 /** Tạo phiên đăng nhập mới → id dùng làm jti trong JWT */
-export async function createAuthSession(userId: string, req: Request): Promise<string> {
+export async function createAuthSession(
+  userId: string,
+  req: Request,
+  options: { gameId?: string; maxAgeSeconds?: number } = {},
+): Promise<string> {
   const now = Date.now();
   const session = await prisma.authSession.create({
     data: {
       userId,
-      expiresAt: new Date(now + SESSION_MAX_AGE * 1000),
+      gameId: options.gameId ?? null,
+      expiresAt: new Date(now + (options.maxAgeSeconds ?? SESSION_MAX_AGE) * 1000),
       lastSeenAt: new Date(now),
       userAgent: req.headers.get("user-agent")?.slice(0, 300) ?? null,
       ip: clientIp(req).slice(0, 64),

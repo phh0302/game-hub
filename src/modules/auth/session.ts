@@ -24,6 +24,7 @@ export const getCurrentUser = cache(async (): Promise<UserWithIdentities | null>
     include: { user: { include: userWithIdentities } },
   });
   if (!row || row.userId !== session.sub || row.revokedAt || row.expiresAt <= new Date()) return null;
+  if (row.gameId) return null; // phiên của Client API (game ngoài hub) không dùng được trên hub
   const user = row.user;
   if (user.deletedAt || user.suspendedAt) return null;
 
