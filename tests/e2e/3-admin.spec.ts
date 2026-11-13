@@ -105,7 +105,7 @@ test("admin: sửa luật của game rồi lưu trữ game ngay trên trang", as
     const r = await fetch("/api/v1/admin/games", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ slug: "e2e-luu-tru", status: "PUBLISHED", translations: [{ locale: "vi", name: "E2E lưu trữ" }] }),
+      body: JSON.stringify({ slug: "e2e-luu-tru", translations: [{ locale: "vi", name: "E2E lưu trữ" }] }),
     });
     return r.status;
   });
