@@ -234,7 +234,8 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 ### Phase 12d – Thu tiền
 - [ ] Cổng thanh toán: Stripe (quốc tế), VNPay / MoMo (Việt Nam), hóa đơn
 - [ ] Điều khoản dịch vụ & chính sách dữ liệu cho khách PaaS; kiểm tra pháp lý trước khi thu tiền thật
-- [ ] Trang trạng thái (status page), cam kết thời gian hoạt động cho gói Business
+- [x] Trang trạng thái [monlabs.fun/status](https://monlabs.fun/status/): kiểm tra trực tiếp Game Hub, API & database, Platform API, docs; sự cố ghi trong `sites/monlabs/status/incidents.json`
+- [ ] Cam kết thời gian hoạt động (SLA) cho gói Business – cần đo uptime liên tục (dịch vụ giám sát bên ngoài) trước khi cam kết
 
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
