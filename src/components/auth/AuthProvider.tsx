@@ -139,6 +139,17 @@ export function AuthProvider({
     }
   }, [router]);
 
+  // Đến từ nút "Kết nối ví" trên monlabs.fun (?connect=1) → mở MetaMask luôn, rồi bỏ tham số khỏi URL
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (url.searchParams.get("connect") !== "1") return;
+    url.searchParams.delete("connect");
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+    if (!initialUser) void login();
+    // Chỉ chạy 1 lần khi trang mở
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Đổi ví trong MetaMask khi đang đăng nhập → đăng xuất để tránh dùng nhầm tài khoản
   useEffect(() => {
     const eth = window.ethereum;
