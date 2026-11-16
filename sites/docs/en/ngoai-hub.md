@@ -42,7 +42,7 @@ It's fine to put it in your game's code: the key **only works on the domains you
 | Function | Result |
 | --- | --- |
 | `GameHub.init({ projectKey, apiBase?, locale? })` | `Promise<{ mode: "project", project, player, canSubmitScore, locale }>` |
-| `GameHub.login()` / `GameHub.login({ guest: true })` | `Promise<player>` – the token is kept in the browser for next time |
+| `GameHub.login()` / `GameHub.login({ guest: true })` | `Promise<player>` – the token is kept in the browser for next time. Calling `login()` (wallet) while playing as a guest links a new wallet to the guest account, or merges the guest's scores into the wallet's existing account – nothing is lost |
 | `GameHub.logout()` | Revokes the token on the server immediately |
 | `GameHub.me()` | `Promise<{ player, best } \| null>` |
 | `GameHub.gameStart()` | Opens a run → `Promise<sessionId \| null>` (for games whose server submits scores, see [Server API](/en/server-api)) |

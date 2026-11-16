@@ -3,7 +3,7 @@
   "ignoreCommand": "bash \"$(git rev-parse --show-toplevel)/scripts/vercel-ignore-build.sh\"",
   "crons": [
     {
-      "path": "/api/cron/webhooks",
+      "path": "/api/cron/daily",
       "schedule": "17 3 * * *"
     }
   ]

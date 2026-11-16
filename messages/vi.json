@@ -147,7 +147,21 @@
     "avatarUpload": "Tải ảnh lên",
     "avatarChange": "Đổi ảnh",
     "avatarUploading": "Đang tải…",
-    "avatarRemove": "Bỏ ảnh"
+    "avatarRemove": "Bỏ ảnh",
+    "delete": {
+      "title": "Xóa tài khoản",
+      "hint": "Xóa hẳn tài khoản: ví đã gắn, tên, ảnh đại diện, lượt chơi, điểm trên mọi bảng xếp hạng (cả game ngoài hub). Không khôi phục được. Kết nối lại ví này sau đó sẽ tạo tài khoản mới, trống.",
+      "button": "Xóa tài khoản…",
+      "word": "XOA",
+      "typeToConfirm": "Gõ {word} để xác nhận",
+      "confirm": "Xóa vĩnh viễn",
+      "cancel": "Hủy",
+      "errors": {
+        "ADMIN_ACCOUNT": "Tài khoản admin không tự xóa được – hãy bỏ quyền admin trước.",
+        "STUDIO_OWNER": "Bạn đang là chủ studio – hãy chuyển quyền chủ cho thành viên khác hoặc nhờ admin xóa studio trước.",
+        "generic": "Không xóa được ({code})."
+      }
+    }
   },
   "admin": {
     "title": "Quản trị",
@@ -562,8 +576,15 @@
       "USER_NOT_FOUND": "Không tìm thấy người dùng (nhập đủ địa chỉ ví hoặc đúng tên).",
       "CANNOT_SUSPEND_ADMIN": "Không thể khóa tài khoản admin.",
       "CANNOT_SUSPEND_SELF": "Không thể tự khóa tài khoản của mình.",
-      "VALIDATION_ERROR": "Thông tin không hợp lệ."
-    }
+      "VALIDATION_ERROR": "Thông tin không hợp lệ.",
+      "ADMIN_ACCOUNT": "Không xóa được tài khoản admin.",
+      "STUDIO_OWNER": "Người này đang là chủ studio – chuyển quyền hoặc xóa studio trước."
+    },
+    "delete": "Xóa tài khoản…",
+    "deleteWarn": "Xóa hẳn ví, điểm, lượt chơi – không khôi phục được.",
+    "deleteConfirm": "Xóa vĩnh viễn",
+    "cancel": "Hủy",
+    "deleted": "Đã xóa tài khoản {name}."
   },
   "errorPage": {
     "title": "Đã có lỗi xảy ra",

@@ -5,6 +5,7 @@ import { createSiweMessage, generateSiweNonce, parseSiweMessage, validateSiweMes
 import { prisma } from "@/lib/prisma";
 import { env } from "@/lib/env";
 import { ApiError } from "@/lib/api";
+import { mergeGuestInto } from "@/modules/users/account";
 import { logEvent } from "@/modules/events/service";
 import { userWithIdentities, type UserWithIdentities } from "@/modules/users/dto";
 import { expectedSiwe, NONCE_TTL_MS, SIWE_STATEMENT } from "./siwe";
@@ -60,6 +61,8 @@ export async function verifyWalletLogin(
   req: Request,
   input: z.infer<typeof verifySchema>,
   target?: SiweTarget,
+  /** Đang chơi khách (Client API) → gắn ví vào tài khoản khách / gộp vào tài khoản ví đã có */
+  options: { guestUserId?: string } = {},
 ): Promise<UserWithIdentities> {
   const parsed = parseSiweMessage(input.message);
   if (!parsed.address || !parsed.nonce) {
@@ -117,6 +120,20 @@ export async function verifyWalletLogin(
     });
     if (user.deletedAt) throw new ApiError(403, "ACCOUNT_DISABLED", "Tài khoản đã bị khóa");
     if (user.suspendedAt) throw new ApiError(403, "ACCOUNT_SUSPENDED", user.suspendReason ?? "Tài khoản đã bị khóa");
+    if (options.guestUserId && options.guestUserId !== user.id) {
+      // Ví đã có tài khoản → chuyển dữ liệu của tài khoản khách sang rồi xóa tài khoản khách
+      await mergeGuestInto(options.guestUserId, user.id);
+    }
+  } else if (options.guestUserId) {
+    // Ví mới → gắn thẳng vào tài khoản khách: giữ nguyên id, điểm, lượt chơi
+    await prisma.authIdentity.create({
+      data: { userId: options.guestUserId, provider: "WALLET", providerUserId: wallet, lastUsedAt: now },
+    });
+    user = await prisma.user.update({
+      where: { id: options.guestUserId },
+      data: { isGuest: false, lastLoginAt: now, role: isAdminWallet ? "ADMIN" : "USER" },
+      include: userWithIdentities,
+    });
   } else {
     user = await prisma.user.create({
       data: {
@@ -128,6 +145,10 @@ export async function verifyWalletLogin(
     });
   }
 
-  await logEvent({ type: "auth.login", userId: user.id, data: { provider: "WALLET", isNew: !identity } });
+  await logEvent({
+    type: "auth.login",
+    userId: user.id,
+    data: { provider: "WALLET", isNew: !identity, fromGuest: Boolean(options.guestUserId) },
+  });
   return user;
 }

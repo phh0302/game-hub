@@ -9,6 +9,8 @@ import type { Hex } from "viem";
 export const WALLETS = {
   admin: privateKeyToAccount("0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"),
   player: privateKeyToAccount("0x59c6995e998f97a5a0044966f0945389dc9e86dae88c7a8412f4603b6b78690d"),
+  /** Ví dùng 1 lần trong test xóa tài khoản / gắn ví vào tài khoản khách */
+  third: privateKeyToAccount("0x5de4111afa1a4b94908f83103eb1f1706367c2e68ca870fc3fb9a804cdab365a"),
 };
 
 /** Gắn window.ethereum giả vào trang: trả về địa chỉ ví, ký thông điệp SIWE bằng khóa test */
