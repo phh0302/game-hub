@@ -147,6 +147,43 @@
         color: var(--text);
       }
 
+      /* Nút kết nối ví: chưa đăng nhập → mở Game Hub và bật MetaMask; đã đăng nhập → tên + vào hồ sơ */
+      .nav-links a.wallet-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: 4px;
+        padding: 7px 14px;
+        border: 1px solid rgb(34 227 255 / 0.55);
+        border-radius: 999px;
+        color: var(--cyan);
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .nav-links a.wallet-btn:hover {
+        background: rgb(34 227 255 / 0.1);
+        color: var(--cyan);
+      }
+
+      .wallet-dot {
+        display: none;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--lime);
+        box-shadow: 0 0 8px rgb(182 255 59 / 0.7);
+      }
+
+      .nav-links a.wallet-btn.signed-in {
+        border-color: var(--line);
+        color: var(--text);
+      }
+
+      .wallet-btn.signed-in .wallet-dot {
+        display: inline-block;
+      }
+
       .lang {
         display: flex;
         padding: 3px;
@@ -729,6 +766,12 @@
           display: none;
         }
 
+        .nav-links a.wallet-btn {
+          display: inline-flex;
+          padding: 6px 12px;
+          font-size: 13px;
+        }
+
         .games {
           grid-template-columns: minmax(0, 1fr);
         }
@@ -760,6 +803,9 @@
           <a href="#developers" data-i18n="navDev">Developer</a>
           <a href="#pricing" data-i18n="navPricing">Bảng giá</a>
           <a href="https://docs.monlabs.fun" data-i18n="navDocs">Tài liệu</a>
+          <a class="wallet-btn" id="wallet-btn" href="https://play.monlabs.fun/?connect=1">
+            <span class="wallet-dot" aria-hidden="true"></span><span id="wallet-label" data-i18n="connectWallet">Kết nối ví</span>
+          </a>
           <div class="lang" role="group" aria-label="Ngôn ngữ / Language">
             <button type="button" data-lang="vi" aria-pressed="true">VI</button>
             <button type="button" data-lang="en" aria-pressed="false">EN</button>
@@ -1068,6 +1114,7 @@ GameHub.<span class="f">gameOver</span>(score);   <span class="c">// submit scor
           f3Text: "Add Game Hub to your home screen on Android and iPhone and play full screen.",
           navPricing: "Pricing",
           navStatus: "Status",
+          connectWallet: "Connect wallet",
           paasEyebrow: "Platform API",
           paasTitle: "Your game, your domain, Monlabs infrastructure",
           paasLead: "No need to publish on the hub: embed the SDK in your own site and get MetaMask sign-in, guest play, cheat-resistant leaderboards and tournaments. Have a backend? Use the Server API and webhooks.",
@@ -1174,6 +1221,28 @@ GameHub.<span class="f">gameOver</span>(score);   <span class="c">// submit scor
         var initial = saved || (/^vi\b/i.test(navigator.language || "vi") ? "vi" : "en");
         if (initial === "en") apply("en");
         document.getElementById("year").textContent = String(new Date().getFullYear());
+
+        // Nút ví: đã đăng nhập Game Hub (cookie ở play.monlabs.fun, cùng site) → hiện tên, bấm vào hồ sơ
+        var btn = document.getElementById("wallet-btn");
+        var label = document.getElementById("wallet-label");
+        fetch("https://play.monlabs.fun/api/v1/me", { credentials: "include", cache: "no-store" })
+          .then(function (r) {
+            return r.ok ? r.json() : null;
+          })
+          .then(function (data) {
+            var u = data && data.user;
+            if (!u || u.isGuest) return;
+            var w = u.walletAddress || "";
+            var name = u.username || (w ? w.slice(0, 6) + "…" + w.slice(-4) : "Game Hub");
+            label.removeAttribute("data-i18n"); // tên người dùng không dịch
+            label.textContent = name;
+            btn.classList.add("signed-in");
+            btn.href = "https://play.monlabs.fun/profile";
+            btn.setAttribute("aria-label", name + " – " + (document.documentElement.lang === "en" ? "your profile" : "hồ sơ của bạn"));
+          })
+          .catch(function () {
+            // Không đọc được (mạng, chặn cookie) → giữ nút "Kết nối ví"
+          });
       })();
     </script>
   </body>

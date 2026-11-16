@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/modules/auth/jwt";
 import { isCrossSiteWrite } from "@/modules/auth/csrf";
 
+const LANDING_ORIGINS = new Set(["https://monlabs.fun", "https://www.monlabs.fun"]);
+
 /**
  * 1. API: chặn request ghi dữ liệu đến từ web khác (CSRF).
  * 2. Trang: chặn /profile, /developer, /preview khi chưa đăng nhập; /admin khi không phải admin.
@@ -27,6 +29,19 @@ export async function middleware(req: NextRequest) {
       });
     }
     return NextResponse.next();
+  }
+
+  // Trang giới thiệu monlabs.fun đọc tài khoản đang đăng nhập để hiện tên trên nút "Kết nối ví".
+  // Chỉ GET /api/v1/me, chỉ từ domain của chính dự án (cùng site → trình duyệt gửi kèm cookie)
+  if (pathname === "/api/v1/me" && req.method === "GET") {
+    const origin = req.headers.get("origin");
+    const res = NextResponse.next();
+    if (origin && LANDING_ORIGINS.has(origin)) {
+      res.headers.set("Access-Control-Allow-Origin", origin);
+      res.headers.set("Access-Control-Allow-Credentials", "true");
+    }
+    res.headers.set("Vary", "Origin");
+    return res;
   }
 
   if (pathname.startsWith("/api/")) {
