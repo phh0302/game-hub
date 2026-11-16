@@ -123,6 +123,8 @@
       SCORE_INVALID: "Điểm nằm ngoài mức cho phép",
       SERVER_SCORING_ONLY: "Game này nộp điểm qua máy chủ của game",
       PLAYER_BANNED: "Tài khoản đã bị cấm trong game này",
+      QUOTA_PLAYERS: "Điểm chưa được lưu: game đã hết hạn mức người chơi của tháng này",
+      QUOTA_SCORES: "Điểm chưa được lưu: game đã hết hạn mức lưu điểm của tháng này",
       SESSION_NOT_STARTED: "Chưa gọi gameStart() nên không lưu được điểm",
       RATE_LIMITED: "Thao tác quá nhanh, thử lại sau",
       NETWORK: "Không kết nối được máy chủ",
@@ -139,6 +141,8 @@
       SCORE_INVALID: "Score is outside the allowed range",
       SERVER_SCORING_ONLY: "This game submits scores from its own server",
       PLAYER_BANNED: "This account is banned in this game",
+      QUOTA_PLAYERS: "Score not saved: this game reached its monthly player limit",
+      QUOTA_SCORES: "Score not saved: this game reached its monthly score limit",
       SESSION_NOT_STARTED: "gameStart() was not called, so the score can't be saved",
       RATE_LIMITED: "Too many requests, try again later",
       NETWORK: "Can't reach the server",
@@ -211,6 +215,24 @@
     };
   }
 
+  /** Gói Free: dòng nhỏ "Powered by Monlabs" ở góc dưới (gói trả phí thì không hiện) */
+  function showBranding() {
+    var doc = global.document;
+    if (!doc || !doc.body || doc.getElementById("monlabs-branding")) return;
+    var a = doc.createElement("a");
+    a.id = "monlabs-branding";
+    a.href = "https://monlabs.fun/?ref=sdk";
+    a.target = "_blank";
+    a.rel = "noopener";
+    a.textContent = "Powered by Monlabs";
+    a.setAttribute(
+      "style",
+      "position:fixed;right:8px;bottom:8px;z-index:2147483000;padding:3px 8px;border-radius:6px;" +
+        "background:rgba(7,7,15,.75);color:#b6ff3b;font:600 11px/1.4 system-ui,sans-serif;text-decoration:none;opacity:.85",
+    );
+    doc.body.appendChild(a);
+  }
+
   function initProject(options) {
     var lang = options.locale || (global.navigator && global.navigator.language) || "en";
     project = {
@@ -226,6 +248,7 @@
     return api("GET", "/project")
       .then(function (data) {
         project.info = data.project;
+        if (project.info && project.info.branding) showBranding();
         if (!project.token) return null;
         return api("GET", "/me").then(
           function (me) {

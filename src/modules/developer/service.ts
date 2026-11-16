@@ -16,6 +16,7 @@ import { primaryWallet } from "@/modules/users/dto";
 import { generateApiKey } from "@/modules/platform/keys";
 import { normalizeOrigin } from "@/modules/platform/origins";
 import { readGameSettings } from "@/modules/games/settings";
+import { assertCanAddProject, assertFeature, planOf } from "@/modules/platform/quota";
 import { DEVELOPER_TERMS_VERSION, isTermsUpToDate } from "./terms";
 import type {
   ApiKeyCreateInput,
@@ -431,6 +432,9 @@ export async function listGameApiKeys(studio: Studio, gameId: string) {
 export async function createGameApiKey(studio: Studio, userId: string, gameId: string, input: ApiKeyCreateInput) {
   assertTermsAccepted(studio);
   const game = await findStudioGame(studio.id, gameId);
+  const plan = planOf(studio);
+  if (input.kind === "SECRET") assertFeature(plan, "serverApi");
+  await assertCanAddProject(plan, game.id);
   const max = MAX_ACTIVE_KEYS[input.kind];
   const active = await prisma.apiKey.count({ where: { gameId: game.id, kind: input.kind, revokedAt: null } });
   if (active >= max) {
@@ -462,6 +466,7 @@ const AUDIT_EVENT_TYPES = [
   "platform.webhook",
   "platform.webhook.rotate",
   "webhook.failed",
+  "quota.warning",
 ];
 const AUDIT_PAGE = 30;
 

@@ -130,12 +130,20 @@ model Studio {
   termsVersion      String?
   termsAcceptedAt   DateTime?
   termsAcceptedById String?
+  /// Gói Platform API (12c). Hết hạn → coi như FREE
+  plan          PlanTier  @default(FREE)
+  planExpiresAt DateTime?
+  /// Hạn mức riêng do admin đặt (vd gói Business theo hợp đồng): { projects?, activePlayers?, scores?, openTournaments? }
+  planLimits    Json?
+  planNote      String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
 
-  members StudioMember[]
-  games   Game[]
+  members        StudioMember[]
+  games          Game[]
+  usageMonths    StudioUsageMonth[]
+  monthlyPlayers StudioMonthlyPlayer[]
 }
 
 model StudioMember {
@@ -503,4 +511,37 @@ model WebhookDelivery {
 
   @@index([status, nextAttemptAt])
   @@index([gameId, createdAt])
+}
+
+enum PlanTier {
+  FREE
+  PRO
+  BUSINESS
+}
+
+/// Số liệu theo tháng (UTC) của studio để áp hạn mức gói – chỉ tính Platform API (game ngoài hub)
+model StudioUsageMonth {
+  studioId String
+  /// Ngày đầu tháng (UTC)
+  month    DateTime @db.Date
+  /// Điểm được lưu qua Client API / Server API
+  scores   Int      @default(0)
+  /// Mốc cảnh báo đã gửi trong tháng, vd "scores:80", "activePlayers:100"
+  warnings String[] @default([])
+
+  studio Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
+
+  @@id([studioId, month])
+}
+
+/// Người chơi hoạt động trong tháng của studio (đếm hạn mức "người chơi hoạt động / tháng")
+model StudioMonthlyPlayer {
+  studioId  String
+  month     DateTime @db.Date
+  userId    String
+  createdAt DateTime @default(now())
+
+  studio Studio @relation(fields: [studioId], references: [id], onDelete: Cascade)
+
+  @@id([studioId, month, userId])
 }

@@ -328,7 +328,10 @@
       "INVALID_WEBHOOK_URL": "URL webhook phải là https và không trỏ vào localhost / mạng nội bộ.",
       "WEBHOOK_NOT_SET": "Hãy lưu URL webhook trước.",
       "DELIVERY_NOT_FOUND": "Không tìm thấy lần gửi này.",
-      "DELIVERY_SUCCEEDED": "Sự kiện này đã gửi thành công."
+      "DELIVERY_SUCCEEDED": "Sự kiện này đã gửi thành công.",
+      "PLAN_REQUIRED": "Tính năng này cần gói Pro trở lên – liên hệ admin để nâng gói.",
+      "QUOTA_PROJECTS": "Gói hiện tại đã đủ số game dùng Platform API – thu hồi hết key của 1 game khác hoặc nâng gói.",
+      "QUOTA_TOURNAMENTS": "Gói hiện tại đã đủ số giải đấu đang mở."
     },
     "agreePrefix": "Tôi đã đọc và đồng ý với",
     "termsLink": "Điều khoản dành cho người đăng game",
@@ -391,7 +394,8 @@
         "player_unban": "Bỏ cấm người chơi",
         "platform_webhook": "Đổi webhook",
         "platform_webhook_rotate": "Đổi khóa ký webhook",
-        "webhook_failed": "Webhook gửi thất bại"
+        "webhook_failed": "Webhook gửi thất bại",
+        "quota_warning": "Cảnh báo hạn mức"
       }
     },
     "usage": {
@@ -434,6 +438,30 @@
         "QUEUED": "đang chờ gửi",
         "RETRYING": "lỗi ({error}), gửi lại lúc {at}"
       }
+    },
+    "plan": {
+      "title": "Gói Platform API",
+      "pricing": "Bảng giá",
+      "tiers": {
+        "FREE": "Free",
+        "PRO": "Pro",
+        "BUSINESS": "Business"
+      },
+      "expired": "Gói {plan} đã hết hạn – đang dùng hạn mức Free",
+      "expiresAt": "Hết hạn {date}",
+      "month": "Tháng {month} (UTC)",
+      "unlimited": "không giới hạn",
+      "metrics": {
+        "projects": "Game dùng Platform API",
+        "activePlayers": "Người chơi hoạt động / tháng",
+        "scores": "Lần lưu điểm / tháng",
+        "openTournaments": "Giải đấu đang mở"
+      },
+      "overBanner": "Đã dùng hết hạn mức: {items}. Người chơi vẫn chơi được nhưng điểm mới không được lưu cho tới tháng sau hoặc khi nâng gói.",
+      "nearBanner": "Sắp hết hạn mức (≥ 80%): {items}.",
+      "featuresFree": "Gói Free: chưa có Server API và webhook; game hiện dòng \"Powered by Monlabs\".",
+      "featuresPaid": "Có Server API và webhook.",
+      "note": "Chỉ tính game chạy ngoài hub (Platform API); chơi trên Game Hub không bị tính. Đổi gói: liên hệ admin (chưa thu tiền online)."
     }
   },
   "preview": {
@@ -649,5 +677,25 @@
       "MIRROR_CHAIN": "Bảng nguồn không được là giải đấu.",
       "LEADERBOARD_NOT_FOUND": "Không tìm thấy bảng xếp hạng."
     }
+  },
+  "adminPlans": {
+    "title": "Gói Platform API của studio",
+    "hint": "Gán gói bằng tay cho khách beta / Business theo hợp đồng. Ô hạn mức để trống = mặc định của gói.",
+    "empty": "Chưa có studio nào.",
+    "plan": "Gói",
+    "expiresAt": "Hết hạn (để trống = không)",
+    "note": "Ghi chú",
+    "save": "Lưu gói",
+    "saved": "Đã lưu gói.",
+    "default": "mặc định",
+    "expired": "đã hết hạn → Free",
+    "error": "Lỗi: {code}",
+    "metrics": {
+      "projects": "Game dùng Platform API",
+      "activePlayers": "Người chơi hoạt động / tháng",
+      "scores": "Lần lưu điểm / tháng",
+      "openTournaments": "Giải đấu đang mở"
+    },
+    "limitsHint": "Hạn mức riêng: nhập số, hoặc ∞ = không giới hạn."
   }
 }

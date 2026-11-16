@@ -42,6 +42,9 @@ test("Server API: secret key, máy chủ nộp điểm, xuất / xóa điểm, c
   if (studio.status !== 200 || !studio.data.studio) {
     expect((await hubApi(page, "/developer/studio", "POST", { name: "E2E Studio", slug: "e2e-studio", acceptTerms: true })).status).toBe(201);
   }
+  // Server API / webhook cần gói Pro → admin gán gói cho studio e2e (gói không có hạn mức riêng)
+  const myStudio = await hubApi<{ studio: { id: string } }>(page, "/developer/studio");
+  expect((await hubApi(page, `/admin/studios/${myStudio.data.studio.id}/plan`, "PUT", { plan: "PRO" })).status).toBe(200);
   const created = await hubApi<{ game: { id: string } }>(page, "/developer/games", "POST", {
     slug: "e2e-server-api",
     translations: [{ locale: "vi", name: "E2E Server API" }],

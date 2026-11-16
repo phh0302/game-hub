@@ -122,6 +122,20 @@ export function verifyMonlabs(secret, header, rawBody) {
 }
 ```
 
+## Plans & limits
+
+Limits only count games running **outside the hub** (Client API + Server API); play on Game Hub is never counted. Pricing: [monlabs.fun/#pricing](https://monlabs.fun/#pricing). The Developer page shows your plan, this month's usage (UTC) and warnings at 80% / 100%.
+
+| Error code | When |
+|---|---|
+| `PLAN_REQUIRED` | Free plan calls the Server API / creates a secret key / sets a webhook |
+| `QUOTA_PROJECTS` | Limit of games on the Platform API reached (games with at least one active key) |
+| `QUOTA_PLAYERS` | A new player this month exceeds the limit → they can play, **scores aren't saved** |
+| `QUOTA_SCORES` | Monthly score limit reached → players can play, **scores aren't saved** |
+| `QUOTA_TOURNAMENTS` | Limit of open tournaments reached |
+
+`GameHub.gameOver()` returns `saved: false` with a `code` and a player-facing message.
+
 ## Usage & log
 
 The game page shows **Platform API usage** (players, plays, scores saved, scores rejected, API calls per day over 7 / 30 / 90 days) and the **Platform API log** (keys created / revoked, domain and score-source changes, rejected / deleted scores, bans, failed webhooks).

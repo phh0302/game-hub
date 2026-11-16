@@ -58,7 +58,12 @@
                   "SERVER_SCORING_ONLY",
                   "PLAYER_BANNED",
                   "PLAY_TOO_SHORT",
-                  "RATE_LIMITED"
+                  "RATE_LIMITED",
+                  "PLAN_REQUIRED",
+                  "QUOTA_PLAYERS",
+                  "QUOTA_SCORES",
+                  "QUOTA_PROJECTS",
+                  "QUOTA_TOURNAMENTS"
                 ]
               },
               "message": {
@@ -226,7 +231,7 @@
         "tags": [
           "Client API"
         ],
-        "summary": "Thông tin project",
+        "summary": "Thông tin project (branding = gói Free phải hiện \"Powered by Monlabs\")",
         "responses": {
           "200": {
             "description": "OK",

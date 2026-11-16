@@ -225,10 +225,11 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 - [x] Đặt `CRON_SECRET` trên Vercel (người dùng làm – xem docs/DEPLOY.md)
 
 ### Phase 12c – Gói & hạn mức (chưa thu tiền)
-- [ ] Bảng `Plan` + gói của studio; áp hạn mức theo gói (người chơi hoạt động / tháng, lần nộp điểm / tháng, số project, giải đấu)
-- [ ] Cảnh báo 80% / 100%; hết hạn mức thì vẫn chơi được nhưng ngừng lưu điểm, SDK báo rõ
-- [ ] Admin gán gói bằng tay cho khách beta
-- [ ] Trang giới thiệu PaaS + bảng giá trên monlabs.fun
+- [x] Gói của studio (`Studio.plan` FREE / PRO / BUSINESS + hạn dùng + hạn mức riêng); định nghĩa gói nằm trong code (`src/modules/platform/plans.ts`) thay cho bảng `Plan` – đổi giá không cần sửa database
+- [x] Áp hạn mức – chỉ tính Platform API, chơi trên hub không tính: game dùng Platform API, người chơi hoạt động / tháng, lần lưu điểm / tháng, giải đấu đang mở; Free không có Server API / webhook, có "Powered by Monlabs"
+- [x] Cảnh báo 80% / 100% (trang Developer + nhật ký); hết hạn mức vẫn chơi được nhưng không lưu điểm (`QUOTA_PLAYERS` / `QUOTA_SCORES`), SDK báo rõ
+- [x] Admin gán gói bằng tay cho khách beta (trang Admin → Gói Platform API của studio)
+- [x] Trang giới thiệu Platform API + bảng giá trên monlabs.fun (`#pricing`)
 
 ### Phase 12d – Thu tiền
 - [ ] Cổng thanh toán: Stripe (quốc tế), VNPay / MoMo (Việt Nam), hóa đơn
@@ -253,5 +254,5 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 | 11 | Kiếm tiền | tùy hướng chọn | |
 | 12a | PaaS – game chạy trên domain riêng | 4–6 ngày | Đã lên production (PR #23); chờ chạy lại test plan |
 | 12b | PaaS – Server API, số liệu, webhook | 3–4 ngày | Xong, đã test trên production (PR #26, #27) |
-| 12c | PaaS – gói & hạn mức | 2–3 ngày | |
+| 12c | PaaS – gói & hạn mức | 2–3 ngày | Xong code; chờ test trên production |
 | 12d | PaaS – thu tiền | tùy cổng thanh toán | |

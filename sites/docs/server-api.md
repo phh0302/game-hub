@@ -122,6 +122,20 @@ export function verifyMonlabs(secret, header, rawBody) {
 }
 ```
 
+## Gói & hạn mức
+
+Hạn mức chỉ tính game chạy **ngoài hub** (Client API + Server API); chơi trên Game Hub không bị tính. Bảng giá: [monlabs.fun/#pricing](https://monlabs.fun/#pricing). Trang Developer hiện gói, mức dùng tháng này (theo UTC) và cảnh báo khi đạt 80% / 100%.
+
+| Mã lỗi | Khi nào |
+|---|---|
+| `PLAN_REQUIRED` | Gói Free gọi Server API / tạo secret key / đặt webhook |
+| `QUOTA_PROJECTS` | Đủ số game dùng Platform API (game có ít nhất 1 key chưa thu hồi) |
+| `QUOTA_PLAYERS` | Người chơi mới trong tháng vượt hạn mức → vẫn chơi được, **không lưu điểm** |
+| `QUOTA_SCORES` | Hết lần lưu điểm của tháng → vẫn chơi được, **không lưu điểm** |
+| `QUOTA_TOURNAMENTS` | Đủ số giải đấu đang mở |
+
+`GameHub.gameOver()` trả `saved: false` kèm `code` và câu giải thích cho người chơi.
+
 ## Số liệu & nhật ký
 
 Trang game có **Số liệu Platform API** (người chơi, lượt chơi, điểm đã lưu, điểm bị từ chối, lượt gọi API theo ngày, 7 / 30 / 90 ngày) và **Nhật ký Platform API** (tạo / thu hồi key, đổi domain, đổi cách nhận điểm, điểm bị từ chối / bị xóa, cấm người chơi, webhook lỗi).
