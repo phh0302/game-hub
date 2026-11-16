@@ -111,7 +111,8 @@
           })
           .catch(fail);
 
-        $("login-wallet").onclick = function () { GameHub.login().catch(fail); };
+        // Đăng nhập ví khi đang chơi khách có thể gộp điểm → tải lại bảng xếp hạng
+        $("login-wallet").onclick = function () { GameHub.login().then(loadBoard).catch(fail); };
         $("login-guest").onclick = function () { GameHub.login({ guest: true }).catch(fail); };
         $("logout").onclick = function () { GameHub.logout(); };
 
