@@ -1,0 +1,606 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Trạng thái hệ thống – Monlabs</title>
+    <meta name="description" content="Trạng thái Game Hub, API, Platform API và tài liệu của Monlabs, kiểm tra trực tiếp từ trình duyệt của bạn." />
+    <meta name="theme-color" content="#08070d" />
+    <link rel="canonical" href="https://monlabs.fun/status/" />
+    <link rel="icon" type="image/png" href="/assets/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,800&family=Be+Vietnam+Pro:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap"
+    />
+    <style>
+      :root {
+        --ink: #08070d;
+        --panel: #12101c;
+        --panel-2: #1b1828;
+        --line: #2b2740;
+        --text: #efedfb;
+        --muted: #a29fbf;
+        --cyan: #22e3ff;
+        --pink: #ff3ec8;
+        --lime: #b6ff3b;
+        --amber: #ffc53d;
+        --display: "Bricolage Grotesque", "Be Vietnam Pro", system-ui, sans-serif;
+        --body: "Be Vietnam Pro", system-ui, -apple-system, "Segoe UI", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--ink);
+        color: var(--text);
+        font: 400 16px/1.6 var(--body);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      :focus-visible {
+        outline: 2px solid var(--cyan);
+        outline-offset: 3px;
+        border-radius: 6px;
+      }
+
+      .wrap {
+        width: 100%;
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 max(16px, env(safe-area-inset-left, 0px)) 0 max(16px, env(safe-area-inset-right, 0px));
+      }
+
+      header {
+        border-bottom: 1px solid var(--line);
+      }
+
+      header .wrap {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding-block: 14px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+        font: 800 20px/1 var(--display);
+      }
+
+      .brand img {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+      }
+
+      .lang {
+        display: flex;
+        padding: 3px;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+      }
+
+      .lang button {
+        padding: 4px 10px;
+        border: 0;
+        border-radius: 999px;
+        background: none;
+        color: var(--muted);
+        font: 500 12px/1 var(--mono);
+        cursor: pointer;
+      }
+
+      .lang button[aria-pressed="true"] {
+        background: var(--panel-2);
+        color: var(--text);
+      }
+
+      main.wrap {
+        padding-top: 40px;
+        padding-bottom: 64px;
+      }
+
+      h1 {
+        margin: 0 0 6px;
+        font: 800 clamp(28px, 6vw, 40px) / 1.1 var(--display);
+        letter-spacing: -0.03em;
+      }
+
+      .sub {
+        margin: 0 0 28px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .overall {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 18px 20px;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+        font: 700 18px/1.3 var(--display);
+      }
+
+      .overall[data-state="ok"] {
+        border-color: rgb(182 255 59 / 0.45);
+      }
+
+      .overall[data-state="degraded"] {
+        border-color: rgb(255 197 61 / 0.5);
+      }
+
+      .overall[data-state="down"] {
+        border-color: rgb(255 62 200 / 0.55);
+      }
+
+      .dot {
+        flex: none;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--muted);
+      }
+
+      [data-state="ok"] .dot {
+        background: var(--lime);
+        box-shadow: 0 0 12px rgb(182 255 59 / 0.6);
+      }
+
+      [data-state="degraded"] .dot {
+        background: var(--amber);
+      }
+
+      [data-state="down"] .dot {
+        background: var(--pink);
+      }
+
+      h2 {
+        margin: 40px 0 12px;
+        font: 700 20px/1.2 var(--display);
+      }
+
+      .list {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--panel);
+      }
+
+      .list > li {
+        padding: 14px 18px;
+      }
+
+      .list > li + li {
+        border-top: 1px solid var(--line);
+      }
+
+      .comp {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 4px 12px;
+      }
+
+      .comp .name {
+        font-weight: 500;
+      }
+
+      .comp .detail {
+        grid-column: 1;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .comp .state {
+        display: flex;
+        grid-row: 1 / span 2;
+        grid-column: 2;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      .incident h3 {
+        margin: 0 0 2px;
+        font-size: 16px;
+      }
+
+      .incident .meta {
+        margin: 0 0 6px;
+        color: var(--muted);
+        font: 500 12px/1.4 var(--mono);
+      }
+
+      .incident p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .badge {
+        display: inline-block;
+        margin-left: 6px;
+        padding: 1px 8px;
+        border-radius: 999px;
+        background: rgb(182 255 59 / 0.12);
+        color: var(--lime);
+        font: 500 11px/1.6 var(--mono);
+        text-transform: uppercase;
+        vertical-align: 2px;
+      }
+
+      .badge.open {
+        background: rgb(255 62 200 / 0.12);
+        color: var(--pink);
+      }
+
+      .empty {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      footer {
+        border-top: 1px solid var(--line);
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      footer .wrap {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 8px;
+        padding-block: 20px;
+      }
+
+      footer a {
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        color: var(--text);
+      }
+
+      button.refresh {
+        padding: 0;
+        border: 0;
+        background: none;
+        color: var(--cyan);
+        font: inherit;
+        cursor: pointer;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="wrap">
+        <a class="brand" href="/"><img src="/assets/icon-192.png" alt="" width="28" height="28" />Monlabs</a>
+        <div class="lang" role="group" aria-label="Ngôn ngữ / Language">
+          <button type="button" data-lang="vi" aria-pressed="true">VI</button>
+          <button type="button" data-lang="en" aria-pressed="false">EN</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <h1 data-i18n="title">Trạng thái hệ thống</h1>
+      <p class="sub">
+        <span data-i18n="sub">Kiểm tra trực tiếp từ trình duyệt của bạn, tự cập nhật mỗi phút.</span>
+        <span id="checked"></span>
+        <button type="button" class="refresh" id="refresh" data-i18n="refresh">Kiểm tra lại</button>
+      </p>
+
+      <div class="overall" id="overall" data-state="checking" role="status" aria-live="polite">
+        <span class="dot" aria-hidden="true"></span><span id="overall-text" data-i18n="checking">Đang kiểm tra…</span>
+      </div>
+
+      <h2 data-i18n="components">Thành phần</h2>
+      <ul class="list" id="components"></ul>
+
+      <h2 data-i18n="incidents">Sự cố gần đây</h2>
+      <ul class="list" id="incidents"><li class="empty" data-i18n="loading">Đang tải…</li></ul>
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <span>© <span id="year">2026</span> Monlabs</span>
+        <span>
+          <a href="https://play.monlabs.fun">Game Hub</a> ·
+          <a href="https://docs.monlabs.fun">Docs</a> ·
+          <a href="/" data-i18n="home">Trang chủ</a>
+        </span>
+      </div>
+    </footer>
+
+    <script>
+      (function () {
+        var HUB = "https://play.monlabs.fun";
+        var TIMEOUT = 8000;
+        var SLOW_MS = 2000;
+
+        var T = {
+          vi: {
+            title: "Trạng thái hệ thống",
+            sub: "Kiểm tra trực tiếp từ trình duyệt của bạn, tự cập nhật mỗi phút.",
+            refresh: "Kiểm tra lại",
+            checking: "Đang kiểm tra…",
+            components: "Thành phần",
+            incidents: "Sự cố gần đây",
+            loading: "Đang tải…",
+            home: "Trang chủ",
+            allOk: "Mọi hệ thống hoạt động bình thường",
+            someSlow: "Một số dịch vụ đang chậm",
+            someDown: "Một số dịch vụ đang gặp sự cố",
+            ok: "Hoạt động",
+            slow: "Chậm",
+            down: "Gián đoạn",
+            checkedAt: "Lần kiểm tra cuối: {t}.",
+            noIncidents: "Không có sự cố nào được ghi nhận.",
+            resolved: "đã xử lý",
+            open: "đang xử lý",
+            netNote: "Nếu chỉ mình bạn thấy gián đoạn, có thể do mạng hoặc tiện ích chặn quảng cáo trên máy bạn.",
+            c: {
+              hub: ["Game Hub", "play.monlabs.fun – trang chơi game"],
+              api: ["API & cơ sở dữ liệu", "Đăng nhập, lượt chơi, bảng xếp hạng"],
+              platform: ["Platform API", "Game chạy trên domain riêng (Client API)"],
+              docs: ["Tài liệu", "docs.monlabs.fun"],
+              site: ["Trang chủ", "monlabs.fun"],
+            },
+          },
+          en: {
+            title: "System status",
+            sub: "Checked live from your browser, refreshed every minute.",
+            refresh: "Check again",
+            checking: "Checking…",
+            components: "Components",
+            incidents: "Recent incidents",
+            loading: "Loading…",
+            home: "Home",
+            allOk: "All systems operational",
+            someSlow: "Some services are slow",
+            someDown: "Some services are having problems",
+            ok: "Operational",
+            slow: "Slow",
+            down: "Disrupted",
+            checkedAt: "Last check: {t}.",
+            noIncidents: "No incidents recorded.",
+            resolved: "resolved",
+            open: "investigating",
+            netNote: "If only you see a disruption, it may be your network or an ad blocker.",
+            c: {
+              hub: ["Game Hub", "play.monlabs.fun – where games are played"],
+              api: ["API & database", "Sign-in, plays, leaderboards"],
+              platform: ["Platform API", "Games on their own domains (Client API)"],
+              docs: ["Documentation", "docs.monlabs.fun"],
+              site: ["Home page", "monlabs.fun"],
+            },
+          },
+        };
+
+        var lang = "vi";
+        var results = {};
+        var incidents = null;
+        var checkedAt = null;
+
+        function withTimeout(promise) {
+          return Promise.race([
+            promise,
+            new Promise(function (_, reject) {
+              setTimeout(function () {
+                reject(new Error("timeout"));
+              }, TIMEOUT);
+            }),
+          ]);
+        }
+
+        function timed(fn) {
+          var t0 = performance.now();
+          return withTimeout(fn()).then(
+            function (ok) {
+              var ms = Math.round(performance.now() - t0);
+              return { state: ok ? (ms > SLOW_MS ? "slow" : "ok") : "down", ms: ms };
+            },
+            function () {
+              return { state: "down", ms: null };
+            },
+          );
+        }
+
+        // Trang tĩnh khác domain: chỉ biết có phản hồi hay không (no-cors)
+        function reachable(url) {
+          return function () {
+            return fetch(url, { mode: "no-cors", cache: "no-store" }).then(function () {
+              return true;
+            });
+          };
+        }
+
+        var CHECKS = {
+          hub: reachable(HUB + "/"),
+          api: function () {
+            return fetch(HUB + "/api/v1/health", { cache: "no-store" }).then(function (r) {
+              return r.ok && r.json().then(function (j) {
+                return j.status === "ok" && j.db === "ok";
+              });
+            });
+          },
+          // Không có key → máy chủ phải trả 401 INVALID_API_KEY (tức là Client API đang chạy)
+          platform: function () {
+            return fetch(HUB + "/api/p1/project", { cache: "no-store" }).then(function (r) {
+              return r.status === 401 && r.json().then(function (j) {
+                return j.error && j.error.code === "INVALID_API_KEY";
+              });
+            });
+          },
+          docs: reachable("https://docs.monlabs.fun/"),
+          site: function () {
+            return fetch("/", { cache: "no-store" }).then(function (r) {
+              return r.ok;
+            });
+          },
+        };
+        var ORDER = ["hub", "api", "platform", "docs", "site"];
+
+        function el(tag, cls, text) {
+          var e = document.createElement(tag);
+          if (cls) e.className = cls;
+          if (text !== undefined) e.textContent = text;
+          return e;
+        }
+
+        function fmtDate(iso) {
+          var d = new Date(iso.length === 10 ? iso + "T00:00:00Z" : iso);
+          return d.toLocaleDateString(lang === "vi" ? "vi-VN" : "en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" });
+        }
+
+        function render() {
+          var t = T[lang];
+          document.querySelectorAll("[data-i18n]").forEach(function (n) {
+            var v = t[n.getAttribute("data-i18n")];
+            if (typeof v === "string") n.textContent = v;
+          });
+          document.documentElement.lang = lang;
+          document.title = t.title + " – Monlabs";
+          document.querySelectorAll(".lang button").forEach(function (b) {
+            b.setAttribute("aria-pressed", String(b.dataset.lang === lang));
+          });
+
+          var list = document.getElementById("components");
+          list.textContent = "";
+          ORDER.forEach(function (key) {
+            var r = results[key];
+            var li = el("li", "comp");
+            li.setAttribute("data-state", r ? r.state : "checking");
+            li.appendChild(el("span", "name", t.c[key][0]));
+            var state = el("span", "state");
+            state.appendChild(el("span", "dot"));
+            state.appendChild(el("span", "", r ? t[r.state] + (r.ms !== null && r.state !== "down" ? " · " + r.ms + " ms" : "") : "…"));
+            li.appendChild(state);
+            li.appendChild(el("span", "detail", t.c[key][1]));
+            list.appendChild(li);
+          });
+
+          var done = ORDER.every(function (k) {
+            return results[k];
+          });
+          var overall = document.getElementById("overall");
+          var text = document.getElementById("overall-text");
+          if (done) {
+            var states = ORDER.map(function (k) {
+              return results[k].state;
+            });
+            var s = states.indexOf("down") >= 0 ? "down" : states.indexOf("slow") >= 0 ? "degraded" : "ok";
+            overall.setAttribute("data-state", s);
+            text.textContent = s === "ok" ? t.allOk : s === "degraded" ? t.someSlow : t.someDown + ". " + t.netNote;
+          } else {
+            overall.setAttribute("data-state", "checking");
+            text.textContent = t.checking;
+          }
+          document.getElementById("checked").textContent = checkedAt
+            ? t.checkedAt.replace("{t}", checkedAt.toLocaleTimeString(lang === "vi" ? "vi-VN" : "en-US"))
+            : "";
+
+          var inc = document.getElementById("incidents");
+          inc.textContent = "";
+          if (incidents === null) {
+            inc.appendChild(el("li", "empty", t.loading));
+          } else if (incidents.length === 0) {
+            inc.appendChild(el("li", "empty", t.noIncidents));
+          } else {
+            incidents.forEach(function (i) {
+              var li = el("li", "incident");
+              var h = el("h3", "", i.title[lang] || i.title.vi);
+              var resolved = i.status === "resolved";
+              h.appendChild(el("span", "badge" + (resolved ? "" : " open"), resolved ? t.resolved : t.open));
+              li.appendChild(h);
+              li.appendChild(
+                el(
+                  "p",
+                  "meta",
+                  fmtDate(i.startedAt) + (i.resolvedAt && i.resolvedAt !== i.startedAt ? " → " + fmtDate(i.resolvedAt) : ""),
+                ),
+              );
+              (i.updates || []).forEach(function (u) {
+                li.appendChild(el("p", "", u.text[lang] || u.text.vi));
+              });
+              inc.appendChild(li);
+            });
+          }
+        }
+
+        function check() {
+          results = {};
+          render();
+          return Promise.all(
+            ORDER.map(function (key) {
+              return timed(CHECKS[key]).then(function (r) {
+                results[key] = r;
+                render();
+              });
+            }),
+          ).then(function () {
+            checkedAt = new Date();
+            render();
+          });
+        }
+
+        fetch("incidents.json", { cache: "no-store" })
+          .then(function (r) {
+            return r.json();
+          })
+          .then(function (list) {
+            incidents = list.slice().sort(function (a, b) {
+              return a.startedAt < b.startedAt ? 1 : -1;
+            });
+          })
+          .catch(function () {
+            incidents = [];
+          })
+          .then(render);
+
+        try {
+          var saved = localStorage.getItem("monlabs-lang");
+          lang = saved === "en" || saved === "vi" ? saved : /^vi\b/i.test(navigator.language || "vi") ? "vi" : "en";
+        } catch (e) {}
+
+        document.querySelectorAll(".lang button").forEach(function (b) {
+          b.addEventListener("click", function () {
+            lang = b.dataset.lang;
+            try {
+              localStorage.setItem("monlabs-lang", lang);
+            } catch (e) {}
+            render();
+          });
+        });
+        document.getElementById("refresh").addEventListener("click", check);
+        document.getElementById("year").textContent = String(new Date().getFullYear());
+
+        check();
+        setInterval(function () {
+          if (!document.hidden) check();
+        }, 60000);
+      })();
+    </script>
+  </body>
+</html>

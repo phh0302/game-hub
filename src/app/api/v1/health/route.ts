@@ -1,8 +1,11 @@
 import { prisma } from "@/lib/prisma";
 import { rateLimitBackend } from "@/lib/rate-limit";
 
-// Kiểm tra web + database còn sống (dùng cho uptime monitor sau khi deploy)
+// Kiểm tra web + database còn sống (uptime monitor, trang trạng thái monlabs.fun/status)
 export const dynamic = "force-dynamic";
+
+/** Trang trạng thái gọi từ domain khác; dữ liệu không nhạy cảm, không dùng cookie */
+const HEADERS = { "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" };
 
 export async function GET() {
   const startedAt = Date.now();
@@ -14,9 +17,9 @@ export async function GET() {
       latencyMs: Date.now() - startedAt,
       rateLimit: rateLimitBackend(),
       errorTracking: process.env.SENTRY_DSN ? "sentry" : "console",
-    });
+    }, { headers: HEADERS });
   } catch (err) {
     console.error("[health] Database không phản hồi:", err);
-    return Response.json({ status: "error", db: "down" }, { status: 503 });
+    return Response.json({ status: "error", db: "down" }, { status: 503, headers: HEADERS });
   }
 }

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "2026-11-13-upload",
+    "status": "resolved",
+    "components": ["hub"],
+    "startedAt": "2026-11-13",
+    "resolvedAt": "2026-11-13",
+    "title": {
+      "vi": "Developer không upload được bản build game",
+      "en": "Developers could not upload game builds"
+    },
+    "updates": [
+      {
+        "at": "2026-11-13",
+        "text": {
+          "vi": "Đã sửa: bổ sung cấu hình CORS của kho lưu trữ cho play.monlabs.fun và gửi kèm độ dài file khi tải lên. Upload hoạt động bình thường.",
+          "en": "Fixed: added the storage CORS rule for play.monlabs.fun and sent the file length on upload. Uploads work normally."
+        }
+      }
+    ]
+  }
+]
