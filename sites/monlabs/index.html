@@ -612,6 +612,92 @@
         color: var(--text);
       }
 
+      /* ───── Platform API & bảng giá ───── */
+      .plans {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+        margin-top: 40px;
+      }
+
+      .plan {
+        display: flex;
+        flex-direction: column;
+        padding: 24px;
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        background: var(--panel);
+      }
+
+      .plan.featured {
+        border-color: rgb(182 255 59 / 0.55);
+        box-shadow: 0 0 0 1px rgb(182 255 59 / 0.2), 0 20px 60px -30px rgb(182 255 59 / 0.5);
+      }
+
+      .plan h3 {
+        margin: 0;
+        font: 700 20px/1.2 var(--display);
+      }
+
+      .plan .price {
+        margin: 12px 0 4px;
+        font: 800 36px/1 var(--display);
+        letter-spacing: -0.03em;
+      }
+
+      .plan .price small {
+        color: var(--muted);
+        font: 500 14px/1 var(--body);
+        letter-spacing: 0;
+      }
+
+      .plan .for {
+        margin: 0 0 18px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .plan ul {
+        flex: 1;
+        margin: 0 0 22px;
+        padding: 0;
+        list-style: none;
+        font-size: 15px;
+      }
+
+      .plan li {
+        display: flex;
+        gap: 10px;
+        padding: 6px 0;
+        border-top: 1px solid rgb(43 39 64 / 0.6);
+      }
+
+      .plan li::before {
+        content: "✓";
+        flex: none;
+        color: var(--lime);
+        font-weight: 700;
+      }
+
+      .plan li.no {
+        color: var(--muted);
+      }
+
+      .plan li.no::before {
+        content: "–";
+        color: var(--muted);
+      }
+
+      .plan .btn {
+        justify-content: center;
+      }
+
+      .pricing-note {
+        margin: 20px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
       /* ───── Màn hình nhỏ ───── */
       @media (max-width: 900px) {
         .hero .wrap,
@@ -623,7 +709,8 @@
           padding-block: 48px 40px;
         }
 
-        .features {
+        .features,
+        .plans {
           grid-template-columns: minmax(0, 1fr);
         }
 
@@ -671,6 +758,7 @@
           <a href="#game-hub" data-i18n="navHub">Game Hub</a>
           <a href="#games" data-i18n="navGames">Game</a>
           <a href="#developers" data-i18n="navDev">Developer</a>
+          <a href="#pricing" data-i18n="navPricing">Bảng giá</a>
           <a href="https://docs.monlabs.fun" data-i18n="navDocs">Tài liệu</a>
           <div class="lang" role="group" aria-label="Ngôn ngữ / Language">
             <button type="button" data-lang="vi" aria-pressed="true">VI</button>
@@ -845,6 +933,85 @@ GameHub.<span class="f">gameOver</span>(score);   <span class="c">// submit scor
         </div>
       </section>
 
+      <section class="block" id="platform">
+        <div class="wrap">
+          <p class="eyebrow" data-i18n="paasEyebrow">Platform API</p>
+          <h2 data-i18n="paasTitle">Game trên domain riêng, hạ tầng của Monlabs</h2>
+          <p class="section-lead" data-i18n="paasLead">
+            Không cần đưa game lên hub: nhúng SDK vào trang web của bạn là có đăng nhập ví MetaMask, chơi khách, bảng xếp hạng chống gian lận và giải đấu. Có máy chủ riêng thì dùng Server API và webhook.
+          </p>
+          <div class="features">
+            <article class="feature">
+              <div class="ico" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></svg>
+              </div>
+              <h3 data-i18n="p1Title">Chạy trên domain của bạn</h3>
+              <p data-i18n="p1Text">Khai báo domain, tạo publishable key, nhúng 1 thẻ script. Key chỉ hoạt động trên domain bạn cho phép.</p>
+            </article>
+            <article class="feature">
+              <div class="ico" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="7" rx="2" /><rect x="3" y="13" width="18" height="7" rx="2" /><path d="M7 7.5h.01M7 16.5h.01" /></svg>
+              </div>
+              <h3 data-i18n="p2Title">Server API & webhook</h3>
+              <p data-i18n="p2Text">Máy chủ của game xác nhận điểm, xuất dữ liệu, cấm người chơi gian lận, tạo giải đấu và nhận sự kiện có ký HMAC.</p>
+            </article>
+            <article class="feature">
+              <div class="ico" aria-hidden="true">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2" /></svg>
+              </div>
+              <h3 data-i18n="p3Title">Số liệu & nhật ký</h3>
+              <p data-i18n="p3Text">Người chơi, lượt chơi, điểm bị từ chối theo ngày; nhật ký mọi thay đổi về key, domain và cấm người chơi.</p>
+            </article>
+          </div>
+
+          <h2 id="pricing" style="margin-top: 72px; scroll-margin-top: 90px" data-i18n="priceTitle">Bảng giá</h2>
+          <p class="section-lead" style="margin-bottom: 0" data-i18n="priceLead">Chỉ tính game chạy ngoài hub. Game đăng trên Game Hub luôn miễn phí.</p>
+          <div class="plans">
+            <article class="plan">
+              <h3>Free</h3>
+              <p class="price">0 <small>USD</small></p>
+              <p class="for" data-i18n="freeFor">Thử nghiệm, game nhỏ</p>
+              <ul>
+                <li data-i18n="freeL1">2 game dùng Platform API</li>
+                <li data-i18n="freeL2">500 người chơi hoạt động / tháng</li>
+                <li data-i18n="freeL3">10.000 lần lưu điểm / tháng</li>
+                <li data-i18n="freeL4">1 giải đấu đang mở</li>
+                <li class="no" data-i18n="freeL5">Không có Server API, webhook</li>
+                <li class="no" data-i18n="freeL6">Hiện dòng "Powered by Monlabs"</li>
+              </ul>
+              <a class="btn btn-ghost" href="https://play.monlabs.fun/developer" data-i18n="freeCta">Bắt đầu miễn phí</a>
+            </article>
+            <article class="plan featured">
+              <h3>Pro</h3>
+              <p class="price">~9 <small data-i18n="perMonth">USD / tháng</small></p>
+              <p class="for" data-i18n="proFor">Game đã có người chơi thường xuyên</p>
+              <ul>
+                <li data-i18n="proL1">10 game dùng Platform API</li>
+                <li data-i18n="proL2">10.000 người chơi hoạt động / tháng</li>
+                <li data-i18n="proL3">500.000 lần lưu điểm / tháng</li>
+                <li data-i18n="proL4">Giải đấu không giới hạn</li>
+                <li data-i18n="proL5">Server API + webhook</li>
+                <li data-i18n="proL6">Ẩn "Powered by Monlabs"</li>
+              </ul>
+              <a class="btn btn-primary" href="https://docs.monlabs.fun/server-api" data-i18n="proCta">Xem tài liệu Server API →</a>
+            </article>
+            <article class="plan">
+              <h3>Business</h3>
+              <p class="price" data-i18n="bizPrice">Liên hệ</p>
+              <p class="for" data-i18n="bizFor">Studio, nhà phát hành, sự kiện lớn</p>
+              <ul>
+                <li data-i18n="bizL1">Không giới hạn số game</li>
+                <li data-i18n="bizL2">Người chơi và lượt lưu điểm theo hợp đồng</li>
+                <li data-i18n="bizL3">Mọi tính năng của Pro</li>
+                <li data-i18n="bizL4">Hỗ trợ tích hợp trực tiếp</li>
+              </ul>
+              <a class="btn btn-ghost" href="https://play.monlabs.fun/developer" data-i18n="bizCta">Mở trang Developer</a>
+            </article>
+          </div>
+          <p class="pricing-note" data-i18n="priceNote">Đang beta: chưa thu tiền online. Gói Pro / Business được bật cho khách beta theo từng trường hợp. Giá có thể thay đổi trước khi mở thanh toán.</p>
+        </div>
+      </section>
+
       <div class="wrap" style="padding-top: 88px">
         <div class="final">
           <h2 data-i18n="finalTitle">Sẵn sàng phá kỷ lục?</h2>
@@ -898,6 +1065,43 @@ GameHub.<span class="f">gameOver</span>(score);   <span class="c">// submit scor
           f2Text: "The server times every round and checks scoring speed; suspicious scores are dropped.",
           f3Title: "Install it like an app",
           f3Text: "Add Game Hub to your home screen on Android and iPhone and play full screen.",
+          navPricing: "Pricing",
+          paasEyebrow: "Platform API",
+          paasTitle: "Your game, your domain, Monlabs infrastructure",
+          paasLead: "No need to publish on the hub: embed the SDK in your own site and get MetaMask sign-in, guest play, cheat-resistant leaderboards and tournaments. Have a backend? Use the Server API and webhooks.",
+          p1Title: "Runs on your domain",
+          p1Text: "Declare your domains, create a publishable key, add one script tag. The key only works on the domains you allow.",
+          p2Title: "Server API & webhooks",
+          p2Text: "Your game server confirms scores, exports data, bans cheaters, creates tournaments and receives HMAC-signed events.",
+          p3Title: "Usage & audit log",
+          p3Text: "Players, plays and rejected scores per day; a log of every key, domain and ban change.",
+          priceTitle: "Pricing",
+          priceLead: "Only games running outside the hub count. Games published on Game Hub are always free.",
+          freeFor: "Experiments and small games",
+          freeL1: "2 games on the Platform API",
+          freeL2: "500 active players / month",
+          freeL3: "10,000 scores saved / month",
+          freeL4: "1 open tournament",
+          freeL5: "No Server API or webhooks",
+          freeL6: 'Shows "Powered by Monlabs"',
+          freeCta: "Start for free",
+          perMonth: "USD / month",
+          proFor: "Games with a regular audience",
+          proL1: "10 games on the Platform API",
+          proL2: "10,000 active players / month",
+          proL3: "500,000 scores saved / month",
+          proL4: "Unlimited tournaments",
+          proL5: "Server API + webhooks",
+          proL6: 'Hide "Powered by Monlabs"',
+          proCta: "Read the Server API docs →",
+          bizPrice: "Contact us",
+          bizFor: "Studios, publishers, large events",
+          bizL1: "Unlimited games",
+          bizL2: "Players and scores by contract",
+          bizL3: "Everything in Pro",
+          bizL4: "Hands-on integration support",
+          bizCta: "Open the Developer page",
+          priceNote: "Beta: no online payments yet. Pro / Business are enabled for beta customers case by case. Prices may change before payments open.",
           gamesEyebrow: "Live on Game Hub",
           gamesTitle: "Pick a game, play in 5 seconds",
           gamesLead: "Keyboard on desktop, swipe and tap on mobile.",

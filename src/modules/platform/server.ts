@@ -6,6 +6,7 @@ import { rateLimit } from "@/lib/rate-limit";
 import { readGameSettings } from "@/modules/games/settings";
 import { hashApiKey, looksLikeApiKey } from "./keys";
 import { trackUsage } from "./usage";
+import { assertFeature, planForGame } from "./quota";
 
 /**
  * Server API (/api/s1): máy chủ của game gọi bằng secret key trong header
@@ -32,6 +33,8 @@ export async function resolveServerProject(req: Request): Promise<ServerContext>
   if (game.deletedAt || game.status === GameStatus.SUSPENDED || game.status === GameStatus.ARCHIVED) {
     throw new ApiError(403, "PROJECT_DISABLED", "Game này đang bị khóa");
   }
+  // Gói bị hạ xuống Free / hết hạn → secret key cũ ngừng chạy
+  assertFeature(await planForGame(game.id), "serverApi");
   await rateLimit(`s1:${game.id}`, SERVER_LIMIT_PER_MINUTE, 60_000);
   await trackUsage(game.id, "apiCalls");
   if (!row.lastUsedAt || Date.now() - row.lastUsedAt.getTime() > LAST_USED_INTERVAL_MS) {

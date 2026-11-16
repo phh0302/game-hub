@@ -8,7 +8,9 @@ import { studioCreateSchema } from "@/modules/developer/schemas";
 export async function GET() {
   return handle(async () => {
     const user = await requireRegisteredUser();
-    return ok({ studio: await getMyStudio(user.id) });
+    const studio = await getMyStudio(user.id);
+    // Ghi chú gói là của admin (vd số hợp đồng) – không trả cho developer
+    return ok({ studio: studio ? { ...studio, planNote: undefined } : null });
   });
 }
 

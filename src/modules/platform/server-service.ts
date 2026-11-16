@@ -10,6 +10,7 @@ import { adminCreateBoard, adminListBoards, boardCreateSchema, listPublicBoards 
 import { submitScoreForGame } from "@/modules/scores/service";
 import { primaryWallet, userWithIdentities } from "@/modules/users/dto";
 import type { ServerContext } from "./server";
+import { assertCanAddTournament, planForGame } from "./quota";
 
 /** Nghiệp vụ của Server API (/api/s1) – mọi thao tác chỉ trong phạm vi project của secret key */
 
@@ -88,7 +89,7 @@ export async function serverSubmitScore(ctx: ServerContext, input: z.infer<typeo
   if (!session || session.gameId !== ctx.game.id) {
     throw new ApiError(404, "SESSION_NOT_FOUND", "Không tìm thấy lượt chơi");
   }
-  return submitScoreForGame(session.userId, ctx.game, input, "server");
+  return submitScoreForGame(session.userId, ctx.game, input, { via: "server", channel: "api" });
 }
 
 /** Xóa điểm gian lận: xóa mọi điểm của cùng lượt chơi (gồm điểm đã ghi vào giải đấu ăn theo) */
@@ -176,6 +177,7 @@ export async function serverListBoards(ctx: ServerContext) {
 /** Tạo giải đấu / bảng phụ – cùng luật như admin (vd mirrorOf: "default" để không cần sửa game) */
 export async function serverCreateBoard(ctx: ServerContext, body: unknown) {
   const input = boardCreateSchema.parse(body);
+  await assertCanAddTournament(await planForGame(ctx.game.id), input.endsAt);
   const board = await adminCreateBoard(ctx.game.id, input, null);
   return { leaderboard: (await adminListBoards(ctx.game.id)).find((b) => b.id === board.id) ?? null };
 }

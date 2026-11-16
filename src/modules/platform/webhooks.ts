@@ -4,6 +4,7 @@ import { after } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/modules/events/service";
+import { planOf } from "./quota";
 import {
   isPrivateAddress,
   nextRetryAt,
@@ -26,8 +27,12 @@ export type WebhookEvent = "score.submitted" | "ping";
  */
 export async function enqueueWebhook(gameId: string, event: WebhookEvent, payload: Prisma.InputJsonObject) {
   try {
-    const game = await prisma.game.findUnique({ where: { id: gameId }, select: { webhookUrl: true } });
-    if (!game?.webhookUrl) return null;
+    const game = await prisma.game.findUnique({
+      where: { id: gameId },
+      select: { webhookUrl: true, studio: { select: { id: true, plan: true, planExpiresAt: true, planLimits: true } } },
+    });
+    // Không có URL, hoặc gói hiện tại không có webhook (hạ xuống Free / hết hạn) → bỏ qua
+    if (!game?.webhookUrl || !planOf(game.studio).limits.webhooks) return null;
     const delivery = await prisma.webhookDelivery.create({
       data: { gameId, event, payload, nextAttemptAt: new Date() },
     });

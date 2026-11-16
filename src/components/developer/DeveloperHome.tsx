@@ -1,5 +1,6 @@
 "use client";
 
+import { PlanUsage } from "./PlanUsage";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -68,6 +69,8 @@ export function DeveloperHome() {
       </header>
 
       {!studio.termsUpToDate && <TermsBanner isOwner={studio.myRole === "OWNER"} onAccepted={load} />}
+
+      <PlanUsage />
 
       {studio.termsUpToDate && <CreateGameForm />}
 

@@ -7,6 +7,7 @@ import { AdminReports } from "./AdminReports";
 import { AdminLeaderboards } from "./AdminLeaderboards";
 import { AdminStats } from "./AdminStats";
 import { AdminUsers } from "./AdminUsers";
+import { AdminPlans } from "./AdminPlans";
 
 const GAME_STATUSES = ["DRAFT", "PENDING_REVIEW", "PUBLISHED", "MAINTENANCE", "SUSPENDED", "ARCHIVED"] as const;
 type GameStatus = (typeof GAME_STATUSES)[number];
@@ -101,6 +102,7 @@ export function AdminDashboard() {
       <AdminStats />
       <AdminReports />
       <AdminUsers />
+      <AdminPlans />
       <AdminLeaderboards games={games ?? []} />
 
       <CreateGameForm categories={categories} run={run} />

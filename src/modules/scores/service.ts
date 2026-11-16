@@ -11,6 +11,7 @@ import { checkScore, type ScoreRuleError } from "./rules";
 import { assertNotBanned } from "@/modules/platform/bans";
 import { trackUsage } from "@/modules/platform/usage";
 import { enqueueWebhook } from "@/modules/platform/webhooks";
+import { admitPlayer, assertCanSaveScore, planForGame, recordScore } from "@/modules/platform/quota";
 
 const REJECT_STATUS: Record<ScoreRuleError, number> = {
   SESSION_EXPIRED: 410,
@@ -58,6 +59,8 @@ export async function startSessionForGame(userId: string, game: ScoringGame, sou
     data: { sessionId: session.id, version: game.currentVersion?.version ?? null, source },
   });
   await trackUsage(game.id, "sessions");
+  // Platform API: tính người chơi hoạt động của tháng (vượt hạn mức vẫn cho chơi, chỉ chặn lưu điểm)
+  if (source === "api") await admitPlayer(await planForGame(game.id), userId, game.id);
   return { sessionId: session.id, startedAt: session.startedAt };
 }
 
@@ -78,12 +81,16 @@ export async function submitScoreForGame(
   userId: string,
   game: ScoringGame,
   input: z.infer<typeof submitScoreSchema>,
-  via: "client" | "server" = "client",
+  options: { via?: "client" | "server"; channel?: "hub" | "api" } = {},
 ) {
+  const via = options.via ?? "client";
   if (via === "client" && game.parsedSettings.scoreSubmission === "server") {
     throw new ApiError(403, "SERVER_SCORING_ONLY", "Game này chỉ nhận điểm do máy chủ của game gửi");
   }
   await assertNotBanned(game.id, userId);
+  // Hạn mức gói chỉ áp cho Platform API (game ngoài hub)
+  const plan = options.channel === "api" ? await planForGame(game.id) : null;
+  if (plan) await assertCanSaveScore(plan, userId, game.id);
   const board = await getLeaderboardByKey(game.id, input.leaderboard);
   const now = new Date();
 
@@ -184,6 +191,7 @@ export async function submitScoreForGame(
     data: { sessionId: session.id, leaderboard: board.key, value, durationSeconds, mirrors: mirrors.map((m) => m.key), via },
   });
   await trackUsage(game.id, "scores");
+  if (plan) await recordScore(plan, game.id);
 
   await enqueueWebhook(game.id, "score.submitted", {
     scoreId: score.id,

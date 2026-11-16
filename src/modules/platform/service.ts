@@ -1,4 +1,5 @@
 import "server-only";
+import { planOf } from "./quota";
 import { prisma } from "@/lib/prisma";
 import { pickTranslation } from "@/lib/locale";
 import { logEvent } from "@/modules/events/service";
@@ -32,13 +33,18 @@ export function playerDto(user: UserWithIdentities) {
 
 /** Thông tin công khai của project cho SDK */
 export async function projectInfo(ctx: ProjectContext, locale: string) {
-  const game = await prisma.game.findUniqueOrThrow({ where: { id: ctx.game.id }, include: { translations: true } });
+  const game = await prisma.game.findUniqueOrThrow({
+    where: { id: ctx.game.id },
+    include: { translations: true, studio: { select: { id: true, plan: true, planExpiresAt: true, planLimits: true } } },
+  });
   return {
     id: game.id,
     slug: game.slug,
     name: pickTranslation(game.translations, locale)?.name ?? game.slug,
     leaderboards: await listPublicBoards(game.id, locale),
     login: { wallet: true, guest: true },
+    /** Gói Free: SDK hiện dòng "Powered by Monlabs" */
+    branding: planOf(game.studio).limits.branding,
   };
 }
 

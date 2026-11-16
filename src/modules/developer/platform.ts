@@ -8,6 +8,7 @@ import { randomBase62 } from "@/modules/platform/keys";
 import { normalizeWebhookUrl } from "@/modules/platform/webhook-utils";
 import { deliverWebhook, WEBHOOK_ALLOW_PRIVATE } from "@/modules/platform/webhooks";
 import { assertTermsAccepted, findStudioGame } from "./service";
+import { assertFeature, planOf } from "@/modules/platform/quota";
 
 /** Trang Developer: webhook và số liệu dùng Platform API của 1 game */
 
@@ -53,6 +54,7 @@ export async function getWebhookConfig(studio: Studio, gameId: string) {
 export async function setWebhookUrl(studio: Studio, userId: string, gameId: string, input: z.infer<typeof webhookUpdateSchema>) {
   assertTermsAccepted(studio);
   const game = await findStudioGame(studio.id, gameId);
+  if (input.url) assertFeature(planOf(studio), "webhooks");
   const url = input.url ? normalizeWebhookUrl(input.url, WEBHOOK_ALLOW_PRIVATE) : null;
   if (input.url && !url) {
     throw new ApiError(400, "INVALID_WEBHOOK_URL", "URL webhook phải là https và không trỏ vào mạng nội bộ");

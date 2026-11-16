@@ -11,6 +11,6 @@ export async function POST(req: Request) {
     const ctx = await resolveProject(req);
     const { user } = await requirePlayer(req, ctx);
     const input = submitScoreSchema.parse(await readJson(req));
-    return ok(await submitScoreForGame(user.id, ctx.game, input), { status: 201 });
+    return ok(await submitScoreForGame(user.id, ctx.game, input, { channel: "api" }), { status: 201 });
   });
 }

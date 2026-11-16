@@ -25,6 +25,7 @@ const KNOWN = [
   "platform.webhook",
   "platform.webhook.rotate",
   "webhook.failed",
+  "quota.warning",
 ] as const;
 
 /** Nhật ký Platform API: key, domain, chế độ nộp điểm, điểm bị từ chối / xóa, cấm người chơi */
@@ -79,6 +80,8 @@ export function PlatformLog({ gameId }: { gameId: string }) {
         return d.url ? String(d.url) : "—";
       case "webhook.failed":
         return `${String(d.event ?? "")} · ${String(d.error ?? "")}`;
+      case "quota.warning":
+        return `${String(d.metric ?? "")} ${String(d.percent ?? "")}% (${String(d.used ?? "")}/${String(d.limit ?? "")})`;
       case "player.ban":
         return d.reason ? String(d.reason) : "";
       default:
