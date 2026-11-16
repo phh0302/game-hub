@@ -42,7 +42,7 @@ const top = await GameHub.leaderboard({ period: "week", limit: 10 });
 | Hàm | Kết quả |
 | --- | --- |
 | `GameHub.init({ projectKey, apiBase?, locale? })` | `Promise<{ mode: "project", project, player, canSubmitScore, locale }>` |
-| `GameHub.login()` / `GameHub.login({ guest: true })` | `Promise<player>` – lưu token trong trình duyệt, lần sau tự đăng nhập |
+| `GameHub.login()` / `GameHub.login({ guest: true })` | `Promise<player>` – lưu token trong trình duyệt, lần sau tự đăng nhập. Đang chơi khách mà gọi `login()` (ví): ví mới được gắn vào tài khoản khách, ví đã có tài khoản thì điểm của khách được gộp sang – không mất điểm |
 | `GameHub.logout()` | Thu hồi token ngay trên máy chủ |
 | `GameHub.me()` | `Promise<{ player, best } \| null>` |
 | `GameHub.gameStart()` | Mở 1 lượt chơi → `Promise<sessionId \| null>` (dùng khi máy chủ của game tự nộp điểm, xem [Server API](/server-api)) |

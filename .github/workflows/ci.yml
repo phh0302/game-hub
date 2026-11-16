@@ -124,6 +124,7 @@ jobs:
       NEXT_TELEMETRY_DISABLED: "1"
       # Test webhook gửi tới máy nhận chạy cùng máy (127.0.0.1) – production KHÔNG bật
       WEBHOOK_ALLOW_PRIVATE: "1"
+      CRON_SECRET: e2e-cron-secret-0123456789
     steps:
       - uses: actions/checkout@v5
 

@@ -29,6 +29,7 @@ export function ProfileView() {
       <ProfileForm user={user} />
       <Achievements />
       <Security />
+      <DeleteAccount />
     </div>
   );
 }
@@ -54,6 +55,79 @@ function Security() {
       >
         {t("logoutAll")}
       </button>
+    </section>
+  );
+}
+
+/** Xóa hẳn tài khoản: gõ chữ xác nhận rồi bấm xóa – không dùng hộp thoại của trình duyệt */
+function DeleteAccount() {
+  const t = useTranslations("profile.delete");
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const word = t("word");
+
+  async function remove() {
+    setBusy(true);
+    setError(null);
+    try {
+      await apiFetch("/me", { method: "DELETE", json: { confirm: "DELETE" } });
+      window.location.href = "/";
+    } catch (err) {
+      const code = errorCode(err);
+      setError(t.has(`errors.${code}`) ? t(`errors.${code}`) : t("errors.generic", { code }));
+      setBusy(false);
+    }
+  }
+
+  return (
+    <section className="rounded-xl border border-neon-pink/40 bg-surface p-5">
+      <h2 className="mb-1 font-display text-xl font-semibold">{t("title")}</h2>
+      <p className="mb-3 text-sm text-muted">{t("hint")}</p>
+      {!open ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="rounded-lg border border-neon-pink/50 px-4 py-2 text-sm font-semibold text-neon-pink hover:bg-neon-pink/10"
+        >
+          {t("button")}
+        </button>
+      ) : (
+        <div className="flex flex-col gap-3">
+          <label className="flex flex-col gap-1 text-sm">
+            <span>{t("typeToConfirm", { word })}</span>
+            <input
+              value={typed}
+              onChange={(e) => setTyped(e.target.value)}
+              autoComplete="off"
+              className="max-w-xs rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none focus:border-neon-pink"
+            />
+          </label>
+          <div className="flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy || typed.trim().toUpperCase() !== word.toUpperCase()}
+              onClick={() => void remove()}
+              className="rounded-lg bg-neon-pink px-4 py-2 text-sm font-semibold text-bg disabled:opacity-40"
+            >
+              {t("confirm")}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              onClick={() => {
+                setOpen(false);
+                setTyped("");
+              }}
+              className="rounded-lg border border-line px-4 py-2 text-sm text-muted hover:text-ink"
+            >
+              {t("cancel")}
+            </button>
+          </div>
+          {error && <p role="alert" className="text-sm text-neon-pink">{error}</p>}
+        </div>
+      )}
     </section>
   );
 }

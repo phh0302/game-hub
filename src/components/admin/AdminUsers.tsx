@@ -38,8 +38,30 @@ export function AdminUsers() {
     setBusy(true);
     setError(null);
     setUser(null);
+    setNotice(null);
+    setConfirmDelete(false);
     try {
       setUser((await apiFetch<{ user: AdminUser }>(`/admin/users?q=${encodeURIComponent(q.trim())}`)).user);
+    } catch (err) {
+      setError(errText(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+
+  /** Xóa hẳn tài khoản theo yêu cầu của người chơi – xác nhận ngay trên trang, không dùng hộp thoại */
+  async function removeUser() {
+    if (!user) return;
+    setBusy(true);
+    setError(null);
+    try {
+      await apiFetch(`/admin/users/${user.id}`, { method: "DELETE" });
+      setNotice(t("deleted", { name: user.displayName }));
+      setUser(null);
+      setConfirmDelete(false);
     } catch (err) {
       setError(errText(err));
     } finally {
@@ -133,8 +155,38 @@ export function AdminUsers() {
                 {t("suspend")}
               </button>
             ))}
+          {user.role !== "ADMIN" && (
+            <div className="flex basis-full flex-wrap items-center justify-end gap-2">
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => setConfirmDelete(true)}
+                  className="rounded-md border border-line px-3 py-1.5 text-xs text-muted hover:border-neon-pink/50 hover:text-neon-pink disabled:opacity-60"
+                >
+                  {t("delete")}
+                </button>
+              ) : (
+                <>
+                  <span className="text-xs text-neon-pink">{t("deleteWarn")}</span>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void removeUser()}
+                    className="rounded-md bg-neon-pink px-3 py-1.5 text-xs font-semibold text-bg disabled:opacity-60"
+                  >
+                    {t("deleteConfirm")}
+                  </button>
+                  <button type="button" disabled={busy} onClick={() => setConfirmDelete(false)} className="text-xs text-muted hover:text-ink">
+                    {t("cancel")}
+                  </button>
+                </>
+              )}
+            </div>
+          )}
         </div>
       )}
+      {notice && <p className="px-5 pb-3 text-sm text-neon-lime">{notice}</p>}
       <p className="border-t border-line px-5 py-2 text-xs text-muted">{t("hint")}</p>
     </section>
   );

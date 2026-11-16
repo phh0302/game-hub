@@ -103,7 +103,7 @@ Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản
 2. **Connect Project** → chọn project, tick Production / Preview / Development → Vercel tự tạo `KV_REST_API_URL` và `KV_REST_API_TOKEN`
    (tạo ở <https://console.upstash.com> cũng được: copy **REST URL** / **REST Token** vào `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN`)
 
-**CRON_SECRET** (gửi lại webhook lỗi của Platform API mỗi ngày lúc 03:17 UTC, cấu hình trong `vercel.json`):
+**CRON_SECRET** (cron `/api/cron/daily` mỗi ngày lúc 03:17 UTC, cấu hình trong `vercel.json`: gửi lại webhook lỗi của Platform API + dọn dữ liệu quá hạn giữ):
 
 - Vercel → project **game-hub** → **Settings → Environment Variables** → thêm `CRON_SECRET` = chuỗi ngẫu nhiên ≥ 16 ký tự (Production) → redeploy. Webhook lỗi vẫn được gửi lại kèm sự kiện mới và bằng nút **Gửi lại**; cron chỉ dọn phần còn sót.
 

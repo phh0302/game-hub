@@ -147,7 +147,21 @@
     "avatarUpload": "Upload photo",
     "avatarChange": "Change photo",
     "avatarUploading": "Uploading…",
-    "avatarRemove": "Remove photo"
+    "avatarRemove": "Remove photo",
+    "delete": {
+      "title": "Delete account",
+      "hint": "Permanently deletes your account: linked wallet, name, avatar, plays and scores on every leaderboard (including games outside the hub). This cannot be undone. Connecting this wallet again later creates a new, empty account.",
+      "button": "Delete account…",
+      "word": "DELETE",
+      "typeToConfirm": "Type {word} to confirm",
+      "confirm": "Delete permanently",
+      "cancel": "Cancel",
+      "errors": {
+        "ADMIN_ACCOUNT": "Admin accounts can't delete themselves – remove the admin role first.",
+        "STUDIO_OWNER": "You own a studio – transfer ownership to another member or ask an admin to delete the studio first.",
+        "generic": "Could not delete ({code})."
+      }
+    }
   },
   "admin": {
     "title": "Admin",
@@ -562,8 +576,15 @@
       "USER_NOT_FOUND": "User not found (enter the full wallet address or exact username).",
       "CANNOT_SUSPEND_ADMIN": "Admin accounts cannot be suspended.",
       "CANNOT_SUSPEND_SELF": "You cannot suspend yourself.",
-      "VALIDATION_ERROR": "Invalid input."
-    }
+      "VALIDATION_ERROR": "Invalid input.",
+      "ADMIN_ACCOUNT": "Admin accounts can't be deleted.",
+      "STUDIO_OWNER": "This user owns a studio – transfer ownership or delete the studio first."
+    },
+    "delete": "Delete account…",
+    "deleteWarn": "Permanently deletes wallet, scores and plays.",
+    "deleteConfirm": "Delete permanently",
+    "cancel": "Cancel",
+    "deleted": "Deleted account {name}."
   },
   "errorPage": {
     "title": "Something went wrong",

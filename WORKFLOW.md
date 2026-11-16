@@ -235,12 +235,16 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 - [ ] Cổng thanh toán: Stripe (quốc tế), VNPay / MoMo (Việt Nam), hóa đơn
 - [ ] Điều khoản dịch vụ & chính sách dữ liệu cho khách PaaS; kiểm tra pháp lý trước khi thu tiền thật
 - [x] Trang trạng thái [monlabs.fun/status](https://monlabs.fun/status/): kiểm tra trực tiếp Game Hub, API & database, Platform API, docs; sự cố ghi trong `sites/monlabs/status/incidents.json`
+- [x] Nháp điều khoản dịch vụ + chính sách dữ liệu Platform API (tài liệu "Nháp: Điều khoản dịch vụ & Chính sách dữ liệu") – chờ luật sư + 13 câu hỏi
+- [x] Người chơi tự xóa tài khoản (trang hồ sơ); admin xóa theo yêu cầu (trang Admin)
+- [x] Tự dọn dữ liệu quá hạn trong cron hằng ngày `/api/cron/daily` (mốc trong `src/modules/maintenance/retention.ts`)
+- [x] Chơi khách rồi đăng nhập ví: gắn ví vào tài khoản khách / gộp điểm vào tài khoản ví đã có
 - [ ] Cam kết thời gian hoạt động (SLA) cho gói Business – cần đo uptime liên tục (dịch vụ giám sát bên ngoài) trước khi cam kết
 
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking
-- Đăng nhập Google / email, chơi khách có lưu điểm (database đã sẵn sàng)
+- Đăng nhập Google / email
 - Analytics dashboard (DAU/MAU, retention)
 
 ## Thứ tự & ước lượng

@@ -78,7 +78,8 @@
       function renderPlayer(data) {
         var p = data && data.player;
         show($("player"), p ? p.displayName + (p.isGuest ? " (khách)" : "") : "chưa đăng nhập");
-        $("login-wallet").hidden = !!p;
+        // Đang chơi khách vẫn hiện "Đăng nhập ví": gắn ví vào tài khoản khách, giữ nguyên điểm
+        $("login-wallet").hidden = !!p && !p.isGuest;
         $("login-guest").hidden = !!p;
         $("logout").hidden = !p;
       }
