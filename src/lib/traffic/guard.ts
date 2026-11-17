@@ -9,9 +9,8 @@ import {
 } from "./limits";
 import { redisPipeline, redisRest } from "./redis";
 
-export type GuardResult =
-  | { ok: true }
-  | { ok: false; code: "RATE_LIMITED" | "IP_BLOCKED"; retryAfter: number; justBlocked?: boolean };
+type GuardBlocked = { ok: false; code: "RATE_LIMITED" | "IP_BLOCKED"; retryAfter: number; justBlocked?: boolean };
+export type GuardResult = { ok: true } | GuardBlocked;
 
 const BANS_KEY = "traffic:bans"; // sorted set: IP → thời điểm hết chặn (ms)
 
@@ -57,7 +56,7 @@ async function guardRedis(redis: NonNullable<ReturnType<typeof redisRest>>, ip: 
   return { ok: true } as const;
 }
 
-function blocked(code: "RATE_LIMITED" | "IP_BLOCKED", retryAfter: number): GuardResult {
+function blocked(code: "RATE_LIMITED" | "IP_BLOCKED", retryAfter: number): GuardBlocked {
   return { ok: false, code, retryAfter: Math.max(1, Math.ceil(retryAfter)) };
 }
 
