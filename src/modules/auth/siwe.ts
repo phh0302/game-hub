@@ -8,6 +8,14 @@ export const SIWE_STATEMENT =
   "Sign in to Game Hub. This request will not trigger a blockchain transaction or cost any gas fees.";
 
 const appUrl = new URL(env.NEXT_PUBLIC_APP_URL);
+/** Trang theo dõi (stats.monlabs.fun) cũng là 1 domain đăng nhập hợp lệ của hub */
+const statsUrl = (() => {
+  try {
+    return new URL(process.env.STATS_URL || "https://stats.monlabs.fun");
+  } catch {
+    return null;
+  }
+})();
 
 /**
  * Domain hợp lệ trong thông điệp SIWE.
@@ -15,7 +23,8 @@ const appUrl = new URL(env.NEXT_PUBLIC_APP_URL);
  * Development: chấp nhận thêm host của request (vd: truy cập bằng IP LAN để test).
  */
 export function expectedSiwe(req: Request) {
-  const requestHost = req.headers.get("host");
+  const requestHost = req.headers.get("x-forwarded-host") ?? req.headers.get("host");
+  if (statsUrl && requestHost === statsUrl.host) return { domain: statsUrl.host, uri: statsUrl.origin };
   const allowDevHost = process.env.NODE_ENV !== "production" && requestHost;
 
   const domain = allowDevHost ? requestHost : appUrl.host;

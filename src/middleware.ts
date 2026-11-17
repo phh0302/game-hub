@@ -1,8 +1,18 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { SESSION_COOKIE, verifySession } from "@/modules/auth/jwt";
 import { isCrossSiteWrite } from "@/modules/auth/csrf";
-import { allowsLargeBody, classifyRequest, MAX_BODY_BYTES, parseExemptIps } from "@/lib/traffic/limits";
+import {
+  allowsLargeBody,
+  BLOCK_SEC,
+  classifyRequest,
+  MAX_BODY_BYTES,
+  parseExemptIps,
+  type TrafficGroup,
+} from "@/lib/traffic/limits";
 import { guardRequest } from "@/lib/traffic/guard";
+import { recordBlocked, recordHit } from "@/lib/traffic/recorder";
+import { raiseAnomaly } from "@/lib/traffic/alerts";
+import { normalizeRoute, parseSampleRate } from "@/lib/traffic/stats-keys";
 
 const LANDING_ORIGINS = new Set(["https://monlabs.fun", "https://www.monlabs.fun"]);
 
@@ -11,14 +21,33 @@ const LANDING_ORIGINS = new Set(["https://monlabs.fun", "https://www.monlabs.fun
  * 2. Trang: chặn /profile, /developer, /preview khi chưa đăng nhập; /admin khi không phải admin.
  * API tự kiểm tra quyền bên trong handler (requireUser / requireAdmin).
  */
-export async function middleware(req: NextRequest) {
+export async function middleware(req: NextRequest, event: NextFetchEvent) {
   const { pathname } = req.nextUrl;
 
-  // 0. Lớp chặn chung cho mọi API: body quá lớn, IP đang bị chặn, vượt giới hạn nhóm
-  if (pathname.startsWith("/api/")) {
-    const stopped = await trafficGuard(req, pathname);
-    if (stopped) return stopped;
+  // stats.monlabs.fun → trang theo dõi (chỉ admin, trang tự kiểm tra đăng nhập)
+  if (isStatsHost(req) && pathname === "/") {
+    const url = req.nextUrl.clone();
+    url.pathname = "/stats";
+    return NextResponse.rewrite(url);
   }
+  if (pathname === "/" || pathname.startsWith("/stats")) return NextResponse.next();
+
+  // 0. API: lớp chặn chung (body quá lớn, IP bị chặn, vượt giới hạn nhóm) + lấy mẫu thống kê
+  let forward: Headers | null = null;
+  if (pathname.startsWith("/api/")) {
+    const group = classifyRequest(pathname, req.method);
+    const ip = requestIp(req);
+    const stopped = group ? await trafficGuard(req, pathname, group, ip, event) : null;
+    if (stopped) return stopped;
+    forward = new Headers(req.headers);
+    for (const h of ["x-mon-s", "x-mon-t"]) forward.delete(h); // không tin header client tự gửi
+    if (group && Math.random() < SAMPLE_RATE) {
+      forward.set("x-mon-s", "1");
+      forward.set("x-mon-t", String(Date.now()));
+      event.waitUntil(recordHit({ group, route: normalizeRoute(pathname), ip, rate: SAMPLE_RATE }));
+    }
+  }
+  const pass = () => (forward ? NextResponse.next({ request: { headers: forward } }) : NextResponse.next());
 
   // Client API cho game chạy trên domain riêng: không dùng cookie (key + token trong header)
   // → không cần chống CSRF; trả lời preflight CORS tại đây
@@ -36,14 +65,14 @@ export async function middleware(req: NextRequest) {
         },
       });
     }
-    return NextResponse.next();
+    return pass();
   }
 
   // Trang giới thiệu monlabs.fun đọc tài khoản đang đăng nhập để hiện tên trên nút "Kết nối ví".
   // Chỉ GET /api/v1/me, chỉ từ domain của chính dự án (cùng site → trình duyệt gửi kèm cookie)
   if (pathname === "/api/v1/me" && req.method === "GET") {
     const origin = req.headers.get("origin");
-    const res = NextResponse.next();
+    const res = pass();
     if (origin && LANDING_ORIGINS.has(origin)) {
       res.headers.set("Access-Control-Allow-Origin", origin);
       res.headers.set("Access-Control-Allow-Credentials", "true");
@@ -65,7 +94,7 @@ export async function middleware(req: NextRequest) {
         { status: 403 },
       );
     }
-    return NextResponse.next();
+    return pass();
   }
 
   const session = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
@@ -84,8 +113,15 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*", "/profile/:path*", "/admin/:path*", "/developer/:path*", "/preview/:path*"],
+  matcher: ["/", "/stats/:path*", "/api/:path*", "/profile/:path*", "/admin/:path*", "/developer/:path*", "/preview/:path*"],
 };
+
+const SAMPLE_RATE = parseSampleRate(process.env.TRAFFIC_SAMPLE_RATE);
+
+function isStatsHost(req: NextRequest): boolean {
+  const host = (req.headers.get("x-forwarded-host") ?? req.headers.get("host") ?? "").toLowerCase();
+  return host.startsWith("stats.");
+}
 
 const EXEMPT_IPS = parseExemptIps(process.env.TRAFFIC_EXEMPT_IPS);
 
@@ -94,9 +130,13 @@ function requestIp(req: NextRequest): string {
   return req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || req.headers.get("x-real-ip") || "unknown";
 }
 
-async function trafficGuard(req: NextRequest, pathname: string): Promise<NextResponse | null> {
-  const group = classifyRequest(pathname, req.method);
-  if (!group) return null;
+async function trafficGuard(
+  req: NextRequest,
+  pathname: string,
+  group: TrafficGroup,
+  ip: string,
+  event: NextFetchEvent,
+): Promise<NextResponse | null> {
   // Game ngoài hub đọc được lỗi (CORS) – các route khác cùng domain
   const origin = req.headers.get("origin");
   const cors: Record<string, string> =
@@ -104,17 +144,26 @@ async function trafficGuard(req: NextRequest, pathname: string): Promise<NextRes
 
   const declared = Number(req.headers.get("content-length") ?? 0);
   if (declared > MAX_BODY_BYTES && !allowsLargeBody(pathname)) {
+    event.waitUntil(recordBlocked({ code: "PAYLOAD_TOO_LARGE" }));
     return NextResponse.json(
       { error: { code: "PAYLOAD_TOO_LARGE", message: "Dữ liệu gửi lên quá lớn" } },
       { status: 413, headers: cors },
     );
   }
 
-  const ip = requestIp(req);
   if (EXEMPT_IPS.has(ip)) return null;
   const result = await guardRequest(ip, group);
   if (result.ok) return null;
-  if (result.justBlocked) console.warn(`[traffic] Chặn tạm IP ${ip} (${group}) ${result.retryAfter}s`);
+  event.waitUntil(recordBlocked({ code: result.code }));
+  if (result.justBlocked) {
+    event.waitUntil(
+      raiseAnomaly("ip_blocked", `Đã chặn tạm IP ${ip} 15 phút vì gửi request dồn dập (nhóm ${group})`, {
+        data: { ip, group },
+        dedupeKey: `ip_blocked:${ip}`,
+        dedupeSec: BLOCK_SEC,
+      }),
+    );
+  }
   const message =
     result.code === "IP_BLOCKED"
       ? "Bạn gửi quá nhiều yêu cầu nên tạm bị chặn, thử lại sau ít phút"

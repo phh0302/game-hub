@@ -733,5 +733,85 @@
     "unblock": "Bỏ chặn",
     "unblocked": "Đã bỏ chặn {ip}.",
     "error": "Lỗi: {code}"
+  },
+  "trafficStats": {
+    "title": "Theo dõi lưu lượng",
+    "subtitle": "Request API theo thời gian, lỗi, request bị chặn và cảnh báo bất thường.",
+    "sampled": "Số liệu ước tính từ mẫu {pct}% request (request bị chặn được đếm đủ).",
+    "sourceDb": "30 ngày: tổng hợp theo ngày (cập nhật mỗi đêm).",
+    "range": {
+      "1h": "1 giờ",
+      "24h": "24 giờ",
+      "7d": "7 ngày",
+      "30d": "30 ngày"
+    },
+    "refresh": "Tải lại",
+    "loading": "Đang tải…",
+    "loadError": "Không tải được số liệu ({code}).",
+    "empty": "Chưa có dữ liệu trong khoảng này.",
+    "emptyErrors": "Không có lỗi máy chủ.",
+    "emptyBlocked": "Không có request nào bị chặn.",
+    "emptyIps": "Chưa có dữ liệu IP.",
+    "kpi": {
+      "requests": "Request API",
+      "requestsHint": "ước tính",
+      "errorRate": "Tỷ lệ lỗi 5xx",
+      "errorsHint": "{errors} lỗi máy chủ · {client} lỗi 4xx",
+      "blocked": "Bị chặn",
+      "blockedHint": "429 / 413 từ lớp chống quá tải",
+      "latency": "Độ trễ p95",
+      "latencyHint": "p50: {p50}"
+    },
+    "chart": {
+      "requests": "Request",
+      "errors": "Lỗi máy chủ (5xx)",
+      "blocked": "Request bị chặn"
+    },
+    "unit": {
+      "requests": "request"
+    },
+    "top": {
+      "groups": "Theo nhóm",
+      "blocked": "Lý do chặn",
+      "routes": "Route nhiều request nhất",
+      "ips": "IP nhiều request nhất"
+    },
+    "group": {
+      "auth": "Đăng nhập",
+      "write": "Ghi dữ liệu",
+      "read": "Đọc",
+      "platform": "Platform API",
+      "admin": "Quản trị"
+    },
+    "ipsHint": "IP được mã hóa một chiều (không lưu IP thật). IP đang bị chặn có địa chỉ đầy đủ ở bảng bên dưới.",
+    "anomalies": {
+      "title": "Bất thường gần đây",
+      "hint": "Kiểm tra mỗi phút: lưu lượng tăng đột biến, lỗi 5xx cao, 1 IP chiếm phần lớn, nhiều request bị chặn.",
+      "empty": "Chưa phát hiện bất thường nào.",
+      "alerted": "đã báo Telegram"
+    },
+    "anomalyType": {
+      "traffic_spike": "Tăng đột biến",
+      "error_rate": "Lỗi cao",
+      "ip_dominant": "1 IP chiếm nhiều",
+      "rate_limited_spike": "Bị chặn nhiều",
+      "ip_blocked": "Chặn IP"
+    },
+    "telegram": {
+      "title": "Cảnh báo Telegram",
+      "noToken": "Chưa đặt TELEGRAM_BOT_TOKEN trên máy chủ – cảnh báo chỉ hiện ở trang này.",
+      "noChat": "Đã có bot. Hãy nhắn 1 tin bất kỳ cho bot (hoặc thêm bot vào nhóm), rồi bấm “Tìm chat”.",
+      "ready": "Cảnh báo gửi về chat {chat}.",
+      "discover": "Tìm chat",
+      "test": "Gửi tin thử",
+      "found": "Đã lưu chat: {name}.",
+      "sent": "Đã gửi tin thử – kiểm tra Telegram.",
+      "error": "Lỗi: {code}"
+    },
+    "gate": {
+      "login": "Trang này chỉ dành cho quản trị viên. Kết nối ví admin để xem.",
+      "forbidden": "Tài khoản này không có quyền quản trị.",
+      "connect": "Kết nối ví"
+    }
   }
 }

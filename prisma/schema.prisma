@@ -545,3 +545,21 @@ model StudioMonthlyPlayer {
 
   @@id([studioId, month, userId])
 }
+
+/// Tổng hợp lưu lượng API theo ngày (UTC) – cron gộp từ Redis, trang stats.monlabs.fun xem 30 ngày
+model TrafficDaily {
+  day          DateTime @id @db.Date
+  /// Ước tính tổng request (đã chia tỷ lệ lấy mẫu)
+  requests     Int      @default(0)
+  /// Ước tính lỗi máy chủ (5xx)
+  errors       Int      @default(0)
+  /// Ước tính lỗi phía client (4xx)
+  clientErrors Int      @default(0)
+  /// Request bị lớp chặn trả 429/413 (đếm đủ)
+  blocked      Int      @default(0)
+  p95Ms        Int?
+  /// { groups, routes, blocked, hist }
+  data         Json?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}

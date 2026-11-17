@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { after, NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
 import { reportError } from "./monitoring";
@@ -34,8 +35,37 @@ function errorResponse(status: number, code: string, message: string, details?: 
   );
 }
 
-/** Bọc handler của route: chuyển mọi lỗi thành JSON thống nhất */
+/** Bọc handler của route: chuyển mọi lỗi thành JSON thống nhất (+ ghi số liệu cho request được lấy mẫu) */
 export async function handle(fn: () => Promise<Response>): Promise<Response> {
+  const res = await run(fn);
+  await trackSampled(res.status);
+  return res;
+}
+
+/**
+ * Middleware đánh dấu request được lấy mẫu (x-mon-s) và thời điểm bắt đầu (x-mon-t).
+ * Sau khi trả lời: ghi mã trạng thái + độ trễ, rồi chạy phát hiện bất thường (tối đa 1 lần/phút).
+ */
+async function trackSampled(status: number) {
+  try {
+    const h = await headers();
+    if (h.get("x-mon-s") !== "1") return;
+    const started = Number(h.get("x-mon-t"));
+    const ms = Number.isFinite(started) && started > 0 ? Math.max(0, Date.now() - started) : 0;
+    after(async () => {
+      const [{ recordResult }, { maybeDetect }] = await Promise.all([
+        import("./traffic/recorder"),
+        import("@/modules/traffic/detect"),
+      ]);
+      await recordResult({ status, ms });
+      await maybeDetect();
+    });
+  } catch {
+    // ngoài ngữ cảnh request (test) → bỏ qua
+  }
+}
+
+async function run(fn: () => Promise<Response>): Promise<Response> {
   try {
     return await fn();
   } catch (err) {
