@@ -8,12 +8,16 @@ import { reportError } from "./monitoring";
  * `code` là mã ổn định để frontend dịch sang tiếng Việt/Anh.
  */
 export class ApiError extends Error {
+  /** Với lỗi 429: số giây nên chờ (gửi kèm header Retry-After) */
+  public retryAfter?: number;
   constructor(
     public status: number,
     public code: string,
     message?: string,
+    options: { retryAfter?: number } = {},
   ) {
     super(message ?? code);
+    this.retryAfter = options.retryAfter;
   }
 }
 
@@ -21,8 +25,13 @@ export function ok<T>(data: T, init?: ResponseInit) {
   return NextResponse.json(data, init);
 }
 
-function errorResponse(status: number, code: string, message: string, details?: unknown) {
-  return NextResponse.json({ error: { code, message, details } }, { status });
+function errorResponse(status: number, code: string, message: string, details?: unknown, retryAfter?: number) {
+  // Mọi 429 đều có Retry-After (mặc định 60 giây) – giống lớp chặn chung ở middleware
+  const wait = status === 429 ? Math.max(1, Math.ceil(retryAfter ?? 60)) : undefined;
+  return NextResponse.json(
+    { error: { code, message, details, ...(wait ? { retryAfter: wait } : {}) } },
+    { status, headers: wait ? { "Retry-After": String(wait) } : undefined },
+  );
 }
 
 /** Bọc handler của route: chuyển mọi lỗi thành JSON thống nhất */
@@ -31,7 +40,7 @@ export async function handle(fn: () => Promise<Response>): Promise<Response> {
     return await fn();
   } catch (err) {
     if (err instanceof ApiError) {
-      return errorResponse(err.status, err.code, err.message);
+      return errorResponse(err.status, err.code, err.message, undefined, err.retryAfter);
     }
     if (err instanceof ZodError) {
       return errorResponse(400, "VALIDATION_ERROR", "Dữ liệu không hợp lệ", err.flatten());
