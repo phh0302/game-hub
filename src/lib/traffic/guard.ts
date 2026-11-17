@@ -119,12 +119,19 @@ export async function listBlockedIps(now = Date.now()): Promise<BlockedIp[]> {
   return items.sort((a, b) => b.until - a.until);
 }
 
-export async function unblockIp(ip: string): Promise<boolean> {
+/** Bỏ chặn + xóa bộ đếm dồn dập của IP (không thì request kế tiếp lại bị chặn ngay) */
+export async function unblockIp(ip: string, now = Date.now()): Promise<boolean> {
+  const w = Math.floor(now / (BURST_WINDOW_SEC * 1000));
+  const burstKeys = [w, w - 1].map((x) => `traffic:burst:${ip}:${x}`);
   const redis = redisRest();
-  if (!redis) return mem.bans.delete(ip);
+  if (!redis) {
+    for (const x of [w, w - 1]) mem.counters.delete(`b:${ip}:${x}`);
+    return mem.bans.delete(ip);
+  }
   const [deleted] = (await redisPipeline(redis, [
     ["DEL", `traffic:ban:${ip}`],
     ["ZREM", BANS_KEY, ip],
-  ])) as [number, number];
+    ["DEL", ...burstKeys],
+  ])) as [number, number, number];
   return deleted > 0;
 }
