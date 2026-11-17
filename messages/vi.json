@@ -49,7 +49,8 @@
       "RATE_LIMITED": "Bạn thử quá nhiều lần, đợi một lát rồi thử lại.",
       "UNKNOWN": "Có lỗi xảy ra, hãy thử lại.",
       "ACCOUNT_SUSPENDED": "Tài khoản của bạn đã bị khóa. Liên hệ admin nếu bạn nghĩ đây là nhầm lẫn.",
-      "ACCOUNT_DISABLED": "Tài khoản này đã bị vô hiệu hóa."
+      "ACCOUNT_DISABLED": "Tài khoản này đã bị vô hiệu hóa.",
+      "IP_BLOCKED": "Bạn gửi quá nhiều yêu cầu nên tạm bị chặn khoảng 15 phút."
     },
     "developer": "Developer"
   },
@@ -76,7 +77,8 @@
       "GUEST_NOT_ALLOWED": "Hãy kết nối ví để lưu điểm.",
       "UNKNOWN": "Không lưu được điểm, hãy thử lại.",
       "SCORE_TOO_FAST": "Điểm không được ghi nhận: tốc độ ghi điểm nhanh bất thường so với thời gian chơi.",
-      "SESSION_NOT_STARTED": "Điểm không được ghi nhận: không bắt đầu được lượt chơi trên máy chủ (thử tải lại trang)."
+      "SESSION_NOT_STARTED": "Điểm không được ghi nhận: không bắt đầu được lượt chơi trên máy chủ (thử tải lại trang).",
+      "IP_BLOCKED": "Bạn gửi quá nhiều yêu cầu nên tạm bị chặn khoảng 15 phút."
     },
     "notSavedLateLogin": "Bạn đạt {score} điểm, nhưng ván này bắt đầu trước khi kết nối ví nên không được lưu. Ván sau sẽ được tính!",
     "dismiss": "Đóng",
@@ -138,7 +140,8 @@
       "UPLOADS_NOT_CONFIGURED": "Máy chủ chưa bật chức năng upload.",
       "RATE_LIMITED": "Bạn đổi ảnh quá nhiều lần, thử lại sau.",
       "IMAGE_KEY_INVALID": "Ảnh không hợp lệ – hãy tải lên lại.",
-      "UPLOAD_NOT_FOUND": "Không tìm thấy ảnh vừa tải – hãy tải lên lại."
+      "UPLOAD_NOT_FOUND": "Không tìm thấy ảnh vừa tải – hãy tải lên lại.",
+      "IP_BLOCKED": "Bạn gửi quá nhiều yêu cầu nên tạm bị chặn khoảng 15 phút."
     },
     "security": "Bảo mật",
     "logoutAllHint": "Đăng xuất khỏi tất cả trình duyệt và thiết bị đang đăng nhập tài khoản này (kể cả máy này). Dùng khi bạn đăng nhập trên máy lạ hoặc nghi bị lộ.",
@@ -345,7 +348,8 @@
       "DELIVERY_SUCCEEDED": "Sự kiện này đã gửi thành công.",
       "PLAN_REQUIRED": "Tính năng này cần gói Pro trở lên – liên hệ admin để nâng gói.",
       "QUOTA_PROJECTS": "Gói hiện tại đã đủ số game dùng Platform API – thu hồi hết key của 1 game khác hoặc nâng gói.",
-      "QUOTA_TOURNAMENTS": "Gói hiện tại đã đủ số giải đấu đang mở."
+      "QUOTA_TOURNAMENTS": "Gói hiện tại đã đủ số giải đấu đang mở.",
+      "IP_BLOCKED": "Bạn gửi quá nhiều yêu cầu nên tạm bị chặn khoảng 15 phút."
     },
     "agreePrefix": "Tôi đã đọc và đồng ý với",
     "termsLink": "Điều khoản dành cho người đăng game",
@@ -516,7 +520,8 @@
       "GUEST_NOT_ALLOWED": "Kết nối ví để gửi báo cáo.",
       "GAME_NOT_FOUND": "Không tìm thấy game.",
       "VALIDATION_ERROR": "Thông tin không hợp lệ.",
-      "UNKNOWN": "Gửi báo cáo thất bại, thử lại sau."
+      "UNKNOWN": "Gửi báo cáo thất bại, thử lại sau.",
+      "IP_BLOCKED": "Bạn gửi quá nhiều yêu cầu nên tạm bị chặn khoảng 15 phút."
     }
   },
   "adminReports": {
@@ -718,5 +723,15 @@
       "openTournaments": "Giải đấu đang mở"
     },
     "limitsHint": "Hạn mức riêng: nhập số, hoặc ∞ = không giới hạn."
+  },
+  "adminTraffic": {
+    "title": "IP đang bị chặn",
+    "hint": "Tự chặn 15 phút khi 1 IP gửi hơn 150 request trong 10 giây.",
+    "refresh": "Tải lại",
+    "empty": "Không có IP nào đang bị chặn.",
+    "until": "đến {time}",
+    "unblock": "Bỏ chặn",
+    "unblocked": "Đã bỏ chặn {ip}.",
+    "error": "Lỗi: {code}"
   }
 }

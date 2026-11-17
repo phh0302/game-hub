@@ -113,6 +113,17 @@ jobs:
         options: >-
           --health-cmd "pg_isready -U ci -d ci"
           --health-interval 5s --health-timeout 5s --health-retries 10
+      # Redis + bộ chuyển REST kiểu Upstash – giống bộ chạy trên VPS (docker-compose)
+      redis:
+        image: redis:7.2-alpine
+        ports: ["6379:6379"]
+      srh:
+        image: hiett/serverless-redis-http:0.0.10
+        env:
+          SRH_MODE: env
+          SRH_TOKEN: ci-srh-token
+          SRH_CONNECTION_STRING: redis://redis:6379
+        ports: ["8079:80"]
     env:
       DATABASE_URL: postgresql://ci:ci@localhost:5432/ci
       DATABASE_URL_UNPOOLED: postgresql://ci:ci@localhost:5432/ci
@@ -125,6 +136,10 @@ jobs:
       # Test webhook gửi tới máy nhận chạy cùng máy (127.0.0.1) – production KHÔNG bật
       WEBHOOK_ALLOW_PRIVATE: "1"
       CRON_SECRET: e2e-cron-secret-0123456789
+      UPSTASH_REDIS_REST_URL: http://localhost:8079
+      UPSTASH_REDIS_REST_TOKEN: ci-srh-token
+      # Máy chạy test gửi rất nhiều request – bỏ qua lớp chặn chung (test riêng giả IP khác bằng x-forwarded-for)
+      TRAFFIC_EXEMPT_IPS: "127.0.0.1,::1,::ffff:127.0.0.1,unknown"
     steps:
       - uses: actions/checkout@v5
 

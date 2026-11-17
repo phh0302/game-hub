@@ -23,7 +23,11 @@ export async function rateLimit(key: string, limit: number, windowMs: number): P
     }
   }
   if (count === null) count = memoryIncrement(key, windowMs);
-  if (count > limit) throw new ApiError(429, "RATE_LIMITED", RATE_LIMITED_MESSAGE);
+  if (count > limit) {
+    // Cửa sổ cố định: chờ tới hết cửa sổ hiện tại
+    const retryAfter = Math.ceil((windowMs - (Date.now() % windowMs)) / 1000);
+    throw new ApiError(429, "RATE_LIMITED", RATE_LIMITED_MESSAGE, { retryAfter });
+  }
 }
 
 /** Đang dùng bộ đếm nào (hiện ở /api/v1/health) */
