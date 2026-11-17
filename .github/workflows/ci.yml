@@ -140,6 +140,8 @@ jobs:
       UPSTASH_REDIS_REST_TOKEN: ci-srh-token
       # Máy chạy test gửi rất nhiều request – bỏ qua lớp chặn chung (test riêng giả IP khác bằng x-forwarded-for)
       TRAFFIC_EXEMPT_IPS: "127.0.0.1,::1,::ffff:127.0.0.1,unknown"
+      # Ghi số liệu cho mọi request (production mặc định lấy mẫu 20%)
+      TRAFFIC_SAMPLE_RATE: "1"
     steps:
       - uses: actions/checkout@v5
 

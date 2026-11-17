@@ -2,9 +2,10 @@ import { timingSafeEqual } from "node:crypto";
 import { ApiError, handle, ok } from "@/lib/api";
 import { runRetentionCleanup } from "@/modules/maintenance/cleanup";
 import { processDueWebhooks } from "@/modules/platform/webhooks";
+import { rollupTrafficDay } from "@/modules/traffic/stats";
 
 /**
- * Cron hằng ngày (vercel.json): gửi lại webhook lỗi đến hạn + dọn dữ liệu quá hạn giữ.
+ * Cron hằng ngày (vercel.json): gửi lại webhook lỗi đến hạn + dọn dữ liệu quá hạn giữ + gộp số liệu lưu lượng hôm qua.
  * Vercel gửi Authorization: Bearer <CRON_SECRET>. Chưa đặt CRON_SECRET → tắt.
  */
 export const maxDuration = 60;
@@ -19,6 +20,10 @@ export async function GET(req: Request) {
     }
     const webhooks = await processDueWebhooks({ limit: 100 });
     const cleanup = await runRetentionCleanup();
-    return ok({ webhooks, cleanup });
+    const traffic = await rollupTrafficDay().catch((err) => {
+      console.error("[cron] Gộp số liệu lưu lượng lỗi", err);
+      return null;
+    });
+    return ok({ webhooks, cleanup, traffic });
   });
 }

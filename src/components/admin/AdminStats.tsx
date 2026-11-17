@@ -155,7 +155,7 @@ function duration(seconds: number) {
   return `${m}:${String(s).padStart(2, "0")}`;
 }
 
-function Kpi({ label, value, hint }: { label: string; value: string; hint: string }) {
+export function Kpi({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
     <div className="rounded-xl border border-line bg-bg/40 px-4 py-3">
       <p className="text-xs font-medium text-muted">{label}</p>
@@ -166,18 +166,20 @@ function Kpi({ label, value, hint }: { label: string; value: string; hint: strin
 }
 
 /** Biểu đồ cột 1 chuỗi: cột mảnh bo 4px phía trên, lưới mờ, rê chuột / chạm để xem số của từng ngày */
-function BarChart({
+export function BarChart({
   title,
   data,
   format,
   unit,
   empty,
+  color = "#22e3ff",
 }: {
   title: string;
   data: { label: string; value: number }[];
   format: (v: number) => string;
   unit: string;
   empty: string;
+  color?: string;
 }) {
   const [hover, setHover] = useState<number | null>(null);
   const W = 600;
@@ -227,7 +229,7 @@ function BarChart({
                 {d.value > 0 && (
                   <path
                     d={`M${x},${top + h} V${top + r} Q${x},${top} ${x + r},${top} H${x + barW - r} Q${x + barW},${top} ${x + barW},${top + r} V${top + h} Z`}
-                    fill="#22e3ff"
+                    fill={color}
                     opacity={hover === null || hover === i ? 1 : 0.45}
                   />
                 )}

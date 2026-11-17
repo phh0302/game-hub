@@ -733,5 +733,85 @@
     "unblock": "Unblock",
     "unblocked": "Unblocked {ip}.",
     "error": "Error: {code}"
+  },
+  "trafficStats": {
+    "title": "Traffic monitor",
+    "subtitle": "API requests over time, errors, blocked requests and anomaly alerts.",
+    "sampled": "Estimated from a {pct}% sample of requests (blocked requests are fully counted).",
+    "sourceDb": "30 days: daily rollup (updated nightly).",
+    "range": {
+      "1h": "1 hour",
+      "24h": "24 hours",
+      "7d": "7 days",
+      "30d": "30 days"
+    },
+    "refresh": "Refresh",
+    "loading": "Loading…",
+    "loadError": "Could not load stats ({code}).",
+    "empty": "No data in this range yet.",
+    "emptyErrors": "No server errors.",
+    "emptyBlocked": "No blocked requests.",
+    "emptyIps": "No IP data yet.",
+    "kpi": {
+      "requests": "API requests",
+      "requestsHint": "estimated",
+      "errorRate": "5xx error rate",
+      "errorsHint": "{errors} server errors · {client} 4xx",
+      "blocked": "Blocked",
+      "blockedHint": "429 / 413 from the traffic guard",
+      "latency": "p95 latency",
+      "latencyHint": "p50: {p50}"
+    },
+    "chart": {
+      "requests": "Requests",
+      "errors": "Server errors (5xx)",
+      "blocked": "Blocked requests"
+    },
+    "unit": {
+      "requests": "requests"
+    },
+    "top": {
+      "groups": "By group",
+      "blocked": "Block reasons",
+      "routes": "Busiest routes",
+      "ips": "Busiest IPs"
+    },
+    "group": {
+      "auth": "Sign-in",
+      "write": "Writes",
+      "read": "Reads",
+      "platform": "Platform API",
+      "admin": "Admin"
+    },
+    "ipsHint": "IPs are one-way hashed (real IPs are not stored). Currently blocked IPs are listed in full below.",
+    "anomalies": {
+      "title": "Recent anomalies",
+      "hint": "Checked every minute: traffic spikes, high 5xx rate, one IP dominating, many blocked requests.",
+      "empty": "No anomalies detected yet.",
+      "alerted": "sent to Telegram"
+    },
+    "anomalyType": {
+      "traffic_spike": "Traffic spike",
+      "error_rate": "High errors",
+      "ip_dominant": "Dominant IP",
+      "rate_limited_spike": "Many blocked",
+      "ip_blocked": "IP blocked"
+    },
+    "telegram": {
+      "title": "Telegram alerts",
+      "noToken": "TELEGRAM_BOT_TOKEN is not set on the server – alerts only show on this page.",
+      "noChat": "Bot is set. Send any message to the bot (or add it to a group), then press “Find chat”.",
+      "ready": "Alerts go to chat {chat}.",
+      "discover": "Find chat",
+      "test": "Send test",
+      "found": "Saved chat: {name}.",
+      "sent": "Test sent – check Telegram.",
+      "error": "Error: {code}"
+    },
+    "gate": {
+      "login": "This page is for administrators only. Connect the admin wallet to view it.",
+      "forbidden": "This account is not an administrator.",
+      "connect": "Connect wallet"
+    }
   }
 }

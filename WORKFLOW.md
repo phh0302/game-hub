@@ -245,18 +245,18 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 Quyết định (17/11): trang theo dõi ở **stats.monlabs.fun**, chỉ admin xem · trang chính **chuyển sang VPS** chạy Docker (nginx đứng trước, Cloudflare proxy) · cảnh báo qua **Telegram** · số liệu request **đếm mẫu** (tỷ lệ chỉnh được) · Neon + R2 giữ nguyên (có sao lưu), Redis chạy trên VPS.
 
 ### Phase 13a – Chống DDoS & giới hạn request
-- [ ] Giới hạn chung cho mọi `/api` ở middleware, theo nhóm (đọc / ghi / đăng nhập / nộp điểm / Platform API / admin), cấu hình ở 1 file
-- [ ] `429` + `Retry-After` thống nhất; giao diện báo "thao tác quá nhanh"
-- [ ] Tự chặn tạm IP gửi dồn dập; admin xem + bỏ chặn
-- [ ] Giới hạn kích thước body cho mọi route ghi
-- [ ] Hướng dẫn Cloudflare (proxy, WAF, rate limiting rules, Under Attack) cho VPS
-- [ ] e2e: dồn request → 429, hết thời gian chặn → gọi lại được
+- [x] Giới hạn chung cho mọi `/api` ở middleware, theo nhóm (đọc / ghi / đăng nhập / nộp điểm / Platform API / admin), cấu hình ở 1 file
+- [x] `429` + `Retry-After` thống nhất; giao diện báo "thao tác quá nhanh"
+- [x] Tự chặn tạm IP gửi dồn dập; admin xem + bỏ chặn
+- [x] Giới hạn kích thước body cho mọi route ghi
+- [x] Hướng dẫn Cloudflare (proxy, WAF, rate limiting rules, Under Attack) cho VPS
+- [x] e2e: dồn request → 429, hết thời gian chặn → gọi lại được
 
 ### Phase 13b – Theo dõi truy cập & cảnh báo
-- [ ] Middleware đếm mẫu: request theo nhóm route, mã trả về, thời gian xử lý, top IP (mã hóa một chiều) – Redis 7 ngày, gộp vào database hằng ngày
-- [ ] Phát hiện bất thường: lưu lượng tăng đột biến so với cùng giờ 7 ngày trước, lỗi 5xx > 5%, 1 IP chiếm quá nhiều, đăng nhập lỗi / 429 tăng vọt
-- [ ] Cảnh báo Telegram (mỗi sự cố 1 lần, có link tới stats) – người dùng tạo bot + gửi token
-- [ ] Trang **stats.monlabs.fun** (chỉ admin): biểu đồ request/phút, lỗi, p50/p95, top route / IP, IP đang bị chặn, lịch sử bất thường & cảnh báo, khung 1h / 24h / 7 ngày – người dùng thêm DNS
+- [x] Middleware đếm mẫu (`TRAFFIC_SAMPLE_RATE`, mặc định 20%): request theo nhóm + route, mã trả về, thời gian xử lý, top IP (mã hóa một chiều); request bị chặn đếm đủ – Redis (phút 2 ngày, giờ 9 ngày), cron gộp vào bảng `TrafficDaily` hằng ngày
+- [x] Phát hiện bất thường (mỗi phút, khóa Redis): lưu lượng 5 phút gấp 3 lần trung bình 24 giờ trước, lỗi 5xx ≥ 5%, 1 IP chiếm ≥ 50%, ≥ 100 request bị chặn / 5 phút, chặn tạm IP
+- [x] Cảnh báo Telegram (mỗi sự cố 1 lần / 30 phút, có link tới stats); nút "Tìm chat" + "Gửi tin thử" trên trang – người dùng tạo bot + đặt `TELEGRAM_BOT_TOKEN` trên Vercel
+- [x] Trang **stats.monlabs.fun** (chỉ admin, đăng nhập ngay trên trang): biểu đồ request/phút, lỗi, p50/p95, top route / IP, IP đang bị chặn, lịch sử bất thường & cảnh báo, khung 1h / 24h / 7 ngày / 30 ngày + e2e – người dùng thêm DNS + domain trên Vercel
 
 ### Phase 13c – Docker + nginx, chuyển sang VPS
 - [ ] `Dockerfile` (Next.js standalone, multi-stage) + `docker-compose.yml`: app, Redis + bộ chuyển REST kiểu Upstash, cron, nginx; tùy chọn Postgres + MinIO để chạy toàn bộ trên máy
@@ -284,6 +284,6 @@ Quyết định (17/11): trang theo dõi ở **stats.monlabs.fun**, chỉ admin 
 | 12b | PaaS – Server API, số liệu, webhook | 3–4 ngày | Xong, đã test trên production (PR #26, #27) |
 | 12c | PaaS – gói & hạn mức | 2–3 ngày | Xong, đã test trên production |
 | 12d | PaaS – thu tiền | tùy cổng thanh toán | Chờ pháp lý + tài khoản Stripe |
-| 13a | Chống DDoS & giới hạn request | 1–2 ngày | |
+| 13a | Chống DDoS & giới hạn request | 1–2 ngày | Xong, đã kiểm tra trên production (PR #37) |
 | 13b | Theo dõi truy cập, cảnh báo, stats.monlabs.fun | 3–5 ngày | |
 | 13c | Docker + nginx, chuyển sang VPS | 2 ngày + thời gian chuyển | |
