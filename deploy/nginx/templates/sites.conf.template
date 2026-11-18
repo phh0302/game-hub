@@ -1,0 +1,127 @@
+# Biến ${...} được thay lúc container khởi động (HUB_HOST, STATS_HOST, LANDING_HOST, DOCS_HOST)
+
+# HTTP → HTTPS (giữ /healthz cho kiểm tra nội bộ)
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+  server_name _;
+  location = /healthz { access_log off; return 200 "ok\n"; }
+  location / { return 301 https://$host$request_uri; }
+}
+
+# Tên miền lạ / truy cập thẳng bằng IP → đóng kết nối (không lộ app)
+server {
+  listen 443 ssl default_server;
+  listen [::]:443 ssl default_server;
+  server_name _;
+  ssl_certificate /etc/nginx/certs/origin.pem;
+  ssl_certificate_key /etc/nginx/certs/origin.key;
+  return 444;
+}
+
+# ── Hub: play.monlabs.fun + stats.monlabs.fun → app Next.js ──
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  http2 on;
+  server_name ${HUB_HOST} ${STATS_HOST};
+  ssl_certificate /etc/nginx/certs/origin.pem;
+  ssl_certificate_key /etc/nginx/certs/origin.key;
+
+  limit_conn perip 60;
+
+  proxy_http_version 1.1;
+  proxy_set_header Connection "";
+  proxy_set_header Host $host;
+  # Ghi đè (không nối thêm) → app luôn thấy đúng 1 IP thật, client không giả được x-forwarded-for
+  proxy_set_header X-Forwarded-For $remote_addr;
+  proxy_set_header X-Real-IP $remote_addr;
+  proxy_set_header X-Forwarded-Host $host;
+  proxy_set_header X-Forwarded-Proto https;
+  proxy_read_timeout 30s;
+  proxy_send_timeout 30s;
+
+  location /api/ {
+    limit_req zone=api burst=80 nodelay;
+    proxy_pass http://hub;
+  }
+
+  # Kho file local (STORAGE_DRIVER=local): cho phép body lớn khi upload
+  location = /api/v1/storage/local {
+    limit_req zone=api burst=20 nodelay;
+    client_max_body_size 60m;
+    proxy_pass http://hub;
+  }
+
+  # File build Next.js có hash trong tên → cache lâu, không giới hạn tốc độ
+  location /_next/static/ {
+    proxy_pass http://hub;
+    expires 1y;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+
+  # File developer upload khi dùng kho local: phục vụ thẳng từ volume, luôn chạy trong sandbox
+  location /uploads/u/ {
+    alias /srv/uploads/u/;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header Content-Security-Policy "sandbox allow-scripts allow-pointer-lock; frame-ancestors 'self'; object-src 'none'" always;
+    add_header X-Content-Type-Options nosniff always;
+    add_header Access-Control-Allow-Origin "*" always;
+    expires 1h;
+  }
+
+  location / {
+    limit_req zone=pages burst=40 nodelay;
+    proxy_pass http://hub;
+  }
+}
+
+# ── monlabs.fun (trang giới thiệu + status) – file tĩnh ──
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  http2 on;
+  server_name ${LANDING_HOST} www.${LANDING_HOST};
+  ssl_certificate /etc/nginx/certs/origin.pem;
+  ssl_certificate_key /etc/nginx/certs/origin.key;
+  limit_conn perip 60;
+  limit_req zone=pages burst=40 nodelay;
+
+  if ($host = www.${LANDING_HOST}) { return 301 https://${LANDING_HOST}$request_uri; }
+
+  root /srv/landing;
+  index index.html;
+  add_header X-Content-Type-Options nosniff always;
+  add_header Referrer-Policy strict-origin-when-cross-origin always;
+  add_header X-Frame-Options DENY always;
+  add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+
+  location ~ /(_headers|vercel\.json|README\.md)$ { return 404; }
+  location /assets/ { expires 7d; }
+  location = /status/incidents.json { expires 1m; }
+  location / { try_files $uri $uri/ $uri.html =404; }
+}
+
+# ── docs.monlabs.fun (VitePress) – file tĩnh ──
+server {
+  listen 443 ssl;
+  listen [::]:443 ssl;
+  http2 on;
+  server_name ${DOCS_HOST};
+  ssl_certificate /etc/nginx/certs/origin.pem;
+  ssl_certificate_key /etc/nginx/certs/origin.key;
+  limit_conn perip 60;
+  limit_req zone=pages burst=40 nodelay;
+
+  root /srv/docs;
+  add_header X-Content-Type-Options nosniff always;
+  add_header Referrer-Policy strict-origin-when-cross-origin always;
+
+  location /assets/ {
+    expires 1y;
+    add_header Cache-Control "public, max-age=31536000, immutable";
+  }
+  # cleanUrls: /sdk → sdk.html
+  location / { try_files $uri $uri.html $uri/ =404; }
+  error_page 404 /404.html;
+}

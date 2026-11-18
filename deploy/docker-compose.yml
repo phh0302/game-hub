@@ -1,0 +1,147 @@
+# Game Hub chạy trên VPS bằng Docker – hướng dẫn: docs/SELF_HOST.md
+#   cd deploy && cp .env.example .env   # rồi điền giá trị
+#   docker compose up -d --build
+# Chạy toàn bộ trên máy (kèm Postgres):  docker compose --profile db up -d --build
+name: gamehub
+
+x-app-env: &app-env
+  NODE_ENV: production
+  DATABASE_URL: ${DATABASE_URL}
+  DATABASE_URL_UNPOOLED: ${DATABASE_URL_UNPOOLED:-${DATABASE_URL}}
+  JWT_SECRET: ${JWT_SECRET}
+  ADMIN_WALLETS: ${ADMIN_WALLETS:-}
+  NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://play.monlabs.fun}
+  STORAGE_DRIVER: ${STORAGE_DRIVER:-s3}
+  S3_ENDPOINT: ${S3_ENDPOINT:-}
+  S3_BUCKET: ${S3_BUCKET:-}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:-}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:-}
+  S3_REGION: ${S3_REGION:-auto}
+  # Redis trên VPS, gọi qua bộ chuyển REST kiểu Upstash (srh) → code không đổi
+  UPSTASH_REDIS_REST_URL: http://srh:80
+  UPSTASH_REDIS_REST_TOKEN: ${REDIS_REST_TOKEN}
+  CRON_SECRET: ${CRON_SECRET}
+  SENTRY_DSN: ${SENTRY_DSN:-}
+  TRAFFIC_SAMPLE_RATE: ${TRAFFIC_SAMPLE_RATE:-0.2}
+  TRAFFIC_EXEMPT_IPS: ${TRAFFIC_EXEMPT_IPS:-}
+  TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-}
+  TELEGRAM_CHAT_ID: ${TELEGRAM_CHAT_ID:-}
+  STATS_URL: ${STATS_URL:-https://stats.monlabs.fun}
+
+x-build-args: &build-args
+  NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://play.monlabs.fun}
+  NEXT_PUBLIC_ASSET_BASE_URL: ${NEXT_PUBLIC_ASSET_BASE_URL:-}
+  NEXT_PUBLIC_GAME_BASE_URL: ${NEXT_PUBLIC_GAME_BASE_URL:-}
+  NEXT_PUBLIC_UPLOAD_BASE_URL: ${NEXT_PUBLIC_UPLOAD_BASE_URL:-}
+
+services:
+  app:
+    image: ${IMAGE_PREFIX:-gamehub}/app:${IMAGE_TAG:-latest}
+    build: { context: .., dockerfile: Dockerfile, target: runner, args: *build-args }
+    restart: unless-stopped
+    environment: *app-env
+    volumes:
+      - uploads:/app/public/uploads/u
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      srh: { condition: service_started }
+    deploy:
+      resources:
+        limits: { memory: 1g }
+    logging: &logging
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  # Chạy 1 lần mỗi lần cập nhật: migrate database + seed (giống bước build trên Vercel)
+  migrate:
+    image: ${IMAGE_PREFIX:-gamehub}/migrate:${IMAGE_TAG:-latest}
+    build: { context: .., dockerfile: Dockerfile, target: migrate }
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_URL_UNPOOLED: ${DATABASE_URL_UNPOOLED:-${DATABASE_URL}}
+    restart: "no"
+    depends_on:
+      db: { condition: service_healthy, required: false }
+    logging: *logging
+
+  nginx:
+    image: ${IMAGE_PREFIX:-gamehub}/nginx:${IMAGE_TAG:-latest}
+    build: { context: .., dockerfile: deploy/nginx/Dockerfile }
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      HUB_HOST: ${HUB_HOST:-play.monlabs.fun}
+      STATS_HOST: ${STATS_HOST:-stats.monlabs.fun}
+      LANDING_HOST: ${LANDING_HOST:-monlabs.fun}
+      DOCS_HOST: ${DOCS_HOST:-docs.monlabs.fun}
+    volumes:
+      - ./certs:/etc/nginx/certs:ro
+      - uploads:/srv/uploads/u:ro
+    depends_on:
+      app: { condition: service_healthy }
+    logging: *logging
+
+  redis:
+    image: redis:7.2-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory", "256mb", "--maxmemory-policy", "volatile-lru"]
+    volumes:
+      - redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    logging: *logging
+
+  srh:
+    image: hiett/serverless-redis-http:0.0.10
+    restart: unless-stopped
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: ${REDIS_REST_TOKEN}
+      SRH_CONNECTION_STRING: redis://redis:6379
+    depends_on:
+      redis: { condition: service_healthy }
+    logging: *logging
+
+  # Thay Vercel Cron: gọi /api/cron/daily lúc 03:17 UTC mỗi ngày (webhook gửi lại, dọn dữ liệu, gộp số liệu)
+  cron:
+    image: alpine:3.20
+    restart: unless-stopped
+    environment:
+      CRON_SECRET: ${CRON_SECRET}
+    command:
+      - sh
+      - -c
+      - |
+        echo "17 3 * * * wget -qO- --header \"Authorization: Bearer $$CRON_SECRET\" http://app:3000/api/cron/daily" > /etc/crontabs/root
+        exec crond -f -l 8
+    depends_on:
+      app: { condition: service_healthy }
+    logging: *logging
+
+  # Chỉ khi chạy toàn bộ trên máy: docker compose --profile db up (production dùng Neon)
+  db:
+    image: postgres:16-alpine
+    profiles: ["db"]
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gamehub
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gamehub}
+      POSTGRES_DB: gamehub
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gamehub -d gamehub"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    logging: *logging
+
+volumes:
+  uploads:
+  redis:
+  pgdata:

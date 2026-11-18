@@ -196,3 +196,53 @@ jobs:
 
       - name: Build trang tài liệu
         run: npm run build
+
+  # Build image Docker (app + nginx) và chạy thử cả cụm như trên VPS (docs/SELF_HOST.md)
+  docker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Tạo deploy/.env cho CI (Postgres trong compose, kho file local)
+        working-directory: deploy
+        run: |
+          cat > .env <<'ENV'
+          DATABASE_URL=postgresql://gamehub:ci-pg-pass@db:5432/gamehub
+          DATABASE_URL_UNPOOLED=postgresql://gamehub:ci-pg-pass@db:5432/gamehub
+          POSTGRES_PASSWORD=ci-pg-pass
+          JWT_SECRET=ci-docker-secret-0123456789abcdef0123456789abcdef
+          ADMIN_WALLETS=0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266
+          CRON_SECRET=ci-docker-cron-secret-0123456789
+          REDIS_REST_TOKEN=ci-docker-redis-token
+          STORAGE_DRIVER=local
+          NEXT_PUBLIC_UPLOAD_BASE_URL=/uploads
+          NEXT_PUBLIC_GAME_BASE_URL=/uploads
+          TRAFFIC_SAMPLE_RATE=1
+          ENV
+
+      - name: Build image
+        working-directory: deploy
+        run: docker compose --profile db build
+
+      - name: Chạy cụm
+        working-directory: deploy
+        run: docker compose --profile db up -d
+
+      - name: Kiểm tra nhanh
+        run: bash scripts/docker-smoke.sh
+
+      - name: Cron gọi được /api/cron/daily trong mạng nội bộ
+        working-directory: deploy
+        run: |
+          docker compose exec -T cron sh -c 'wget -qO- --header "Authorization: Bearer $CRON_SECRET" http://app:3000/api/cron/daily' | tee /tmp/cron.json
+          grep -q '"webhooks"' /tmp/cron.json
+
+      - name: Kích thước image
+        if: always()
+        run: docker images --format '{{.Repository}}:{{.Tag}} {{.Size}}' | grep gamehub || true
+
+      - name: Log khi lỗi
+        if: failure()
+        working-directory: deploy
+        run: docker compose --profile db ps -a && docker compose --profile db logs --tail 150
