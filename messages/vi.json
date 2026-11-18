@@ -182,7 +182,7 @@
     "versionName": "Phiên bản",
     "storageKey": "Thư mục build",
     "addVersion": "Thêm phiên bản",
-    "storageHint": "Game của developer: họ tự upload bản build ở trang Developer, bạn chỉ cần Chơi thử → Duyệt → Đặt làm bản chạy. Game chính thức của hub: chép bản build vào public/uploads/games/ten-game/phien-ban/ (có index.html), rồi thêm phiên bản ở đây.",
+    "storageHint": "Game của developer: họ tự upload bản build ở trang Developer, bạn Chơi thử → Duyệt. Bản đầu tiên được duyệt sẽ tự chạy và game tự phát hành; bản cập nhật sau đó cần bấm thêm Đặt làm bản chạy. Game chính thức của hub: chép bản build vào public/uploads/games/ten-game/phien-ban/ (có index.html), rồi thêm phiên bản ở đây.",
     "stats": "{sessions} lượt chơi · {scores} điểm",
     "createGame": "Thêm game",
     "create": "Tạo game",
@@ -209,6 +209,8 @@
     "ok": {
       "statusChanged": "Đã đổi trạng thái.",
       "approved": "Đã duyệt phiên bản.",
+      "approvedPublished": "Đã duyệt – bản này đang chạy và game đã được phát hành.",
+      "approvedActivated": "Đã duyệt – bản này đã được đặt làm bản chạy.",
       "rejected": "Đã từ chối phiên bản.",
       "activated": "Đã đổi phiên bản đang chạy.",
       "versionAdded": "Đã thêm phiên bản (chờ duyệt).",

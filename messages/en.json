@@ -182,7 +182,7 @@
     "versionName": "Version",
     "storageKey": "Build folder",
     "addVersion": "Add version",
-    "storageHint": "Developer games: developers upload builds from the Developer page; you just Playtest → Approve → Make live. Official hub games: copy the build into public/uploads/games/game-name/version/ (with index.html), then add the version here.",
+    "storageHint": "Developer games: developers upload builds from the Developer page; you Playtest → Approve. The first approved version goes live and the game is published automatically; later updates still need Make live. Official hub games: copy the build into public/uploads/games/game-name/version/ (with index.html), then add the version here.",
     "stats": "{sessions} plays · {scores} scores",
     "createGame": "Add game",
     "create": "Create game",
@@ -209,6 +209,8 @@
     "ok": {
       "statusChanged": "Status updated.",
       "approved": "Version approved.",
+      "approvedPublished": "Approved – this version is live and the game is published.",
+      "approvedActivated": "Approved – this version is now the live version.",
       "rejected": "Version rejected.",
       "activated": "Live version changed.",
       "versionAdded": "Version added (pending review).",

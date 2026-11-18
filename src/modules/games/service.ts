@@ -210,9 +210,27 @@ export async function adminReviewVersion(
     throw new ApiError(409, "VERSION_IN_USE", "Không thể từ chối phiên bản đang chạy");
   }
 
-  return prisma.gameVersion.update({
-    where: { id: versionId },
-    data: { status: input.status, reviewNote: input.reviewNote, reviewedById: reviewerId, reviewedAt: new Date() },
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.gameVersion.update({
+      where: { id: versionId },
+      data: { status: input.status, reviewNote: input.reviewNote, reviewedById: reviewerId, reviewedAt: new Date() },
+    });
+    // Duyệt bản đầu tiên của game đang chờ duyệt → tự đặt làm bản chạy + phát hành (khỏi quên 2 bước sau).
+    // Game đã có bản chạy: admin vẫn tự bấm "Đặt làm bản chạy" khi muốn đổi bản.
+    if (input.status === "APPROVED") {
+      const game = await tx.game.findUnique({ where: { id: gameId }, select: { currentVersionId: true, status: true } });
+      if (game && !game.currentVersionId) {
+        await tx.game.update({
+          where: { id: gameId },
+          data: {
+            currentVersionId: versionId,
+            ...(game.status === GameStatus.PENDING_REVIEW ? { status: GameStatus.PUBLISHED } : {}),
+          },
+        });
+        return { ...updated, activated: true, published: game.status === GameStatus.PENDING_REVIEW };
+      }
+    }
+    return { ...updated, activated: false, published: false };
   });
 }
 
