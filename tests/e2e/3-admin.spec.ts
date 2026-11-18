@@ -130,3 +130,47 @@ test("admin: sửa luật của game rồi lưu trữ game ngay trên trang", as
   await expect(page.getByRole("heading", { name: /E2E lưu trữ/ })).toHaveCount(0);
   expect((await page.request.get("/games/e2e-luu-tru")).status()).toBe(404);
 });
+
+test("admin: duyệt bản đầu tiên → tự chạy + tự phát hành; bản sau phải tự đặt làm bản chạy", async ({ page }) => {
+  await installWallet(page, "admin");
+  await page.goto("/");
+  await login(page, "admin");
+
+  // Game chờ duyệt + 2 phiên bản (dùng lại build 2048 có sẵn)
+  const ids = await page.evaluate(async () => {
+    const post = (url: string, body: unknown) =>
+      fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) }).then(
+        (r) => r.json(),
+      );
+    const { game } = await post("/api/v1/admin/games", {
+      slug: "e2e-tu-phat-hanh",
+      status: "PENDING_REVIEW",
+      translations: [{ locale: "vi", name: "E2E tự phát hành" }],
+    });
+    const v1 = (await post(`/api/v1/admin/games/${game.id}/versions`, { version: "1.0.0", storageKey: "games/2048/1.0.0" })).version;
+    const v2 = (await post(`/api/v1/admin/games/${game.id}/versions`, { version: "1.0.1", storageKey: "games/2048/1.0.0" })).version;
+    return { gameId: game.id as string, v1: v1.id as string, v2: v2.id as string };
+  });
+  expect(ids.v1).toBeTruthy();
+  expect((await page.request.get("/games/e2e-tu-phat-hanh")).status()).toBe(404);
+
+  await page.goto("/admin");
+  const card = page.locator("section", { has: page.getByRole("heading", { name: /E2E tự phát hành/ }) }).last();
+  const row = (v: string) => card.getByRole("row").filter({ hasText: `v${v}` });
+
+  // Duyệt bản đầu tiên ngay trên trang → báo đã phát hành, game hiện công khai
+  await row("1.0.0").getByRole("button", { name: "Duyệt" }).click();
+  await expect(page.getByRole("status").first()).toHaveText("Đã duyệt – bản này đang chạy và game đã được phát hành.");
+  await expect(row("1.0.0").getByText("đang chạy")).toBeVisible();
+  expect((await page.request.get("/games/e2e-tu-phat-hanh")).status()).toBe(200);
+
+  // Duyệt bản cập nhật → KHÔNG tự đổi bản chạy
+  await row("1.0.1").getByRole("button", { name: "Duyệt" }).click();
+  await expect(page.getByRole("status").first()).toHaveText("Đã duyệt phiên bản.");
+  await expect(row("1.0.1").getByRole("button", { name: "Đặt làm bản chạy" })).toBeVisible();
+
+  // Dọn: lưu trữ game tạm
+  await card.getByRole("button", { name: "Lưu trữ game" }).click();
+  await card.getByRole("button", { name: "Xác nhận lưu trữ" }).click();
+  await expect(page.getByRole("status").first()).toHaveText("Đã lưu trữ game.");
+});

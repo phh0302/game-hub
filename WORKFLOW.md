@@ -285,5 +285,5 @@ Quyết định (17/11): trang theo dõi ở **stats.monlabs.fun**, chỉ admin 
 | 12c | PaaS – gói & hạn mức | 2–3 ngày | Xong, đã test trên production |
 | 12d | PaaS – thu tiền | tùy cổng thanh toán | Chờ pháp lý + tài khoản Stripe |
 | 13a | Chống DDoS & giới hạn request | 1–2 ngày | Xong, đã kiểm tra trên production (PR #37) |
-| 13b | Theo dõi truy cập, cảnh báo, stats.monlabs.fun | 3–5 ngày | |
+| 13b | Theo dõi truy cập, cảnh báo, stats.monlabs.fun | 3–5 ngày | Xong (PR #38); chờ DNS stats + token Telegram |
 | 13c | Docker + nginx, chuyển sang VPS | 2 ngày + thời gian chuyển | |

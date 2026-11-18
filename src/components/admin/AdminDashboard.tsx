@@ -64,11 +64,11 @@ export function AdminDashboard() {
 
   /** Chạy 1 thao tác admin rồi tải lại danh sách */
   const run = useCallback(
-    async (action: () => Promise<unknown>, okText: string) => {
+    async (action: () => Promise<unknown>, okText: string | ((result: unknown) => string)) => {
       setMessage(null);
       try {
-        await action();
-        setMessage({ kind: "ok", text: okText });
+        const result = await action();
+        setMessage({ kind: "ok", text: typeof okText === "function" ? okText(result) : okText });
         await reload();
         return true;
       } catch (err) {
@@ -204,11 +204,18 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
                               onClick={() =>
                                 run(
                                   () =>
-                                    apiFetch(`/admin/games/${game.id}/versions/${v.id}`, {
-                                      method: "PATCH",
-                                      json: { status: "APPROVED" },
-                                    }),
-                                  t("ok.approved"),
+                                    apiFetch<{ version: { activated?: boolean; published?: boolean } }>(
+                                      `/admin/games/${game.id}/versions/${v.id}`,
+                                      { method: "PATCH", json: { status: "APPROVED" } },
+                                    ),
+                                  (res) => {
+                                    const r = (res as { version?: { activated?: boolean; published?: boolean } }).version;
+                                    return r?.published
+                                      ? t("ok.approvedPublished")
+                                      : r?.activated
+                                        ? t("ok.approvedActivated")
+                                        : t("ok.approved");
+                                  },
                                 )
                               }
                             >

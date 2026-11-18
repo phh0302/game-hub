@@ -71,9 +71,20 @@ Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản
     "AllowedMethods": ["PUT"],
     "AllowedHeaders": ["Content-Type"],
     "MaxAgeSeconds": 3600
+  },
+  {
+    "AllowedOrigins": ["*"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "MaxAgeSeconds": 86400
   }
 ]
 ```
+
+   - Quy tắc 1: trình duyệt upload thẳng file .zip lên R2 (chỉ domain của hub).
+   - Quy tắc 2 – **bắt buộc**: game chạy trong khung bị cô lập (`sandbox`, origin `null`). Game build bằng Vite / bundler
+     hiện đại dùng `<script type="module">` → trình duyệt tải bằng CORS; thiếu quy tắc này game chỉ hiện màn hình trống,
+     nhật ký SDK không có tin nào. Chỉ cho **đọc**, file game vốn đã công khai nên `*` là an toàn.
+   - Sửa CORS: giữ cả 2 quy tắc – dán JSON mới sẽ **thay toàn bộ** chính sách cũ.
 
 4. Bucket → **Settings → Object lifecycle rules** → **Add rule**: prefix `u/incoming/`, xóa object sau **1 ngày**
    (file .zip đã xử lý tự xóa, rule này dọn các lần upload bị bỏ dở)
