@@ -116,7 +116,7 @@ export function AdminDashboard() {
   );
 }
 
-type Run = (action: () => Promise<unknown>, okText: string) => Promise<boolean>;
+type Run = (action: () => Promise<unknown>, okText: string | ((result: unknown) => string)) => Promise<boolean>;
 
 function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
   const t = useTranslations("admin");
@@ -208,7 +208,7 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
                                       `/admin/games/${game.id}/versions/${v.id}`,
                                       { method: "PATCH", json: { status: "APPROVED" } },
                                     ),
-                                  (res) => {
+                                  (res: unknown) => {
                                     const r = (res as { version?: { activated?: boolean; published?: boolean } }).version;
                                     return r?.published
                                       ? t("ok.approvedPublished")
