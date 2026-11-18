@@ -172,7 +172,7 @@ export async function adminUpdateGame(id: string, input: GameUpdateInput, actorI
     await logEvent({ type: "game.status", userId: actorId ?? null, gameId: id, data: { from: game.status, to: input.status } });
   }
   if (input.settings) {
-    await logEvent({ type: "game.rules", userId: actorId ?? null, gameId: id, data: { ...input.settings } });
+    await logEvent({ type: "game.rules", userId: actorId ?? null, gameId: id, data: { ...input.settings } as Prisma.InputJsonObject });
   }
   return updated;
 }
