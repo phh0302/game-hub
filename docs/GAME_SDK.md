@@ -33,7 +33,7 @@ Tài liệu cho developer muốn đưa game HTML5 lên Game Hub.
 Hub nhúng game trong `iframe` có `sandbox="allow-scripts allow-pointer-lock"`:
 
 - Game **không đọc được** cookie, trang hay dữ liệu đăng nhập của hub
-- `localStorage` / `sessionStorage` có thể bị chặn → luôn bọc `try/catch`
+- Origin của game là `null` → `localStorage` / `sessionStorage` / IndexedDB / cookie **luôn lỗi** → lưu tiến trình bằng `GameHub.saveState()` / `loadState()`; mọi `fetch` / script module tới file của game là cross-origin (kho file trả `Access-Control-Allow-Origin: *`)
 - Không mở popup, không điều hướng trang cha, không gửi form
 - Mọi giao tiếp với hub đi qua SDK (`postMessage`)
 

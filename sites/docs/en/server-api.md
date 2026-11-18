@@ -44,8 +44,23 @@ const res = await fetch("https://play.monlabs.fun/api/s1/scores", {
   },
   body: JSON.stringify({ sessionId, score, leaderboard: "default" }),
 });
-const result = await res.json(); // { score, isNewBest, best, rank, tournaments }
+const result = await res.json();
 ```
+
+Response – **`score` is an object**; the points are in `score.value`:
+
+```json
+{
+  "score": { "id": "cm…", "value": 1696, "durationSeconds": 84, "leaderboard": "default" },
+  "format": "number",
+  "isNewBest": true,
+  "best": 1696,
+  "rank": 3,
+  "tournaments": [{ "key": "new-year-2027", "rank": 1 }]
+}
+```
+
+`best` is the player's best on that board, `rank` the all-time rank (`null` if none yet), `tournaments` the tournaments that also received this score with the rank there. Errors come back as `{ "error": { "code", "message" } }` – codes are listed under [Leaderboards](/en/bang-xep-hang#ma-loi).
 
 Leaderboard anti-cheat rules (minimum play time, max score, scoring speed) **still apply**; each play can be submitted once.
 

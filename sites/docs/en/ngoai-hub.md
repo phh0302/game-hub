@@ -13,7 +13,8 @@ Try the sample game: [play.monlabs.fun/demo/index.html](https://play.monlabs.fun
 
 ```html
 <script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
-<script>
+<script type="module">
+  // Top-level await only works in type="module"; in a classic <script>, wrap it in an async function
   const hub = await GameHub.init({ projectKey: "pk_live_…" });
   // hub.player = null when signed out; hub.project.name, hub.project.leaderboards
 </script>
@@ -27,7 +28,7 @@ await GameHub.login();                  // MetaMask – signs a message naming y
 
 GameHub.gameStart();                    // run starts – the server starts timing
 const result = await GameHub.gameOver(score);
-// { saved, code, message, score, best, rank, isNewBest, tournaments }
+// { saved, code, message, score, best, rank, isNewBest, tournaments } – here score is the saved NUMBER
 
 const top = await GameHub.leaderboard({ period: "week", limit: 10 });
 // { leaderboard, entries: [{ rank, displayName, score, … }], me }
@@ -47,11 +48,23 @@ It's fine to put it in your game's code: the key **only works on the domains you
 | `GameHub.me()` | `Promise<{ player, best } \| null>` |
 | `GameHub.gameStart()` | Opens a run → `Promise<sessionId \| null>` (for games whose server submits scores, see [Server API](/en/server-api)) |
 | `GameHub.gameOver(score, { leaderboard? })` | `Promise<{ saved, code, message, … }>` – also emits `scoreResult` |
-| `GameHub.leaderboard({ board?, period?, limit? })` | Top players + your rank (`me`) |
+| `GameHub.leaderboard({ board?, period?, limit? })` | Top players + your rank (`me`). Defaults: `board: "default"`, `period: "all"` (or `"week"`, `"day"`), `limit: 50` |
 | `GameHub.leaderboards()` | Main board + visible [events](/en/bang-xep-hang#giai-dau) |
+| `GameHub.saveState(data)` / `GameHub.loadState()` | Save / load progress (JSON ≤ 64KB) in your domain's `localStorage` – see [Saving progress](/en/sdk#luu-tien-trinh) |
 | `GameHub.on("init", cb)` | Called when the player signs in / out |
 
-Without `projectKey` the SDK runs in **hub mode** as before (game inside Game Hub) – one build works in both places.
+Without `projectKey` the SDK runs in **hub mode** as before (game inside Game Hub). One build works in both places if you mind the differences:
+
+| | Hub mode | Standalone (`projectKey`) |
+| --- | --- | --- |
+| Sign-in | Handled by the hub (its **Connect wallet** button) – the game doesn't call `login()` | The game calls `login()` |
+| `gameStart()` | Returns nothing | `Promise<sessionId \| null>` |
+| `gameOver()` | `Promise<result>` (SDK v3) + `scoreResult` event | `Promise<result>` + `scoreResult` event |
+| Not signed in | `code: "NOT_SIGNED_IN"` | `code: "PLAYER_UNAUTHORIZED"` |
+| Signed in mid-run | `code: "STARTED_BEFORE_LOGIN"` | `code: "SESSION_NOT_STARTED"` |
+| The game's `localStorage` | **Not available** (sandboxed frame) – use `saveState()` | Available |
+
+To behave the same in both: show results from `GameHub.on("scoreResult", r => …)` and rely on `r.saved` + `r.message` rather than checking specific codes. Full code list: [Leaderboards](/en/bang-xep-hang#ma-loi).
 
 ## Anti-cheat
 
@@ -74,4 +87,4 @@ Every request goes to `https://play.monlabs.fun/api/p1/…` with header `x-gameh
 | GET | `/leaderboards` | Main board + events |
 | GET | `/leaderboard?board=&period=&limit=` | Top players (+ `me` with a token) |
 
-Client API error codes: `INVALID_API_KEY` (wrong / revoked key), `ORIGIN_NOT_ALLOWED` (domain not listed), `PROJECT_DISABLED` (game suspended), `PLAYER_UNAUTHORIZED` (signed out / token expired), `RATE_LIMITED`.
+Client API error codes: `INVALID_API_KEY` (wrong / revoked key), `ORIGIN_NOT_ALLOWED` (domain not listed), `PROJECT_DISABLED` (game suspended), `PLAYER_UNAUTHORIZED` (signed out / token expired), `RATE_LIMITED`. In the `POST /scores` response `score` is an **object** (`score.value` holds the points) – see the [Server API](/en/server-api) example.

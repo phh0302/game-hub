@@ -57,17 +57,35 @@ They can play normally, but scores aren't saved: `init` returns `canSubmitScore:
 
 ## Error codes {#ma-loi}
 
-When `scoreResult.saved` is `false`, the `code` field gives the reason. `message` already contains an explanation in the player's language – the game just needs to show it.
+When `scoreResult.saved` is `false`, the `code` field gives the reason. `message` already contains an explanation in the player's language – the game just needs to show it. **Mode** column: *Hub* = the game runs inside Game Hub, *Standalone* = [outside the hub](/en/ngoai-hub) with a `projectKey`.
 
-| Code | Meaning |
-| --- | --- |
-| `NOT_SIGNED_IN` | The player hasn't connected a wallet |
-| `STARTED_BEFORE_LOGIN` | The run started before the wallet was connected |
-| `SESSION_NOT_STARTED` | The game called `gameOver()` without `gameStart()` |
-| `PLAY_TOO_SHORT` | The run was shorter than the minimum play time |
-| `SCORE_TOO_FAST` | Abnormally fast scoring |
-| `SCORE_INVALID` | Not an integer ≥ 0, or outside the allowed range |
-| `SESSION_ENDED` | This session already submitted a score |
-| `SESSION_EXPIRED` | The session was open longer than the maximum |
-| `LEADERBOARD_NOT_FOUND` | The board name in `gameOver(score, { leaderboard })` doesn't exist |
-| `LEADERBOARD_CLOSED` | The leaderboard (e.g. a time-limited event) is closed |
+::: tip Don't branch on individual codes
+Some situations have **different codes in the two modes** (e.g. not signed in). For one build to behave correctly in both, rely on `saved` and show `message`.
+:::
+
+| Code | Mode | Meaning |
+| --- | --- | --- |
+| `NOT_SIGNED_IN` | Hub | The player hasn't connected a wallet |
+| `PLAYER_UNAUTHORIZED` | Standalone | No `login()` yet or the token expired (same situation as `NOT_SIGNED_IN`) |
+| `STARTED_BEFORE_LOGIN` | Hub | The run started before the wallet was connected – the next run counts |
+| `SESSION_NOT_STARTED` | Both | `gameOver()` without `gameStart()`, or opening the run failed. In standalone mode this is also the code for **signing in mid-run** |
+| `PLAY_TOO_SHORT` | Both | The run was shorter than the minimum play time |
+| `SCORE_TOO_FAST` | Both | Abnormally fast scoring |
+| `SCORE_INVALID` | Both | Score outside the board's allowed range. (A non-numeric score does **not** cause this – the SDK turns it into 0, see [SDK](/en/sdk#diem-gui-len)) |
+| `SESSION_ENDED` | Both | This run already submitted a score |
+| `SESSION_EXPIRED` | Both | The run was open longer than the maximum |
+| `SESSION_NOT_FOUND` | Both | The run doesn't exist / belongs to another player |
+| `LEADERBOARD_NOT_FOUND` | Both | The board name in `gameOver(score, { leaderboard })` doesn't exist |
+| `LEADERBOARD_CLOSED` | Both | The leaderboard (e.g. a time-limited event) is closed |
+| `PLAYER_BANNED` | Both | The account is banned in this game |
+| `SERVER_SCORING_ONLY` | Both | The game is set to "server submits scores only" ([Server API](/en/server-api)) – browser submissions are rejected |
+| `QUOTA_PLAYERS` / `QUOTA_SCORES` | Standalone | The game hit its plan's monthly player / score limit |
+| `RATE_LIMITED` | Both | Too many requests in a short time |
+| `IP_BLOCKED` | Both | The IP flooded requests and is blocked for 15 minutes |
+| `NETWORK` | Both | Couldn't reach the server |
+| `TIMEOUT` | Hub | The SDK got no reply from the hub within 20 seconds |
+| `STANDALONE` | – | The game file was opened directly, not through the hub – no score saved |
+| `PREVIEW` | Hub | On the **Playtest** page – no score saved |
+| `UNKNOWN` / `ERROR` | Hub / Standalone | Other errors |
+
+Calling the Client API / Server API directly (without the SDK) adds `INVALID_API_KEY`, `ORIGIN_NOT_ALLOWED`, `PROJECT_DISABLED`, `INVALID_SECRET_KEY`, `VALIDATION_ERROR` – see [Outside Game Hub](/en/ngoai-hub) and [Server API](/en/server-api).

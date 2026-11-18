@@ -16,10 +16,28 @@ Use the **full URL** as above – your build is served from a different domain t
 | --- | --- | --- |
 | `GameHub.init()` | Once, when the game has loaded | `Promise<{ locale, player, canSubmitScore, standalone }>` |
 | `GameHub.gameStart()` | A new run starts – best called on the player's **first input** | The hub starts timing the run |
-| `GameHub.gameOver(score, { leaderboard })` | The run ends | The hub submits the score (integer ≥ 0) to leaderboard `leaderboard` (default `"default"`) |
+| `GameHub.gameOver(score, { leaderboard })` | The run ends | The hub submits the score to leaderboard `leaderboard` (default `"default"`) → `Promise<result>` (same as [`scoreResult`](#du-lieu-scoreresult)) |
+| `GameHub.saveState(data)` | Save progress (levels, items, settings) | `Promise<{ saved, code }>` – see [Saving progress](#luu-tien-trinh) |
+| `GameHub.loadState()` | When the game loads | `Promise<data \| null>` |
 | `GameHub.showRewardedAd()` | The player chooses to watch an ad for a reward | `Promise<{ shown, rewarded, reason? }>` – **only reward when `rewarded === true`** |
 | `GameHub.showInterstitialAd()` | Between levels | `Promise<{ shown }>` |
 | `GameHub.on(event, callback)` | Listen to the hub | See [Events](#su-kien) |
+
+### The score sent by `gameOver(score)` {#diem-gui-len}
+
+The SDK normalises the score before sending: `Math.max(0, Math.floor(Number(score) || 0))` – rounded down, negatives become 0. If `score` is **not a number** (`NaN`, `undefined`, `"abc"`…) the SDK logs a console warning and **submits 0** instead of failing – so `SCORE_INVALID` almost only appears when the score is outside the board's allowed range. Make sure your score variable is always a number.
+
+### `gameOver()` result {#ket-qua-gameover}
+
+Since **SDK v3**, `gameOver()` returns a `Promise` of the result in every mode (on the hub, in Playtest, opened directly, [outside the hub](/en/ngoai-hub)) and also emits `scoreResult`. The recommended way is to handle the **event** – it works with every hub version:
+
+```js
+GameHub.on("scoreResult", (r) => showResult(r.message, r.saved));
+GameHub.gameOver(score);              // no need to await
+// or: const r = await GameHub.gameOver(score);
+```
+
+No reply from the hub within 20 seconds → `{ saved: false, code: "TIMEOUT" }`. Opened directly (outside the hub) → `code: "STANDALONE"`.
 
 ### `init` data
 
@@ -43,14 +61,14 @@ When `canSubmitScore` is `false`, show a small hint such as *"Connect your walle
 | `scoreResult` | After `gameOver()`: the result of saving the score |
 | `pause` / `resume` | The hub asks the game to pause / continue (for interstitial ads) |
 
-### `scoreResult` data
+### `scoreResult` data {#du-lieu-scoreresult}
 
 ```js
 {
   saved: true,              // false = the score was NOT recorded
   code: null,               // when saved = false: an error code, see the Leaderboards page
   message: "New best: 1,696 points! You're rank #3",  // already in the player's language
-  score: 1696, best: 1696, rank: 3, isNewBest: true    // only when saved = true
+  score: 1696, best: 1696, rank: 3, isNewBest: true    // only when saved = true; score is a NUMBER
 }
 ```
 
@@ -58,9 +76,36 @@ When `canSubmitScore` is `false`, show a small hint such as *"Connect your walle
 Especially when `saved: false` – don't let players think their score was saved. Error codes are listed in [Leaderboards & anti-cheat](/en/bang-xep-hang#ma-loi).
 :::
 
+## Saving progress {#luu-tien-trinh}
+
+On the hub the game runs in an isolated frame, so **`localStorage` / IndexedDB / cookies always fail** ([why](/en/moi-truong#luu-du-lieu)). Use these two SDK functions:
+
+```js
+// When the game loads
+const save = (await GameHub.loadState()) ?? { level: 1, coins: 0, sound: true };
+
+// When progress changes (level cleared, item bought, setting changed)
+save.level = 2;
+const r = await GameHub.saveState(save);   // { saved: true, code: null }
+```
+
+- `data` is any JSON value (object, array, number, string), up to **64KB** after `JSON.stringify`. Each save **overwrites** the previous one.
+- The hub stores it **in the player's browser**, one slot per game – not synced across devices / accounts yet. Clearing browser data removes it.
+- The **Playtest** page uses a separate slot per build, so it never overwrites real progress.
+- Opened directly or [outside the hub](/en/ngoai-hub): stored in the page's `localStorage`.
+
+| `code` when `saved: false` | Meaning |
+| --- | --- |
+| `STATE_TOO_LARGE` | Data > 64KB |
+| `STATE_INVALID` | Can't be converted to JSON (e.g. circular references) |
+| `STORAGE_UNAVAILABLE` | The browser blocks storage (strict private mode, quota full) |
+| `TIMEOUT` | The hub didn't reply within 5 seconds |
+
 ## Ads
 
 Game Hub **doesn't show ads yet**: `showRewardedAd()` returns `{ shown: false, rewarded: false }` and `showInterstitialAd()` returns `{ shown: false }`. Make sure the game plays normally without ads – for example, hide the "Watch an ad for a reward" button when `shown` is `false`.
+
+If the hub doesn't reply (e.g. the game is embedded in another page), both ad functions wait up to **60 seconds** before returning `{ shown: false, rewarded: false, reason: "TIMEOUT" }` – don't lock the UI while waiting. Opened directly, they return immediately with `reason: "STANDALONE"`.
 
 ## Full example
 

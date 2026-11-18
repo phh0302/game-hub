@@ -16,10 +16,28 @@ Dùng **đường dẫn đầy đủ** như trên – bản build của bạn đ
 | --- | --- | --- |
 | `GameHub.init()` | 1 lần khi game tải xong | `Promise<{ locale, player, canSubmitScore, standalone }>` |
 | `GameHub.gameStart()` | Bắt đầu 1 ván mới – nên gọi ở **thao tác đầu tiên** của người chơi | Hub bắt đầu tính giờ ván chơi |
-| `GameHub.gameOver(score, { leaderboard })` | Ván kết thúc | Hub nộp điểm (số nguyên ≥ 0) lên bảng xếp hạng `leaderboard` (mặc định `"default"`) |
+| `GameHub.gameOver(score, { leaderboard })` | Ván kết thúc | Hub nộp điểm lên bảng `leaderboard` (mặc định `"default"`) → `Promise<kết quả>` (giống [`scoreResult`](#du-lieu-scoreresult)) |
+| `GameHub.saveState(data)` | Lưu tiến trình (màn, vật phẩm, cài đặt) | `Promise<{ saved, code }>` – xem [Lưu tiến trình](#luu-tien-trinh) |
+| `GameHub.loadState()` | Lúc tải game | `Promise<data \| null>` |
 | `GameHub.showRewardedAd()` | Người chơi chọn xem quảng cáo để nhận thưởng | `Promise<{ shown, rewarded, reason? }>` – **chỉ thưởng khi `rewarded === true`** |
 | `GameHub.showInterstitialAd()` | Giữa các màn | `Promise<{ shown }>` |
 | `GameHub.on(event, callback)` | Lắng nghe hub | Xem [Sự kiện](#su-kien) |
+
+### Điểm gửi lên `gameOver(score)` {#diem-gui-len}
+
+SDK chuẩn hóa điểm trước khi gửi: `Math.max(0, Math.floor(Number(score) || 0))` – làm tròn xuống, số âm thành 0. Nếu `score` **không phải số** (`NaN`, `undefined`, `"abc"`…) SDK in cảnh báo trong console và **nộp 0 điểm** chứ không báo lỗi – nên mã `SCORE_INVALID` gần như chỉ xuất hiện khi điểm vượt khoảng cho phép của bảng. Hãy chắc chắn biến điểm luôn là số.
+
+### Kết quả `gameOver()` {#ket-qua-gameover}
+
+Từ **SDK v3**, `gameOver()` trả về `Promise` kết quả ở mọi chế độ (trên hub, chơi thử, mở file trực tiếp, [ngoài hub](/ngoai-hub)) và đồng thời phát sự kiện `scoreResult`. Cách khuyên dùng là xử lý trong **sự kiện** – chạy được với mọi phiên bản hub:
+
+```js
+GameHub.on("scoreResult", (r) => showResult(r.message, r.saved));
+GameHub.gameOver(score);              // không cần await
+// hoặc: const r = await GameHub.gameOver(score);
+```
+
+Không nhận được trả lời của hub sau 20 giây → `{ saved: false, code: "TIMEOUT" }`. Mở file trực tiếp (không qua hub) → `code: "STANDALONE"`.
 
 ### Dữ liệu `init`
 
@@ -43,14 +61,14 @@ Khi `canSubmitScore` là `false`, nên hiện một dòng nhắc nhỏ kiểu *"
 | `scoreResult` | Sau `gameOver()`: kết quả lưu điểm |
 | `pause` / `resume` | Hub yêu cầu tạm dừng / chơi tiếp (dành cho quảng cáo xen giữa) |
 
-### Dữ liệu `scoreResult`
+### Dữ liệu `scoreResult` {#du-lieu-scoreresult}
 
 ```js
 {
   saved: true,              // false = điểm KHÔNG được ghi nhận
-  code: null,               // khi saved = false: mã lỗi, xem trang Bảng xếp hạng
+  code: null,               // khi saved = false: mã lỗi, xem Bảng xếp hạng → Mã lỗi
   message: "Kỷ lục mới: 1.696 điểm! Bạn đang hạng #3",  // đã dịch theo ngôn ngữ người chơi
-  score: 1696, best: 1696, rank: 3, isNewBest: true      // chỉ có khi saved = true
+  score: 1696, best: 1696, rank: 3, isNewBest: true      // chỉ có khi saved = true; score là SỐ
 }
 ```
 
@@ -58,9 +76,36 @@ Khi `canSubmitScore` là `false`, nên hiện một dòng nhắc nhỏ kiểu *"
 Đặc biệt khi `saved: false` – đừng để người chơi tưởng điểm đã được lưu. Danh sách mã lỗi ở [Bảng xếp hạng & chống gian lận](/bang-xep-hang#ma-loi).
 :::
 
+## Lưu tiến trình {#luu-tien-trinh}
+
+Trên hub game chạy trong khung cách ly nên **`localStorage` / IndexedDB / cookie luôn lỗi** ([vì sao](/moi-truong#luu-du-lieu)). Dùng 2 hàm của SDK:
+
+```js
+// Lúc tải game
+const save = (await GameHub.loadState()) ?? { level: 1, coins: 0, sound: true };
+
+// Khi có tiến trình mới (qua màn, mua đồ, đổi cài đặt)
+save.level = 2;
+const r = await GameHub.saveState(save);   // { saved: true, code: null }
+```
+
+- `data` là giá trị JSON bất kỳ (object, mảng, số, chuỗi), tối đa **64KB** sau khi `JSON.stringify`. Mỗi lần lưu **ghi đè** bản trước.
+- Hub lưu **trong trình duyệt của người chơi**, mỗi game 1 ô riêng – chưa đồng bộ giữa các thiết bị / tài khoản. Xóa dữ liệu trình duyệt là mất.
+- Trang **Chơi thử** dùng ô riêng theo từng bản build, không đè tiến trình thật.
+- Mở file trực tiếp hoặc [chạy ngoài hub](/ngoai-hub): lưu vào `localStorage` của trang.
+
+| `code` khi `saved: false` | Nghĩa |
+| --- | --- |
+| `STATE_TOO_LARGE` | Dữ liệu > 64KB |
+| `STATE_INVALID` | Không chuyển được sang JSON (vd có vòng lặp tham chiếu) |
+| `STORAGE_UNAVAILABLE` | Trình duyệt chặn lưu trữ (chế độ ẩn danh nghiêm ngặt, hết dung lượng) |
+| `TIMEOUT` | Hub không trả lời trong 5 giây |
+
 ## Quảng cáo
 
 Hiện Game Hub **chưa bật quảng cáo**: `showRewardedAd()` trả về `{ shown: false, rewarded: false }`, `showInterstitialAd()` trả về `{ shown: false }`. Hãy thiết kế để game vẫn chơi bình thường khi không có quảng cáo – ví dụ ẩn nút "Xem quảng cáo nhận thưởng" khi `shown` là `false`.
+
+Nếu hub không trả lời (vd game được nhúng ở trang khác), hai hàm quảng cáo chờ tối đa **60 giây** rồi trả về `{ shown: false, rewarded: false, reason: "TIMEOUT" }` – đừng khóa giao diện trong lúc chờ. Mở file trực tiếp thì trả về ngay với `reason: "STANDALONE"`.
 
 ## Ví dụ đầy đủ
 

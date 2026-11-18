@@ -57,17 +57,35 @@ Vẫn chơi được bình thường, nhưng điểm không lưu: `init` trả v
 
 ## Mã lỗi {#ma-loi}
 
-Khi `scoreResult.saved` là `false`, trường `code` cho biết lý do. `message` đã có câu giải thích theo ngôn ngữ người chơi – game chỉ cần hiện ra.
+Khi `scoreResult.saved` là `false`, trường `code` cho biết lý do. `message` đã có câu giải thích theo ngôn ngữ người chơi – game chỉ cần hiện ra. Cột **Chế độ**: *Hub* = game chạy trong Game Hub, *Độc lập* = [chạy ngoài hub](/ngoai-hub) bằng `projectKey`.
 
-| Mã | Nghĩa |
-| --- | --- |
-| `NOT_SIGNED_IN` | Người chơi chưa kết nối ví |
-| `STARTED_BEFORE_LOGIN` | Ván bắt đầu trước khi kết nối ví |
-| `SESSION_NOT_STARTED` | Game gọi `gameOver()` mà chưa gọi `gameStart()` |
-| `PLAY_TOO_SHORT` | Ván ngắn hơn thời gian tối thiểu |
-| `SCORE_TOO_FAST` | Ghi điểm nhanh bất thường |
-| `SCORE_INVALID` | Điểm không phải số nguyên ≥ 0, hoặc ngoài khoảng cho phép |
-| `SESSION_ENDED` | Lượt chơi này đã nộp điểm rồi |
-| `SESSION_EXPIRED` | Lượt chơi mở quá thời gian tối đa |
-| `LEADERBOARD_NOT_FOUND` | Tên bảng xếp hạng trong `gameOver(score, { leaderboard })` không tồn tại |
-| `LEADERBOARD_CLOSED` | Bảng xếp hạng (vd giải đấu có thời hạn) đã đóng |
+::: tip Đừng viết logic theo từng mã
+Một số tình huống có **mã khác nhau ở hai chế độ** (vd chưa đăng nhập). Để một bản build chạy đúng ở cả hai nơi, chỉ cần dựa vào `saved` và hiện `message`.
+:::
+
+| Mã | Chế độ | Nghĩa |
+| --- | --- | --- |
+| `NOT_SIGNED_IN` | Hub | Người chơi chưa kết nối ví |
+| `PLAYER_UNAUTHORIZED` | Độc lập | Chưa `login()` hoặc token hết hạn (cùng tình huống với `NOT_SIGNED_IN`) |
+| `STARTED_BEFORE_LOGIN` | Hub | Ván bắt đầu trước khi kết nối ví – ván sau mới được tính |
+| `SESSION_NOT_STARTED` | Cả hai | Gọi `gameOver()` mà chưa gọi `gameStart()`, hoặc mở lượt chơi thất bại. Ở chế độ độc lập cũng là mã khi **đăng nhập giữa ván** |
+| `PLAY_TOO_SHORT` | Cả hai | Ván ngắn hơn thời gian tối thiểu |
+| `SCORE_TOO_FAST` | Cả hai | Ghi điểm nhanh bất thường |
+| `SCORE_INVALID` | Cả hai | Điểm ngoài khoảng cho phép của bảng. (Điểm không phải số **không** gây mã này – SDK tự đổi thành 0, xem [SDK](/sdk#diem-gui-len)) |
+| `SESSION_ENDED` | Cả hai | Lượt chơi này đã nộp điểm rồi |
+| `SESSION_EXPIRED` | Cả hai | Lượt chơi mở quá thời gian tối đa |
+| `SESSION_NOT_FOUND` | Cả hai | Lượt chơi không tồn tại / không thuộc người chơi này |
+| `LEADERBOARD_NOT_FOUND` | Cả hai | Tên bảng trong `gameOver(score, { leaderboard })` không tồn tại |
+| `LEADERBOARD_CLOSED` | Cả hai | Bảng xếp hạng (vd giải đấu có thời hạn) đã đóng |
+| `PLAYER_BANNED` | Cả hai | Tài khoản bị cấm trong game này |
+| `SERVER_SCORING_ONLY` | Cả hai | Game đặt chế độ "chỉ máy chủ nộp điểm" ([Server API](/server-api)) – điểm từ trình duyệt bị từ chối |
+| `QUOTA_PLAYERS` / `QUOTA_SCORES` | Độc lập | Game hết hạn mức người chơi / lần lưu điểm của tháng theo gói |
+| `RATE_LIMITED` | Cả hai | Gửi quá nhiều yêu cầu trong thời gian ngắn |
+| `IP_BLOCKED` | Cả hai | IP gửi dồn dập nên bị chặn tạm 15 phút |
+| `NETWORK` | Cả hai | Không kết nối được máy chủ |
+| `TIMEOUT` | Hub | SDK không nhận được trả lời của hub sau 20 giây |
+| `STANDALONE` | – | Mở file game trực tiếp, không qua hub – không lưu điểm |
+| `PREVIEW` | Hub | Đang ở trang **Chơi thử** – không lưu điểm |
+| `UNKNOWN` / `ERROR` | Hub / Độc lập | Lỗi khác |
+
+Mã lỗi khi gọi thẳng Client API / Server API (không qua SDK) có thêm `INVALID_API_KEY`, `ORIGIN_NOT_ALLOWED`, `PROJECT_DISABLED`, `INVALID_SECRET_KEY`, `VALIDATION_ERROR` – xem [Dùng ngoài Game Hub](/ngoai-hub) và [Server API](/server-api).

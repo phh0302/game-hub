@@ -9,6 +9,7 @@ import { ShareButton } from "./ShareButton";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { displayName } from "@/lib/format";
 import { formatScore, type ScoreFormat } from "@/lib/score-format";
+import { handleStateMessage } from "@/lib/game-state";
 
 /** Giao thức Game Hub SDK v1 – xem docs/GAME_SDK.md */
 const PROTOCOL = "gamehub";
@@ -196,8 +197,8 @@ function GamePlayer({
   );
 
   // Luôn dùng handler mới nhất mà không phải gỡ/gắn lại listener
-  const handlers = useRef({ sendInit, startSession, finishSession, post });
-  handlers.current = { sendInit, startSession, finishSession, post };
+  const handlers = useRef({ sendInit, startSession, finishSession, post, slug });
+  handlers.current = { sendInit, startSession, finishSession, post, slug };
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -219,6 +220,12 @@ function GamePlayer({
         case "GAME_OVER":
           void h.finishSession(payload);
           break;
+        case "STATE_SAVE":
+        case "STATE_LOAD": {
+          const result = handleStateMessage(msg.type, payload, handlers.current.slug);
+          if (result) h.post("STATE_RESULT", result);
+          break;
+        }
         case "AD_REQUEST":
           // Chưa bật quảng cáo (Phase 11)
           h.post("AD_RESULT", { requestId: payload.requestId, shown: false, rewarded: false, reason: "NO_ADS" });

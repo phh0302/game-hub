@@ -24,6 +24,9 @@ The game and the hub talk through `window.postMessage`. Every message looks like
 | game → hub | `AD_REQUEST` | `{ requestId, kind: "rewarded" \| "interstitial" }` |
 | hub → game | `SCORE_RESULT` | `{ saved, code, message, score?, best?, rank?, isNewBest? }` |
 | hub → game | `AD_RESULT` | `{ requestId, shown, rewarded, reason? }` |
+| game → hub | `STATE_SAVE` | `{ requestId, data }` – `data` is a JSON **string** ≤ 65,536 characters |
+| game → hub | `STATE_LOAD` | `{ requestId }` |
+| hub → game | `STATE_RESULT` | Reply to `STATE_SAVE`: `{ requestId, saved, code }` · reply to `STATE_LOAD`: `{ requestId, data: string \| null }` |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Sequence
@@ -31,7 +34,8 @@ The game and the hub talk through `window.postMessage`. Every message looks like
 1. The game finishes loading → sends `READY`
 2. The hub replies with `INIT` (and sends `INIT` again whenever the player signs in or switches language)
 3. The player starts a run → the game sends `GAME_START`
-4. The run ends → the game sends `GAME_OVER` → the hub replies with `SCORE_RESULT`
+4. The run ends → the game sends `GAME_OVER` → the hub replies with `SCORE_RESULT` (the bundled SDK waits up to 20 seconds)
+5. Save / load progress at any time: `STATE_SAVE` / `STATE_LOAD` → `STATE_RESULT` with the same `requestId` (the bundled SDK waits 5 seconds). Games in the frame can't use `localStorage`, so this is the only way to persist – see [Runtime environment](/en/moi-truong#luu-du-lieu)
 
 If the game isn't inside a frame (opened directly), or no `INIT` arrives within 3 seconds, the ready-made SDK treats the game as standalone and returns `standalone: true`. A custom SDK should do the same.
 

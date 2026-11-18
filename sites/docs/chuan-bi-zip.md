@@ -44,13 +44,20 @@ Riêng file SDK dùng **đường dẫn đầy đủ** tới hub: `https://play.
 
 ## Unity WebGL
 
-Compression Format **Brotli**, **Gzip** hay **Disabled** đều được. File nén sẵn (vd `Build/game.wasm.br`) được hub **giải nén lúc upload** và phục vụ đúng tên cũ, nên không cần cấu hình máy chủ và không cần bật *Decompression Fallback*.
+Compression Format **Brotli**, **Gzip** hay **Disabled** đều được. File nén sẵn (vd `Build/game.wasm.br`) được hub **giải nén lúc upload** và phục vụ đúng tên cũ, nên không cần bật *Decompression Fallback*.
+
+Unity tải `.data` / `.wasm` bằng `fetch` – trong khung cách ly đây là request cross-origin, kho file của hub đã trả sẵn header CORS nên **bạn không phải cấu hình gì** ([chi tiết](/moi-truong#cors)). Hai điều cần làm:
+
+- Tắt **Data Caching** (Player Settings → Publishing Settings): tính năng này dùng IndexedDB, không chạy được trong khung cách ly.
+- `PlayerPrefs` không lưu được trên hub – lưu tiến trình bằng [`GameHub.saveState()`](/sdk#luu-tien-trinh) (gọi qua `.jslib`).
 
 Không nén hai lớp (vd `a.js.gz.br`) – hub sẽ từ chối.
 
 ## Không cần máy chủ riêng
 
-Game chạy hoàn toàn trên trình duyệt. Muốn lưu dữ liệu giữa các lần chơi thì dùng `localStorage` (bọc `try/catch`, xem [Môi trường chạy game](/moi-truong)); điểm số lưu qua [SDK](/sdk).
+Game chạy hoàn toàn trên trình duyệt. Điểm số lưu qua [SDK](/sdk).
+
+Muốn lưu tiến trình giữa các lần chơi (màn đã qua, vật phẩm, cài đặt) thì dùng **`GameHub.saveState()` / `GameHub.loadState()`** – **không** dùng `localStorage`: trên hub game chạy trong khung cách ly nên `localStorage` / IndexedDB luôn lỗi và không lưu được gì ([vì sao](/moi-truong#luu-du-lieu)).
 
 ## Lỗi thường gặp khi upload
 
