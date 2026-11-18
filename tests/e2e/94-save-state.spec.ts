@@ -57,3 +57,47 @@ test("saveState: tiến trình còn sau khi tải lại; localStorage của game
 
   await ctx.close();
 });
+
+test("saveState theo tài khoản: tiến trình lúc chơi khách chuyển sang ví, máy khác đăng nhập vẫn thấy", async ({ browser }) => {
+  test.setTimeout(90_000);
+  // Máy A: chơi khách 1 ván (3 sao) → lưu trong trình duyệt
+  const a = await browser.newContext({ locale: "vi-VN" });
+  const pa = await a.newPage();
+  await installWallet(pa, "player");
+  await pa.goto("/games/e2e-star-jar");
+  let game = pa.frameLocator('iframe[title="E2E Star Jar"]');
+  await expect(game.getByTestId("log")).toContainText("loadState:");
+  for (let i = 0; i < 3; i++) await game.getByRole("button", { name: "jar" }).click();
+  await expect(game.getByTestId("log")).toContainText('saveState: {"saved":true,"code":null}', { timeout: 15_000 });
+
+  // Kết nối ví rồi tải lại → tiến trình của khách được đẩy lên tài khoản
+  await login(pa, "player");
+  const pushed = pa.waitForResponse((r) => r.url().endsWith("/api/v1/games/e2e-star-jar/state") && r.request().method() === "PUT");
+  await pa.reload();
+  game = pa.frameLocator('iframe[title="E2E Star Jar"]');
+  await expect(game.getByTestId("log")).toContainText('loadState: {"total":3,"runs":1}');
+  expect((await pushed).ok()).toBe(true);
+
+  // Máy B (trình duyệt mới, không có dữ liệu cũ): đăng nhập cùng ví → đọc từ máy chủ
+  const b = await browser.newContext({ locale: "vi-VN" });
+  const pb = await b.newPage();
+  await installWallet(pb, "player");
+  await pb.goto("/");
+  await login(pb, "player");
+  await pb.goto("/games/e2e-star-jar");
+  const gb = pb.frameLocator('iframe[title="E2E Star Jar"]');
+  await expect(gb.getByTestId("log")).toContainText('loadState: {"total":3,"runs":1}');
+
+  // Máy B chơi thêm 1 ván (2 sao) → máy A tải lại thấy tổng mới
+  for (let i = 0; i < 2; i++) await gb.getByRole("button", { name: "jar" }).click();
+  await expect(gb.getByTestId("log")).toContainText('saveState: {"saved":true,"code":null}', { timeout: 15_000 });
+  await pa.reload();
+  await expect(pa.frameLocator('iframe[title="E2E Star Jar"]').locator("#total")).toHaveText("5");
+
+  // API: chưa đăng nhập → 401; dữ liệu không phải JSON → 400
+  const anon = await browser.newContext();
+  expect((await anon.request.get("/api/v1/games/e2e-star-jar/state")).status()).toBe(401);
+  const bad = await pb.evaluate(async () => (await fetch("/api/v1/games/e2e-star-jar/state", { method: "PUT", body: "{oops" })).status);
+  expect(bad).toBe(400);
+  await Promise.all([a.close(), b.close(), anon.close()]);
+});

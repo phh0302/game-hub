@@ -8,7 +8,7 @@ const store = new Map<string, string>();
     setItem: (k: string, v: string) => void store.set(k, v),
   },
 };
-const { handleStateMessage, STATE_MAX_CHARS } = await import("../../src/lib/game-state.ts");
+const { handleStateMessage, STATE_MAX_BYTES } = await import("../../src/lib/game-state.ts");
 
 test("lưu rồi đọc tiến trình theo từng game", () => {
   assert.deepEqual(handleStateMessage("STATE_LOAD", { requestId: "a" }, "snake"), { requestId: "a", data: null });
@@ -24,7 +24,7 @@ test("lưu rồi đọc tiến trình theo từng game", () => {
 
 test("từ chối dữ liệu sai kiểu / quá lớn; bỏ qua tin không liên quan", () => {
   assert.equal(handleStateMessage("STATE_SAVE", { requestId: "e", data: { x: 1 } }, "g")?.code, "STATE_INVALID");
-  assert.equal(handleStateMessage("STATE_SAVE", { requestId: "f", data: "x".repeat(STATE_MAX_CHARS + 1) }, "g")?.code, "STATE_TOO_LARGE");
+  assert.equal(handleStateMessage("STATE_SAVE", { requestId: "f", data: "x".repeat(STATE_MAX_BYTES + 1) }, "g")?.code, "STATE_TOO_LARGE");
   assert.equal(handleStateMessage("GAME_OVER", {}, "g"), null);
 });
 

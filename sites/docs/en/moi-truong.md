@@ -23,7 +23,7 @@ The isolated frame has **no** `allow-same-origin`, so the game page's origin is 
 - `localStorage`, `sessionStorage`, `indexedDB` and `document.cookie` **always throw** (`SecurityError`) – not "sometimes", every time.
 - Unity: `PlayerPrefs` and the **Data Caching** option (both use IndexedDB) don't persist anything. Turn *Data Caching* off in Player Settings.
 
-Use the SDK's **`GameHub.saveState(data)` / `GameHub.loadState()`** instead of localStorage: the hub stores JSON data (up to 64KB) in the player's browser, one slot per game. See [Saving progress](/en/sdk#luu-tien-trinh).
+Use the SDK's **`GameHub.saveState(data)` / `GameHub.loadState()`** instead of localStorage: the hub stores JSON data (up to 64KB) – per account when the player has connected a wallet (synced across devices), in the browser for guests. See [Saving progress](/en/sdk#luu-tien-trinh).
 
 ```js
 const save = (await GameHub.loadState()) ?? { level: 1, coins: 0 };

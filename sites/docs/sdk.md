@@ -101,8 +101,10 @@ save.level = 2;
 const r = await GameHub.saveState(save);   // { saved: true, code: null }
 ```
 
-- `data` là giá trị JSON bất kỳ (object, mảng, số, chuỗi), tối đa **64KB** sau khi `JSON.stringify`. Mỗi lần lưu **ghi đè** bản trước.
-- Hub lưu **trong trình duyệt của người chơi**, mỗi game 1 ô riêng – chưa đồng bộ giữa các thiết bị / tài khoản. Xóa dữ liệu trình duyệt là mất.
+- `data` là giá trị JSON bất kỳ (object, mảng, số, chuỗi), tối đa **64KB** (UTF-8) sau khi `JSON.stringify`. Mỗi lần lưu **ghi đè** bản trước.
+- **Người chơi đã kết nối ví:** hub lưu **theo tài khoản** trên máy chủ (kèm bản sao trong trình duyệt) → đổi máy, đổi trình duyệt vẫn còn. Tiến trình chơi lúc **chưa kết nối ví** trên máy đó được chuyển sang tài khoản ở lần `loadState()` đầu tiên sau khi kết nối (nếu tài khoản chưa có bản lưu của game).
+- **Khách (chưa kết nối ví):** lưu trong trình duyệt, mỗi game 1 ô riêng; xóa dữ liệu trình duyệt là mất.
+- Hai máy cùng lưu thì bản lưu **sau cùng thắng** – nếu cần, tự gộp dữ liệu trong game trước khi `saveState()`.
 - Trang **Chơi thử** dùng ô riêng theo từng bản build, không đè tiến trình thật.
 - Mở file trực tiếp hoặc [chạy ngoài hub](/ngoai-hub): lưu vào `localStorage` của trang.
 
@@ -111,6 +113,7 @@ const r = await GameHub.saveState(save);   // { saved: true, code: null }
 | `STATE_TOO_LARGE` | Dữ liệu > 64KB |
 | `STATE_INVALID` | Không chuyển được sang JSON (vd có vòng lặp tham chiếu) |
 | `STORAGE_UNAVAILABLE` | Trình duyệt chặn lưu trữ (chế độ ẩn danh nghiêm ngặt, hết dung lượng) |
+| `SYNC_FAILED` | Đi kèm `saved: true`: đã lưu trong trình duyệt nhưng chưa lên được máy chủ (mất mạng) – lần lưu sau sẽ đồng bộ |
 | `TIMEOUT` | Hub không trả lời trong 5 giây |
 
 ## Quảng cáo
