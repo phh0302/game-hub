@@ -259,10 +259,10 @@ Quyết định (17/11): trang theo dõi ở **stats.monlabs.fun**, chỉ admin 
 - [x] Trang **stats.monlabs.fun** (chỉ admin, đăng nhập ngay trên trang): biểu đồ request/phút, lỗi, p50/p95, top route / IP, IP đang bị chặn, lịch sử bất thường & cảnh báo, khung 1h / 24h / 7 ngày / 30 ngày + e2e – người dùng thêm DNS + domain trên Vercel
 
 ### Phase 13c – Docker + nginx, chuyển sang VPS
-- [ ] `Dockerfile` (Next.js standalone, multi-stage) + `docker-compose.yml`: app, Redis + bộ chuyển REST kiểu Upstash, cron, nginx; tùy chọn Postgres + MinIO để chạy toàn bộ trên máy
-- [ ] nginx: `limit_req` / `limit_conn` theo IP, gzip, cache file tĩnh, phục vụ monlabs.fun + docs, HTTPS, chỉ nhận IP thật từ Cloudflare
-- [ ] CI: build image + chạy thử compose
-- [ ] Hướng dẫn chuyển production: thuê VPS, cài Docker, biến môi trường, DNS Cloudflare, sao lưu, cập nhật phiên bản – người dùng thuê VPS + làm theo
+- [x] `Dockerfile` (Next.js standalone, multi-stage) + `docker-compose.yml`: app, Redis + bộ chuyển REST kiểu Upstash, cron, nginx; tùy chọn Postgres (`--profile db`) + kho file local (volume, nginx phục vụ) để chạy toàn bộ trên máy – thay cho MinIO
+- [x] nginx: `limit_req` / `limit_conn` theo IP, gzip, cache file tĩnh, phục vụ monlabs.fun + docs, HTTPS, chỉ nhận IP thật từ Cloudflare
+- [x] CI: build image + chạy thử compose (`scripts/docker-smoke.sh`)
+- [x] Hướng dẫn chuyển production ([docs/SELF_HOST.md](docs/SELF_HOST.md)): thuê VPS, cài Docker, biến môi trường, DNS Cloudflare, sao lưu, cập nhật phiên bản – người dùng thuê VPS + làm theo
 
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
@@ -286,4 +286,4 @@ Quyết định (17/11): trang theo dõi ở **stats.monlabs.fun**, chỉ admin 
 | 12d | PaaS – thu tiền | tùy cổng thanh toán | Chờ pháp lý + tài khoản Stripe |
 | 13a | Chống DDoS & giới hạn request | 1–2 ngày | Xong, đã kiểm tra trên production (PR #37) |
 | 13b | Theo dõi truy cập, cảnh báo, stats.monlabs.fun | 3–5 ngày | Xong (PR #38); chờ DNS stats + token Telegram |
-| 13c | Docker + nginx, chuyển sang VPS | 2 ngày + thời gian chuyển | |
+| 13c | Docker + nginx, chuyển sang VPS | 2 ngày + thời gian chuyển | Xong phần code + CI; chờ thuê VPS + chuyển DNS |

@@ -12,6 +12,9 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const GAME_CSP = ["sandbox allow-scripts allow-pointer-lock", "frame-ancestors 'self'", "object-src 'none'"].join("; ");
 
 const nextConfig: NextConfig = {
+  // Docker (deploy/): NEXT_OUTPUT=standalone → .next/standalone chỉ gồm file cần chạy, image nhỏ.
+  // Vercel không đặt biến này → build như cũ.
+  ...(process.env.NEXT_OUTPUT === "standalone" ? { output: "standalone" as const } : {}),
   reactStrictMode: true,
   poweredByHeader: false,
   // Hub không dùng next/image → tắt bộ tối ưu ảnh (không gọi tới sharp/libvips)

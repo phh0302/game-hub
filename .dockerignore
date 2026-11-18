@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+.next
+.env
+.env.*
+!.env.example
+deploy/.env
+deploy/certs
+tests
+playwright-report
+test-results
+sites/docs/node_modules
+sites/docs/.vitepress/dist
+sites/docs/.vitepress/cache
+tsconfig.tsbuildinfo
+*.log
