@@ -1,0 +1,55 @@
+# Sao lưu database (Neon) mỗi đêm 02:30 giờ Việt Nam → artifact MÃ HÓA, giữ 30 ngày.
+# Repo public → ai đăng nhập GitHub cũng tải được artifact, nên bản sao lưu BẮT BUỘC mã hóa (gpg AES256).
+# Cần 2 secret (Settings → Secrets and variables → Actions):
+#   BACKUP_DATABASE_URL – chuỗi kết nối TRỰC TIẾP (DATABASE_URL_UNPOOLED trên Vercel)
+#   BACKUP_PASSPHRASE   – mật khẩu mã hóa (lưu ở nơi an toàn, mất là không giải mã được)
+# Khôi phục: docs/DEPLOY.md → "Sao lưu & khôi phục database"
+name: Backup
+
+on:
+  schedule:
+    - cron: "30 19 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      DB_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+    steps:
+      - name: Kiểm tra secret
+        id: cfg
+        run: |
+          if [ -z "$DB_URL" ] || [ -z "$PASSPHRASE" ]; then
+            echo "::warning::Chưa đặt BACKUP_DATABASE_URL / BACKUP_PASSPHRASE – bỏ qua sao lưu"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: pg_dump (định dạng custom, nén) + mã hóa
+        if: steps.cfg.outputs.ready == 'true'
+        run: |
+          set -euo pipefail
+          name="gamehub-$(date -u +%F).dump"
+          # pg_dump bản 17 đọc được server Postgres 13–17
+          docker run --rm -e DB_URL postgres:17-alpine sh -c 'pg_dump "$DB_URL" --format=custom --no-owner --no-privileges' > "$name"
+          size=$(stat -c %s "$name"); echo "Kích thước: $size byte"
+          test "$size" -gt 1000
+          gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase "$PASSPHRASE" -o "$name.gpg" "$name"
+          shred -u "$name"
+          echo "FILE=$name.gpg" >> "$GITHUB_ENV"
+
+      - name: Lưu artifact (30 ngày)
+        if: steps.cfg.outputs.ready == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_id }}
+          path: ${{ env.FILE }}
+          retention-days: 30
+          if-no-files-found: error

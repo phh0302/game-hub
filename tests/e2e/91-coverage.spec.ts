@@ -72,7 +72,7 @@ test("Ca khó test tay: ví giữa ván, mất mạng, khóa người chơi, stu
       await session;
       await ctx.setOffline(true);
     });
-    await expect(p3.getByRole("alert")).toBeVisible();
+    await expect(p3.getByRole("alert").filter({ hasText: "Không kết nối được máy chủ" })).toBeVisible();
     await expect(p3.locator('iframe[title="Lật thẻ"]')).toBeVisible();
     await ctx.setOffline(false);
 
