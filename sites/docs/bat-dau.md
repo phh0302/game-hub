@@ -60,3 +60,4 @@ Game Hub có 4 game mẫu dùng đúng SDK này, mã nguồn ở repo [phh0302/g
 | [Rắn săn mồi](https://play.monlabs.fun/games/snake) | Canvas, vòng lặp theo nhịp | 10 điểm mỗi mồi, xử lý `pause` |
 | [Neon Flap](https://play.monlabs.fun/games/neon-flap) | Canvas, vật lý bước cố định | số cột vượt qua, xử lý `pause` / `resume` |
 | [Lật thẻ](https://play.monlabs.fun/games/memory) | DOM, lật thẻ | thời gian hoàn thành, bảng "thấp là tốt" |
+| [Star Jar](https://github.com/phh0302/game-hub/blob/main/public/uploads/games/save-demo/1.0.0/index.html) (chỉ mã nguồn) | 1 file HTML, mẫu đầy đủ SDK v3 | `saveState` / `loadState`, `on("init")`, `pause` / `resume`, `scoreResult` |

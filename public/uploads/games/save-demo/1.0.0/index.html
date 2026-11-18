@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Star Jar – SDK saveState demo</title>
+    <style>
+      :root { color-scheme: dark; font-family: system-ui, sans-serif; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #120d24; color: #f3efff; }
+      main { width: min(92vw, 420px); text-align: center; }
+      h1 { margin: 0 0 4px; font-size: 26px; }
+      .muted { color: #a99cc8; font-size: 13px; }
+      #jar { margin: 20px auto; width: 160px; height: 160px; border-radius: 28px; border: 3px solid #ffd45c; background: #2a1d4f;
+             font-size: 64px; cursor: pointer; user-select: none; touch-action: manipulation; }
+      #jar:active { transform: scale(0.96); }
+      .row { display: flex; justify-content: center; gap: 10px; margin: 10px 0; }
+      .box { background: #1f1740; border: 1px solid #3b2d6b; border-radius: 12px; padding: 8px 12px; min-width: 84px; }
+      .box b { display: block; font-size: 22px; }
+      button.secondary { background: none; color: #a99cc8; border: 1px solid #3b2d6b; border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+      #log { margin-top: 12px; text-align: left; font: 12px ui-monospace, monospace; color: #a99cc8; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Star Jar</h1>
+      <p class="muted" id="hint">Bấm hũ để nhặt sao – mỗi ván 10 giây. Tổng sao được lưu bằng GameHub.saveState().</p>
+      <button id="jar" type="button" aria-label="jar">⭐</button>
+      <div class="row">
+        <div class="box"><span class="muted" id="l-run">Ván này</span><b id="run">0</b></div>
+        <div class="box"><span class="muted" id="l-total">Tổng sao</span><b id="total">0</b></div>
+        <div class="box"><span class="muted" id="l-left">Còn lại</span><b id="left">10</b></div>
+      </div>
+      <p id="result" role="status" class="muted"></p>
+      <button class="secondary" id="reset" type="button">Xóa tiến trình</button>
+      <div id="log" data-testid="log"></div>
+    </main>
+    <script src="/sdk/v3/gamehub-sdk.js"></script>
+    <script>
+      // Mẫu tích hợp SDK v3: init + on("init"), gameStart/gameOver, scoreResult, pause/resume, saveState/loadState
+      var RUN_SECONDS = 10;
+      var save = { total: 0, runs: 0 };
+      var run = 0, left = RUN_SECONDS, timer = null, paused = false;
+      var $ = function (id) { return document.getElementById(id); };
+      var TEXT = {
+        vi: { hint: "Bấm hũ để nhặt sao – mỗi ván 10 giây. Tổng sao được lưu bằng GameHub.saveState().", run: "Ván này", total: "Tổng sao", left: "Còn lại", reset: "Xóa tiến trình" },
+        en: { hint: "Tap the jar to collect stars – 10 seconds per run. Total stars are saved with GameHub.saveState().", run: "This run", total: "Total stars", left: "Time left", reset: "Reset progress" },
+      };
+      function log(line) { $("log").textContent = line + "\n" + $("log").textContent; }
+      function render() { $("run").textContent = run; $("total").textContent = save.total; $("left").textContent = left; }
+      function applyHub(hub) {
+        var t = TEXT[hub.locale] || TEXT.vi;
+        document.documentElement.lang = hub.locale;
+        $("hint").textContent = t.hint; $("l-run").textContent = t.run; $("l-total").textContent = t.total;
+        $("l-left").textContent = t.left; $("reset").textContent = t.reset;
+      }
+
+      // localStorage của chính game: trên hub (sandbox, origin "null") luôn lỗi – chỉ để minh họa
+      try { window.localStorage.setItem("probe", "1"); log("localStorage: ok"); }
+      catch (e) { log("localStorage: blocked (" + (e && e.name) + ")"); }
+
+      GameHub.init().then(function (hub) {
+        applyHub(hub);
+        log("init: standalone=" + hub.standalone + " canSubmitScore=" + hub.canSubmitScore);
+        return GameHub.loadState();
+      }).then(function (data) {
+        if (data && typeof data.total === "number") save = data;
+        log("loadState: " + JSON.stringify(data));
+        render();
+      });
+      GameHub.on("init", applyHub);
+      GameHub.on("scoreResult", function (r) { $("result").textContent = r.message || r.code || ""; log("scoreResult: " + (r.saved ? "saved" : r.code)); });
+      GameHub.on("pause", function () { paused = true; });
+      GameHub.on("resume", function () { paused = false; });
+
+      function tick() {
+        if (paused) return;
+        left -= 1; render();
+        if (left <= 0) end();
+      }
+      function end() {
+        clearInterval(timer); timer = null;
+        save.total += run; save.runs += 1;
+        GameHub.saveState(save).then(function (r) { log("saveState: " + JSON.stringify(r)); });
+        GameHub.gameOver(run);
+        run = 0; left = RUN_SECONDS; render();
+      }
+      $("jar").addEventListener("click", function () {
+        if (!timer) { GameHub.gameStart(); timer = setInterval(tick, 1000); }
+        run += 1; render();
+      });
+      $("reset").addEventListener("click", function () {
+        save = { total: 0, runs: 0 }; render();
+        GameHub.saveState(save).then(function (r) { log("saveState: " + JSON.stringify(r)); });
+      });
+    </script>
+  </body>
+</html>
