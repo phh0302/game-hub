@@ -264,6 +264,17 @@ Quyết định (17/11): trang theo dõi ở **stats.monlabs.fun**, chỉ admin 
 - [x] CI: build image + chạy thử compose (`scripts/docker-smoke.sh`)
 - [x] Hướng dẫn chuyển production ([docs/SELF_HOST.md](docs/SELF_HOST.md)): thuê VPS, cài Docker, biến môi trường, DNS Cloudflare, sao lưu, cập nhật phiên bản – người dùng thuê VPS + làm theo
 
+## Phase 14 – SDK v3 & công cụ cho developer (18/11)
+Từ review tài liệu: game chạy trong sandbox (origin `null`) nên localStorage luôn lỗi, cần CORS cho file game.
+- [x] SDK v3: `saveState` / `loadState`, `gameOver()` trả Promise ở mọi chế độ, cảnh báo điểm không phải số; URL có phiên bản `/sdk/v1|v2|v3/` + trang Lịch sử SDK (PR #41, #42)
+- [x] Tiến trình lưu theo tài khoản (bảng `GameSave`, đồng bộ giữa thiết bị, chuyển tiến trình khách sang ví) (PR #45)
+- [x] Game mẫu Star Jar dùng đủ SDK v3 (PR #43)
+- [x] Duyệt bản đầu tiên tự chạy + phát hành; developer tự rollback / đặt bản chạy; nhật ký hoạt động; luật chấm điểm + điểm bị từ chối theo lý do (PR #39, #42, #44)
+- [x] Tài liệu: bảng mã lỗi chung, CORS / Unity, cập nhật game, nav Tham khảo (PR #41, #42)
+- [x] Trang status: uptime 90 ngày từ kiểm tra phía máy chủ mỗi 10 phút, cảnh báo Telegram khi đổi trạng thái (PR #46)
+- [ ] Sao lưu database mỗi đêm (workflow có sẵn) – người dùng thêm secret `BACKUP_DATABASE_URL`, `BACKUP_PASSPHRASE`
+- [ ] Flying Miso 0.1.1: dùng `saveState`, thêm bảng cho Thử thách ngày / chế độ Trẻ em – cần mã nguồn game
+
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking
@@ -287,3 +298,4 @@ Quyết định (17/11): trang theo dõi ở **stats.monlabs.fun**, chỉ admin 
 | 13a | Chống DDoS & giới hạn request | 1–2 ngày | Xong, đã kiểm tra trên production (PR #37) |
 | 13b | Theo dõi truy cập, cảnh báo, stats.monlabs.fun | 3–5 ngày | Xong (PR #38); chờ DNS stats + token Telegram |
 | 13c | Docker + nginx, chuyển sang VPS | 2 ngày + thời gian chuyển | Xong phần code + CI; chờ thuê VPS + chuyển DNS |
+| 14 | SDK v3 & công cụ cho developer | 1 ngày | Xong, đã kiểm tra trên production (18/11); chờ secret sao lưu |
