@@ -50,6 +50,9 @@ const nextConfig: NextConfig = {
         headers: [
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
           { key: "Content-Security-Policy", value: GAME_CSP },
+          // Game chạy với origin "null" → mọi fetch / <script type="module"> / file .wasm, .data của Unity
+          // tới chính file của game đều là cross-origin → cần CORS (chỉ đọc, file vốn công khai)
+          { key: "Access-Control-Allow-Origin", value: "*" },
         ],
       },
       // Bản build Unity nén sẵn (.br/.gz) đã được hub giải nén khi upload, nhưng vẫn giữ tên cũ →

@@ -13,7 +13,8 @@ Xem thử game mẫu: [play.monlabs.fun/demo/index.html](https://play.monlabs.fu
 
 ```html
 <script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
-<script>
+<script type="module">
+  // type="module" mới dùng được await ở ngoài cùng; với <script> thường hãy bọc trong async function
   const hub = await GameHub.init({ projectKey: "pk_live_…" });
   // hub.player = null nếu chưa đăng nhập; hub.project.name, hub.project.leaderboards
 </script>
@@ -27,7 +28,7 @@ await GameHub.login();                  // ví MetaMask – ký thông điệp g
 
 GameHub.gameStart();                    // bắt đầu ván – máy chủ bắt đầu tính giờ
 const result = await GameHub.gameOver(score);
-// { saved, code, message, score, best, rank, isNewBest, tournaments }
+// { saved, code, message, score, best, rank, isNewBest, tournaments } – score ở đây là SỐ điểm đã lưu
 
 const top = await GameHub.leaderboard({ period: "week", limit: 10 });
 // { leaderboard, entries: [{ rank, displayName, score, … }], me }
@@ -47,11 +48,23 @@ const top = await GameHub.leaderboard({ period: "week", limit: 10 });
 | `GameHub.me()` | `Promise<{ player, best } \| null>` |
 | `GameHub.gameStart()` | Mở 1 lượt chơi → `Promise<sessionId \| null>` (dùng khi máy chủ của game tự nộp điểm, xem [Server API](/server-api)) |
 | `GameHub.gameOver(score, { leaderboard? })` | `Promise<{ saved, code, message, … }>` – cũng phát sự kiện `scoreResult` |
-| `GameHub.leaderboard({ board?, period?, limit? })` | Top người chơi + hạng của bạn (`me`) |
+| `GameHub.leaderboard({ board?, period?, limit? })` | Top người chơi + hạng của bạn (`me`). Mặc định `board: "default"`, `period: "all"` (hoặc `"week"`, `"day"`), `limit: 50` |
 | `GameHub.leaderboards()` | Bảng chính + các [giải đấu](/bang-xep-hang#giai-dau) đang hiển thị |
+| `GameHub.saveState(data)` / `GameHub.loadState()` | Lưu / đọc tiến trình (JSON ≤ 64KB) trong `localStorage` của domain game – xem [Lưu tiến trình](/sdk#luu-tien-trinh) |
 | `GameHub.on("init", cb)` | Gọi lại khi người chơi đăng nhập / đăng xuất |
 
-Không truyền `projectKey` thì SDK chạy **chế độ hub** như cũ (game nằm trong Game Hub) – một bản build dùng được cho cả hai nơi.
+Không truyền `projectKey` thì SDK chạy **chế độ hub** như cũ (game nằm trong Game Hub). Một bản build dùng được cho cả hai nơi nếu chú ý mấy chỗ khác nhau:
+
+| | Chế độ hub | Chế độ độc lập (`projectKey`) |
+| --- | --- | --- |
+| Đăng nhập | Hub lo (nút **Kết nối ví** của hub) – game không gọi `login()` | Game tự gọi `login()` |
+| `gameStart()` | Không trả gì | `Promise<sessionId \| null>` |
+| `gameOver()` | `Promise<kết quả>` (SDK v3) + sự kiện `scoreResult` | `Promise<kết quả>` + sự kiện `scoreResult` |
+| Chưa đăng nhập | `code: "NOT_SIGNED_IN"` | `code: "PLAYER_UNAUTHORIZED"` |
+| Đăng nhập giữa ván | `code: "STARTED_BEFORE_LOGIN"` | `code: "SESSION_NOT_STARTED"` |
+| `localStorage` của game | **Không dùng được** (khung sandbox) – dùng `saveState()` | Dùng được |
+
+Cách viết chạy đúng ở cả hai nơi: hiện kết quả trong `GameHub.on("scoreResult", r => …)` và dựa vào `r.saved` + `r.message` thay vì so sánh mã lỗi cụ thể. Bảng mã lỗi đầy đủ: [Bảng xếp hạng](/bang-xep-hang#ma-loi).
 
 ## Chống gian lận
 
@@ -74,4 +87,4 @@ Mọi request gửi tới `https://play.monlabs.fun/api/p1/…` kèm header `x-g
 | GET | `/leaderboards` | Bảng chính + giải đấu |
 | GET | `/leaderboard?board=&period=&limit=` | Top người chơi (+ `me` nếu có token) |
 
-Mã lỗi riêng của Client API: `INVALID_API_KEY` (key sai / đã thu hồi), `ORIGIN_NOT_ALLOWED` (domain chưa khai báo), `PROJECT_DISABLED` (game bị khóa), `PLAYER_UNAUTHORIZED` (chưa đăng nhập / token hết hạn), `RATE_LIMITED`.
+Mã lỗi riêng của Client API: `INVALID_API_KEY` (key sai / đã thu hồi), `ORIGIN_NOT_ALLOWED` (domain chưa khai báo), `PROJECT_DISABLED` (game bị khóa), `PLAYER_UNAUTHORIZED` (chưa đăng nhập / token hết hạn), `RATE_LIMITED`. Phản hồi `POST /scores` có `score` là **object** (`score.value` là số điểm) – xem ví dụ ở [Server API](/server-api).

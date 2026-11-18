@@ -5,11 +5,17 @@ import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { displayName } from "@/lib/format";
 import { StatusBadge } from "./shared";
+import { handleStateMessage } from "@/lib/game-state";
 
 const PROTOCOL = "gamehub";
 const PROTOCOL_VERSION = 1;
 
 type LogLine = { at: string; type: string; payload: string; ok: boolean };
+
+/** Nhật ký chỉ hiện độ dài dữ liệu tiến trình, không in cả khối JSON */
+function summarize(data: unknown): string {
+  return typeof data === "string" ? `${data.length} ký tự` : String(data);
+}
 
 /**
  * Chơi thử 1 phiên bản: chạy y như trên hub (iframe sandbox + SDK) nhưng KHÔNG lưu điểm,
@@ -35,8 +41,8 @@ export function PreviewPlayer({
   const { user } = useAuth();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [log, setLog] = useState<LogLine[]>([]);
-  const ctx = useRef({ locale, user, t });
-  ctx.current = { locale, user, t };
+  const ctx = useRef({ locale, user, t, playUrl });
+  ctx.current = { locale, user, t, playUrl };
 
   useEffect(() => {
     const post = (type: string, payload: Record<string, unknown>) =>
@@ -54,7 +60,7 @@ export function PreviewPlayer({
       }
       const payload = msg.payload ?? {};
       const { locale: loc, user: u, t: tr } = ctx.current;
-      add(`← ${msg.type}`, payload);
+      add(`← ${msg.type}`, msg.type === "STATE_SAVE" ? { ...payload, data: summarize(payload.data) } : payload);
 
       switch (msg.type) {
         case "READY": {
@@ -76,6 +82,16 @@ export function PreviewPlayer({
           const result = { saved: false, code: "PREVIEW", message: tr("notSaved", { score: valid ? score : "?" }) };
           post("SCORE_RESULT", result);
           add("→ SCORE_RESULT", result);
+          break;
+        }
+        case "STATE_SAVE":
+        case "STATE_LOAD": {
+          // Chơi thử dùng khóa riêng theo bản build → không đè tiến trình thật của game trên hub
+          const result = handleStateMessage(msg.type, payload, `preview:${ctx.current.playUrl}`);
+          if (result) {
+            post("STATE_RESULT", result);
+            add("→ STATE_RESULT", msg.type === "STATE_LOAD" ? { ...result, data: summarize(result.data) } : result);
+          }
           break;
         }
         case "AD_REQUEST": {

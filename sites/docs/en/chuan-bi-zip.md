@@ -44,13 +44,20 @@ The SDK file is the exception: use the **full URL** to the hub, `https://play.mo
 
 ## Unity WebGL
 
-Compression Format **Brotli**, **Gzip** or **Disabled** all work. Pre-compressed files (e.g. `Build/game.wasm.br`) are **decompressed by the hub at upload** and served under their original names, so there's no server configuration and no need for *Decompression Fallback*.
+Compression Format **Brotli**, **Gzip** or **Disabled** all work. Pre-compressed files (e.g. `Build/game.wasm.br`) are **decompressed by the hub at upload** and served under their original names, so there's no need for *Decompression Fallback*.
+
+Unity loads `.data` / `.wasm` with `fetch` – a cross-origin request inside the isolated frame. The hub's file storage already sends CORS headers, so **there's nothing to configure** ([details](/en/moi-truong#cors)). Two things to do:
+
+- Turn off **Data Caching** (Player Settings → Publishing Settings): it uses IndexedDB, which doesn't work in the isolated frame.
+- `PlayerPrefs` doesn't persist on the hub – save progress with [`GameHub.saveState()`](/en/sdk#luu-tien-trinh) (called from a `.jslib`).
 
 Don't compress twice (e.g. `a.js.gz.br`) – the hub rejects it.
 
 ## No server of your own
 
-The game runs entirely in the browser. To keep data between sessions use `localStorage` (wrapped in `try/catch`, see [Runtime environment](/en/moi-truong)); scores are saved through the [SDK](/en/sdk).
+The game runs entirely in the browser. Scores are saved through the [SDK](/en/sdk).
+
+To keep progress between sessions (levels, items, settings) use **`GameHub.saveState()` / `GameHub.loadState()`** – **not** `localStorage`: on the hub the game runs in an isolated frame, so `localStorage` / IndexedDB always fail and nothing is saved ([why](/en/moi-truong#luu-du-lieu)).
 
 ## Common upload errors
 

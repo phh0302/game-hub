@@ -1,7 +1,9 @@
 /*!
- * Game Hub SDK v2
- * 1. Chế độ hub (game chạy trong Game Hub): giao tiếp qua postMessage – y hệt v1.
- *      const hub = await GameHub.init();  GameHub.gameStart();  GameHub.gameOver(1234);
+ * Game Hub SDK v3
+ * 1. Chế độ hub (game chạy trong Game Hub): giao tiếp qua postMessage.
+ *      const hub = await GameHub.init();  GameHub.gameStart();
+ *      const result = await GameHub.gameOver(1234);   // v3: Promise kết quả ở mọi chế độ
+ *      await GameHub.saveState({ level: 3 });  const save = await GameHub.loadState();
  * 2. Chế độ độc lập (game chạy trên domain riêng – Platform API): truyền projectKey.
  *      await GameHub.init({ projectKey: "pk_live_…" });
  *      await GameHub.login();                 // ví MetaMask; GameHub.login({ guest: true }) = chơi khách
@@ -15,7 +17,7 @@
 
   var PROTOCOL = "gamehub";
   var VERSION = 1; // phiên bản giao thức postMessage (chế độ hub)
-  var SDK_VERSION = 2;
+  var SDK_VERSION = 3;
   var INIT_TIMEOUT_MS = 3000;
 
   var embedded = global.parent && global.parent !== global;
@@ -34,6 +36,10 @@
   var seq = 0;
   var initData = null;
   var initPromise = null;
+  var pendingScore = null; // resolve của gameOver() đang chờ SCORE_RESULT (chế độ hub)
+  var SCORE_TIMEOUT_MS = 20000;
+  var STATE_TIMEOUT_MS = 5000;
+  var STATE_MAX_CHARS = 64 * 1024;
 
   function send(type, payload) {
     if (!embedded) return;
@@ -71,7 +77,18 @@
         break;
       case "SCORE_RESULT":
         // Kết quả lưu điểm sau gameOver(): { saved, code, message, score?, best?, rank?, isNewBest? }
+        if (pendingScore) {
+          var resolveScore = pendingScore;
+          pendingScore = null;
+          resolveScore(payload);
+        }
         emit("scoreResult", payload);
+        break;
+      case "STATE_RESULT":
+        if (pending[payload.requestId]) {
+          pending[payload.requestId](payload);
+          delete pending[payload.requestId];
+        }
         break;
       case "PAUSE":
         emit("pause", payload);
@@ -107,6 +124,67 @@
         }
       }, 60000);
     });
+  }
+
+  /** Gửi yêu cầu cho hub và chờ trả lời theo requestId (hub cũ không trả lời → fallback sau timeoutMs) */
+  function requestHub(type, payload, timeoutMs, fallback) {
+    return new Promise(function (resolve) {
+      var requestId = "rq_" + ++seq;
+      pending[requestId] = resolve;
+      payload.requestId = requestId;
+      send(type, payload);
+      setTimeout(function () {
+        if (pending[requestId]) {
+          delete pending[requestId];
+          resolve(fallback);
+        }
+      }, timeoutMs);
+    });
+  }
+
+  /**
+   * Lưu tiến trình. Trên hub game chạy trong khung sandbox (origin "null") nên localStorage / IndexedDB
+   * luôn lỗi → hub lưu hộ (trong trình duyệt của người chơi, theo từng game). Ngoài hub: localStorage của trang.
+   */
+  function localKey() {
+    return "gamehub:state:" + (project ? project.key.slice(0, 16) : "standalone");
+  }
+  function localSave(text) {
+    try {
+      global.localStorage.setItem(localKey(), text);
+      return { saved: true, code: null };
+    } catch (e) {
+      memoryState = text;
+      return { saved: false, code: "STORAGE_UNAVAILABLE" };
+    }
+  }
+  function localLoad() {
+    try {
+      return global.localStorage.getItem(localKey());
+    } catch (e) {
+      return memoryState;
+    }
+  }
+  var memoryState = null;
+
+  function toStateText(data) {
+    var text;
+    try {
+      text = JSON.stringify(data === undefined ? null : data);
+    } catch (e) {
+      return { error: "STATE_INVALID" };
+    }
+    if (typeof text !== "string") return { error: "STATE_INVALID" };
+    if (text.length > STATE_MAX_CHARS) return { error: "STATE_TOO_LARGE" };
+    return { text: text };
+  }
+  function parseState(text) {
+    if (typeof text !== "string") return null;
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      return null;
+    }
   }
 
   // ───────────── Chế độ độc lập (Platform API) ─────────────
@@ -363,15 +441,36 @@
     },
 
     /**
-     * Gọi khi ván kết thúc. score: số nguyên ≥ 0.
+     * Gọi khi ván kết thúc. score: số ≥ 0 (làm tròn xuống; không phải số → cảnh báo trong console và nộp 0).
      * options.leaderboard: key bảng xếp hạng (mặc định "default").
+     * Mọi chế độ: trả về Promise<{ saved, code, message, … }> và phát sự kiện "scoreResult".
      */
     gameOver: function (score, options) {
-      var value = Math.max(0, Math.floor(Number(score) || 0));
+      var num = Number(score);
+      if (!isFinite(num) || num < 0) {
+        console.warn("[GameHub SDK] gameOver(score): score phải là số ≥ 0, nhận " + String(score) + " → nộp 0 điểm");
+      }
+      var value = Math.max(0, Math.floor(num || 0));
       var board = (options && options.leaderboard) || "default";
       if (!project) {
+        // Chế độ hub: hub nộp điểm rồi trả SCORE_RESULT → Promise kết quả (giống chế độ độc lập)
+        if (!embedded) {
+          var standalone = { saved: false, code: "STANDALONE", message: "Standalone: score not saved", score: value };
+          emit("scoreResult", standalone);
+          return Promise.resolve(standalone);
+        }
+        if (pendingScore) pendingScore({ saved: false, code: "SUPERSEDED", message: "" });
+        var scorePromise = new Promise(function (resolve) {
+          pendingScore = resolve;
+          setTimeout(function () {
+            if (pendingScore === resolve) {
+              pendingScore = null;
+              resolve({ saved: false, code: "TIMEOUT", message: "" });
+            }
+          }, SCORE_TIMEOUT_MS);
+        });
         send("GAME_OVER", { score: value, leaderboard: board });
-        return;
+        return scorePromise;
       }
       // Chế độ độc lập: trả về Promise<{ saved, code, message, score?, best?, rank?, isNewBest?, tournaments? }>
       function finish(result) {
@@ -455,6 +554,32 @@
       return api("GET", "/leaderboards").then(function (r) {
         return r.leaderboards;
       });
+    },
+
+    /**
+     * Lưu tiến trình (dữ liệu JSON, tối đa 64KB) → Promise<{ saved, code }>.
+     * Trên hub: hub lưu hộ trong trình duyệt của người chơi (localStorage của game KHÔNG dùng được trong sandbox).
+     * Ngoài hub / chế độ độc lập: localStorage của trang. Mỗi lần lưu ghi đè bản trước.
+     */
+    saveState: function (data) {
+      var t = toStateText(data);
+      if (t.error) return Promise.resolve({ saved: false, code: t.error });
+      if (embedded && !project) {
+        return requestHub("STATE_SAVE", { data: t.text }, STATE_TIMEOUT_MS, { saved: false, code: "TIMEOUT" }).then(function (r) {
+          return { saved: !!r.saved, code: r.saved ? null : r.code || "ERROR" };
+        });
+      }
+      return Promise.resolve(localSave(t.text));
+    },
+
+    /** Đọc tiến trình đã lưu bằng saveState() → Promise<data | null> */
+    loadState: function () {
+      if (embedded && !project) {
+        return requestHub("STATE_LOAD", {}, STATE_TIMEOUT_MS, { data: null }).then(function (r) {
+          return parseState(r.data);
+        });
+      }
+      return Promise.resolve(parseState(localLoad()));
     },
 
     /** Quảng cáo có thưởng → Promise<{ shown, rewarded, reason? }>. Chỉ thưởng khi rewarded === true. */

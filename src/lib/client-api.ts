@@ -14,12 +14,18 @@ export class ApiClientError extends Error {
 
 export async function apiFetch<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
   const { json, headers, ...rest } = init;
-  const res = await fetch(`${API_BASE}${path}`, {
-    ...rest,
-    headers: { ...(json !== undefined ? { "Content-Type": "application/json" } : {}), ...headers },
-    body: json !== undefined ? JSON.stringify(json) : rest.body,
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_BASE}${path}`, {
+      ...rest,
+      headers: { ...(json !== undefined ? { "Content-Type": "application/json" } : {}), ...headers },
+      body: json !== undefined ? JSON.stringify(json) : rest.body,
+      cache: "no-store",
+    });
+  } catch {
+    // Mất mạng / máy chủ không phản hồi → mã riêng để báo đúng cho người chơi (và game qua SCORE_RESULT)
+    throw new ApiClientError(0, "NETWORK");
+  }
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new ApiClientError(res.status, data?.error?.code ?? "UNKNOWN", data?.error?.message);

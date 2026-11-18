@@ -44,8 +44,23 @@ const res = await fetch("https://play.monlabs.fun/api/s1/scores", {
   },
   body: JSON.stringify({ sessionId, score, leaderboard: "default" }),
 });
-const result = await res.json(); // { score, isNewBest, best, rank, tournaments }
+const result = await res.json();
 ```
+
+Kết quả – **`score` là object**, giá trị điểm nằm ở `score.value`:
+
+```json
+{
+  "score": { "id": "cm…", "value": 1696, "durationSeconds": 84, "leaderboard": "default" },
+  "format": "number",
+  "isNewBest": true,
+  "best": 1696,
+  "rank": 3,
+  "tournaments": [{ "key": "giai-tet-2027", "rank": 1 }]
+}
+```
+
+`best` là điểm tốt nhất của người chơi ở bảng đó, `rank` là hạng mọi thời điểm (`null` nếu chưa có), `tournaments` là các giải đấu cũng nhận điểm này kèm hạng trong giải. Lỗi trả về dạng `{ "error": { "code", "message" } }` – mã lỗi ở [Bảng xếp hạng](/bang-xep-hang#ma-loi).
 
 Luật chống gian lận của bảng xếp hạng (thời gian chơi tối thiểu, điểm tối đa, tốc độ ghi điểm) **vẫn áp dụng**; mỗi lượt chơi chỉ nộp được 1 lần.
 

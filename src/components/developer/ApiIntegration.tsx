@@ -234,7 +234,7 @@ export function ApiIntegration({
         <h3 className="text-sm font-semibold">{t("snippetTitle")}</h3>
         <pre className="overflow-x-auto rounded-lg border border-line bg-bg p-3 font-mono text-xs leading-relaxed">
           {`<script src="${hubOrigin}/sdk/gamehub-sdk.js"></script>
-<script>
+<script type="module">
   await GameHub.init({ projectKey: "${snippetKey}" });
   await GameHub.login();            // ${t("snippetLogin")}
   GameHub.gameStart();

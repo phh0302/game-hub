@@ -14,32 +14,42 @@ Hub nhúng game trong một **khung cách ly** (`iframe` có `sandbox="allow-scr
 - Đọc cookie, trang hay dữ liệu đăng nhập của hub
 - Mở cửa sổ popup, chuyển trang cha, gửi form
 - Tự gọi API của hub – mọi thứ đi qua SDK (`postMessage`)
+- Dùng `localStorage`, `IndexedDB`, cookie – lưu tiến trình bằng [`saveState()`](#luu-du-lieu)
 
-## localStorage có thể bị chặn
+## Không có localStorage – lưu tiến trình bằng SDK {#luu-du-lieu}
 
-Trong khung cách ly, `localStorage` / `sessionStorage` có thể ném lỗi. Luôn bọc trong `try/catch` và cho game chạy được khi không lưu được:
+Khung cách ly **không có** `allow-same-origin`, nên trang game có origin là `null`. Hệ quả trên hub:
+
+- `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie` **luôn ném lỗi** (`SecurityError`) – không phải "thỉnh thoảng", mà là mọi lần.
+- Unity: `PlayerPrefs` và tùy chọn **Data Caching** (cả hai dùng IndexedDB) không lưu được gì. Nên tắt *Data Caching* trong Player Settings.
+
+Dùng **`GameHub.saveState(data)` / `GameHub.loadState()`** của SDK thay cho localStorage: hub lưu hộ dữ liệu JSON (tối đa 64KB) trong trình duyệt của người chơi, mỗi game một ô riêng. Xem [Lưu tiến trình](/sdk#luu-tien-trinh).
 
 ```js
-function load(key) {
-  try {
-    return window.localStorage.getItem(key);
-  } catch {
-    return null; // không lưu được – chơi tiếp bình thường
-  }
-}
-
-function save(key, value) {
-  try {
-    window.localStorage.setItem(key, value);
-  } catch {
-    // bỏ qua
-  }
-}
+const save = (await GameHub.loadState()) ?? { level: 1, coins: 0 };
+// … khi qua màn …
+GameHub.saveState(save);
 ```
+
+Code đọc localStorage cũ vẫn phải bọc `try/catch` để game không bị dừng giữa chừng.
+
+::: warning Thử bằng "Chơi thử", đừng chỉ mở file trực tiếp
+Mở thẳng file `index.html` của bản build (không qua hub) thì game **không** bị cách ly: localStorage chạy bình thường, nên trông như lưu được – lên hub thì mất hết. Luôn kiểm tra ở trang **Chơi thử** sau khi upload.
+:::
+
+## Tải file của chính game (CORS) {#cors}
+
+Vì origin là `null`, mọi request tới file của chính game đều tính là **cross-origin**:
+
+- `fetch()` / `XMLHttpRequest` tới file JSON, âm thanh, level…
+- `<script type="module">` (mặc định của Vite, Rollup, esbuild…) và `import()` động
+- Unity WebGL tải `.data`, `.wasm`, `.framework.js` bằng `fetch`
+
+Kho file của Game Hub trả header `Access-Control-Allow-Origin: *` cho mọi file game, nên các cách trên **chạy được, không cần cấu hình gì**. Nếu tự host file ở máy chủ khác (vd game gọi API riêng), máy chủ đó cũng phải trả CORS cho origin `null` (thường là `*`), và không dùng được cookie.
 
 ## Mở game trực tiếp
 
-Mở thẳng file `index.html` (không qua hub) vẫn chạy được: SDK chuyển sang chế độ độc lập, `init()` trả về `standalone: true`, điểm không được lưu. Tiện để thử game trên máy trước khi upload.
+Mở thẳng file `index.html` (không qua hub) vẫn chạy được: SDK chuyển sang chế độ độc lập, `init()` trả về `standalone: true`, điểm không được lưu (`gameOver()` trả `code: "STANDALONE"`), `saveState()` dùng localStorage của trang. Tiện để thử nhanh trên máy – nhưng nhớ kiểm tra lại ở **Chơi thử** vì trên hub game chạy trong khung cách ly ([khác biệt](#luu-du-lieu)).
 
 ## Kích thước màn hình
 

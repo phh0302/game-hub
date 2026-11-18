@@ -24,6 +24,9 @@ Game và hub nói chuyện qua `window.postMessage`. Mọi tin nhắn có dạng
 | game → hub | `AD_REQUEST` | `{ requestId, kind: "rewarded" \| "interstitial" }` |
 | hub → game | `SCORE_RESULT` | `{ saved, code, message, score?, best?, rank?, isNewBest? }` |
 | hub → game | `AD_RESULT` | `{ requestId, shown, rewarded, reason? }` |
+| game → hub | `STATE_SAVE` | `{ requestId, data }` – `data` là **chuỗi** JSON ≤ 65.536 ký tự |
+| game → hub | `STATE_LOAD` | `{ requestId }` |
+| hub → game | `STATE_RESULT` | Trả lời `STATE_SAVE`: `{ requestId, saved, code }` · trả lời `STATE_LOAD`: `{ requestId, data: string \| null }` |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Trình tự
@@ -31,7 +34,8 @@ Game và hub nói chuyện qua `window.postMessage`. Mọi tin nhắn có dạng
 1. Game tải xong → gửi `READY`
 2. Hub trả `INIT` (và gửi lại `INIT` mỗi khi người chơi đăng nhập hoặc đổi ngôn ngữ)
 3. Người chơi bắt đầu ván → game gửi `GAME_START`
-4. Hết ván → game gửi `GAME_OVER` → hub trả `SCORE_RESULT`
+4. Hết ván → game gửi `GAME_OVER` → hub trả `SCORE_RESULT` (SDK có sẵn chờ tối đa 20 giây)
+5. Lưu / đọc tiến trình bất kỳ lúc nào: `STATE_SAVE` / `STATE_LOAD` → `STATE_RESULT` cùng `requestId` (SDK có sẵn chờ 5 giây). Game trong khung không dùng được `localStorage` nên đây là cách lưu duy nhất – xem [Môi trường](/moi-truong#luu-du-lieu)
 
 Nếu game không nằm trong khung (mở trực tiếp), hoặc sau 3 giây không nhận được `INIT`, SDK có sẵn coi như game chạy độc lập và trả về `standalone: true`. SDK tự viết nên làm tương tự.
 
