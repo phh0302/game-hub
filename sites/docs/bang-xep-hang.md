@@ -15,7 +15,7 @@ Mỗi lượt chơi chỉ nộp điểm **1 lần**. Ván bị từ chối là k
 Không gọi lúc tải trang. Nếu người chơi mở game rồi để đó vài phút, thời gian chơi sẽ bị tính sai và có thể vượt giới hạn.
 :::
 
-## Luật của bảng xếp hạng
+## Luật của bảng xếp hạng {#luat}
 
 Admin đặt các luật này cho từng game, theo cách chơi thật của game:
 
@@ -28,6 +28,8 @@ Admin đặt các luật này cho từng game, theo cách chơi thật của gam
 | Thứ tự | "Cao là tốt" hoặc "thấp là tốt" | Lật thẻ: thấp là tốt |
 
 Khi gửi game duyệt, hãy ghi vào **ghi chú phiên bản** điểm tối đa có thể đạt và tốc độ ghi điểm nhanh nhất của người chơi giỏi, để admin đặt luật vừa khít.
+
+**Xem luật của game bạn:** trang Developer → game → mục **Luật chấm điểm** (chỉ xem): thời gian chơi tối thiểu, lượt chơi dài tối đa, và từng bảng với khoảng điểm, tốc độ tối đa, thứ tự, thời gian mở. Luật đặt sai làm điểm thật bị từ chối (`SCORE_INVALID`, `SCORE_TOO_FAST`, `PLAY_TOO_SHORT`) – thấy không khớp thì báo admin.
 
 ## Game tính theo thời gian
 

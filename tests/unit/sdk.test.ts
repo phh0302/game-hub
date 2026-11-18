@@ -84,3 +84,10 @@ test("mở file trực tiếp: gameOver báo STANDALONE, saveState dùng localSt
   assert.equal((await G.saveState({ a: 1 })).saved, true);
   assert.deepEqual({ ...(await G.loadState()) }, { a: 1 });
 });
+
+test("/sdk/gamehub-sdk.js (mới nhất) trùng /sdk/v3/gamehub-sdk.js; v1, v2 giữ nguyên", () => {
+  const read = (p: string) => fs.readFileSync(new URL(`../../public/sdk/${p}`, import.meta.url), "utf8");
+  assert.equal(read("gamehub-sdk.js"), read("v3/gamehub-sdk.js"), "Sửa SDK thì chép sang public/sdk/v3/ (hoặc tạo v4 nếu phá tương thích)");
+  assert.match(read("v1/gamehub-sdk.js"), /Game Hub SDK v1/);
+  assert.match(read("v2/gamehub-sdk.js"), /Game Hub SDK v2/);
+});

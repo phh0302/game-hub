@@ -12,7 +12,7 @@ Try the sample game: [play.monlabs.fun/demo/index.html](https://play.monlabs.fun
 4. Include the SDK and call `init` with the key:
 
 ```html
-<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
 <script type="module">
   // Top-level await only works in type="module"; in a classic <script>, wrap it in an async function
   const hub = await GameHub.init({ projectKey: "pk_live_…" });

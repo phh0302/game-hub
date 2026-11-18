@@ -40,7 +40,7 @@ Your build is served from storage, **not** from the root of a domain. Every asse
 <img src="/img/player.png" />
 ```
 
-The SDK file is the exception: use the **full URL** to the hub, `https://play.monlabs.fun/sdk/gamehub-sdk.js`.
+The SDK file is the exception: use the **full URL** to the hub, `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`.
 
 ## Unity WebGL
 

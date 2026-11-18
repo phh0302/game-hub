@@ -32,7 +32,18 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: "Guide", link: "/en/bat-dau", activeMatch: "^/en/(bat-dau|chuan-bi-zip|moi-truong|studio)" },
-          { text: "SDK", link: "/en/sdk", activeMatch: "^/en/(sdk|bang-xep-hang|ngoai-hub|server-api|giao-thuc)" },
+          {
+            text: "Reference",
+            activeMatch: "^/en/(sdk|bang-xep-hang|ngoai-hub|server-api|giao-thuc|changelog)",
+            items: [
+              { text: "Game Hub SDK", link: "/en/sdk" },
+              { text: "Leaderboards & anti-cheat", link: "/en/bang-xep-hang" },
+              { text: "Platform API (outside the hub)", link: "/en/ngoai-hub" },
+              { text: "Server API & webhooks", link: "/en/server-api" },
+              { text: "postMessage protocol", link: "/en/giao-thuc" },
+              { text: "SDK changelog", link: "/en/changelog" },
+            ],
+          },
           { text: "Game Hub", link: HUB },
           { text: "monlabs.fun", link: "https://monlabs.fun" },
         ],
@@ -54,6 +65,7 @@ export default defineConfig({
               { text: "Outside Game Hub (Platform API)", link: "/en/ngoai-hub" },
               { text: "Server API & webhooks", link: "/en/server-api" },
               { text: "postMessage protocol", link: "/en/giao-thuc" },
+              { text: "SDK changelog", link: "/en/changelog" },
               { text: "Terms", link: "/en/dieu-khoan" },
             ],
           },
@@ -84,7 +96,18 @@ export default defineConfig({
     siteTitle: "Monlabs Docs",
     nav: [
       { text: "Hướng dẫn", link: "/bat-dau", activeMatch: "^/(bat-dau|chuan-bi-zip|moi-truong|studio)" },
-      { text: "SDK", link: "/sdk", activeMatch: "^/(sdk|bang-xep-hang|ngoai-hub|server-api|giao-thuc)" },
+      {
+        text: "Tham khảo",
+        activeMatch: "^/(sdk|bang-xep-hang|ngoai-hub|server-api|giao-thuc|changelog)",
+        items: [
+          { text: "Game Hub SDK", link: "/sdk" },
+          { text: "Bảng xếp hạng & chống gian lận", link: "/bang-xep-hang" },
+          { text: "Platform API (ngoài hub)", link: "/ngoai-hub" },
+          { text: "Server API & webhook", link: "/server-api" },
+          { text: "Giao thức postMessage", link: "/giao-thuc" },
+          { text: "Lịch sử SDK", link: "/changelog" },
+        ],
+      },
       { text: "Game Hub", link: HUB },
       { text: "monlabs.fun", link: "https://monlabs.fun" },
     ],
@@ -106,6 +129,7 @@ export default defineConfig({
           { text: "Dùng ngoài Game Hub (Platform API)", link: "/ngoai-hub" },
           { text: "Server API & webhook", link: "/server-api" },
           { text: "Giao thức postMessage", link: "/giao-thuc" },
+          { text: "Lịch sử SDK", link: "/changelog" },
           { text: "Điều khoản", link: "/dieu-khoan" },
         ],
       },

@@ -5,10 +5,20 @@ SDK là một file JavaScript nhỏ giúp game nói chuyện với hub: nhận n
 ## Nhúng SDK
 
 ```html
-<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
 ```
 
 Dùng **đường dẫn đầy đủ** như trên – bản build của bạn được phục vụ từ tên miền khác hub. SDK tạo biến toàn cục `window.GameHub`.
+
+### Phiên bản SDK {#phien-ban}
+
+| Đường dẫn | Dùng khi |
+| --- | --- |
+| `/sdk/v3/gamehub-sdk.js` | **Khuyên dùng.** Cố định bản chính v3: chỉ nhận sửa lỗi và tính năng thêm vào, không bao giờ có thay đổi phá vỡ |
+| `/sdk/v2/…`, `/sdk/v1/…` | Game cũ muốn giữ đúng hành vi đã thử (bản đóng băng, không cập nhật) |
+| `/sdk/gamehub-sdk.js` | Luôn là bản chính mới nhất – khi có v4 sẽ đổi theo. Chỉ nên dùng khi đang thử nghiệm |
+
+Thay đổi phá vỡ tương thích chỉ ra ở **bản chính mới** (`/sdk/v4/`), kèm hướng dẫn chuyển trong [Lịch sử SDK](/changelog). Game đang chạy với `/sdk/v3/` không bị ảnh hưởng. `GameHub.version` cho biết bản đang chạy.
 
 ## Các hàm
 
@@ -50,6 +60,8 @@ Không nhận được trả lời của hub sau 20 giây → `{ saved: false, c
   canSubmitScore: true    // false = người chơi chưa kết nối ví, điểm sẽ không được lưu
 }
 ```
+
+`init()` chờ hub tối đa **3 giây**; quá hạn thì trả `standalone: true`. Hub vẫn gửi `INIT` sau đó (máy chậm, mạng chậm) qua sự kiện `init` – vì vậy **luôn đăng ký `GameHub.on("init", …)`** với cùng hàm xử lý.
 
 Khi `canSubmitScore` là `false`, nên hiện một dòng nhắc nhỏ kiểu *"Kết nối ví trên Game Hub để lưu điểm"* – game vẫn chơi bình thường.
 
@@ -110,7 +122,7 @@ Nếu hub không trả lời (vd game được nhúng ở trang khác), hai hàm
 ## Ví dụ đầy đủ
 
 ```html
-<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
 <script>
   let score = 0;
   let playing = false;
@@ -129,6 +141,7 @@ Nếu hub không trả lời (vd game được nhúng ở trang khác), hai hàm
     result.className = r.saved ? "ok" : "error";
   });
   GameHub.on("pause", () => pauseGame());
+  GameHub.on("resume", () => resumeGame()); // luôn xử lý cặp pause / resume
 
   function onFirstInput() {
     if (!playing) {

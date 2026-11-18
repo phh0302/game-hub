@@ -484,6 +484,31 @@
       "featuresFree": "Free plan: no Server API or webhooks; games show \"Powered by Monlabs\".",
       "featuresPaid": "Server API and webhooks included.",
       "note": "Only games running outside the hub (Platform API) count; play on Game Hub is not counted. To change plans, contact an admin (no online payment yet)."
+    },
+    "rules": {
+      "title": "Scoring rules",
+      "hint": "Set by the admin when reviewing the game (read-only for you). Scores that break a rule are rejected – if a rule doesn't match real play (e.g. good players score above the maximum), say so in the version notes or tell the admin.",
+      "none": "No limit",
+      "minPlay": "Minimum play time",
+      "maxSession": "Maximum run length",
+      "submission": "Scores come from",
+      "submissionValue": {
+        "client": "Browser (SDK)",
+        "server": "Game server only"
+      },
+      "seconds": "{n} s",
+      "hours": "{n} h",
+      "board": "Board",
+      "order": "Order",
+      "range": "Score range",
+      "speed": "Max speed",
+      "time": "Time",
+      "desc": "Higher is better",
+      "asc": "Lower is better",
+      "duration": "time (ms)",
+      "perSecond": "{n} points/s",
+      "always": "Always open",
+      "mirror": "(receives scores from {key})"
     }
   },
   "preview": {

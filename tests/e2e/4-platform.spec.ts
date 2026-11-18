@@ -51,6 +51,10 @@ test("Platform API: game ngoài hub đăng nhập khách / ví, nộp điểm, b
   }
 
   await page.goto(`/developer/games/${gameId}`);
+  // Developer xem được luật chấm điểm (chỉ xem) – bảng mặc định, chưa giới hạn
+  const rules = page.getByTestId("game-rules");
+  await expect(rules).toContainText("Lượt chơi dài tối đa");
+  await expect(page.getByRole("cell", { name: "default", exact: false }).first()).toBeVisible();
   await page.getByLabel("Domain được gọi API (mỗi dòng 1 domain)").fill(GAME_ORIGIN);
   await page.getByRole("button", { name: "Lưu domain" }).click();
   await expect(page.getByText("Đã lưu domain.")).toBeVisible();

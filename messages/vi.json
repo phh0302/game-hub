@@ -484,6 +484,31 @@
       "featuresFree": "Gói Free: chưa có Server API và webhook; game hiện dòng \"Powered by Monlabs\".",
       "featuresPaid": "Có Server API và webhook.",
       "note": "Chỉ tính game chạy ngoài hub (Platform API); chơi trên Game Hub không bị tính. Đổi gói: liên hệ admin (chưa thu tiền online)."
+    },
+    "rules": {
+      "title": "Luật chấm điểm",
+      "hint": "Do admin đặt khi duyệt game (bạn chỉ xem được). Điểm vi phạm luật bị từ chối – thấy luật không khớp cách chơi thật (vd người chơi giỏi đạt điểm cao hơn mức tối đa) thì ghi vào ghi chú phiên bản hoặc báo admin.",
+      "none": "Không giới hạn",
+      "minPlay": "Thời gian chơi tối thiểu",
+      "maxSession": "Lượt chơi dài tối đa",
+      "submission": "Nhận điểm từ",
+      "submissionValue": {
+        "client": "Trình duyệt (SDK)",
+        "server": "Chỉ máy chủ của game"
+      },
+      "seconds": "{n} giây",
+      "hours": "{n} giờ",
+      "board": "Bảng",
+      "order": "Thứ tự",
+      "range": "Khoảng điểm",
+      "speed": "Tốc độ tối đa",
+      "time": "Thời gian",
+      "desc": "Cao là tốt",
+      "asc": "Thấp là tốt",
+      "duration": "thời gian (ms)",
+      "perSecond": "{n} điểm/giây",
+      "always": "Luôn mở",
+      "mirror": "(nhận điểm từ {key})"
     }
   },
   "preview": {

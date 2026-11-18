@@ -41,7 +41,7 @@ Hub nhúng game trong `iframe` có `sandbox="allow-scripts allow-pointer-lock"`:
 
 ```html
 <!-- Dùng ĐƯỜNG DẪN ĐẦY ĐỦ tới hub: bản build được phục vụ từ kho lưu trữ (domain khác hub) -->
-<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
 <!-- Hub chạy trên máy (localhost): <script src="http://localhost:3000/sdk/gamehub-sdk.js"></script> -->
 ```
 

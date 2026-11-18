@@ -40,7 +40,7 @@ Bản build được phục vụ từ kho lưu trữ, **không** nằm ở gốc
 <img src="/img/player.png" />
 ```
 
-Riêng file SDK dùng **đường dẫn đầy đủ** tới hub: `https://play.monlabs.fun/sdk/gamehub-sdk.js`.
+Riêng file SDK dùng **đường dẫn đầy đủ** tới hub: `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`.
 
 ## Unity WebGL
 

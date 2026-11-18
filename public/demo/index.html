@@ -63,7 +63,7 @@
       var params = new URLSearchParams(location.search);
       var apiBase = params.get("api") || location.origin;
       var sdk = document.createElement("script");
-      sdk.src = apiBase.replace(/\/+$/, "") + "/sdk/gamehub-sdk.js";
+      sdk.src = apiBase.replace(/\/+$/, "") + "/sdk/v3/gamehub-sdk.js";
       sdk.onload = start;
       document.head.appendChild(sdk);
 

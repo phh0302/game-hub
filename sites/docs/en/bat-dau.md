@@ -26,12 +26,17 @@ Have an HTML5 game (hand-written, Phaser, PixiJS, Construct, Godot, Unity WebGL�
 <html>
   <body>
     <canvas id="game"></canvas>
-    <script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+    <script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
     <script>
       let score = 0;
-      GameHub.init().then((hub) => {
+      function applyHub(hub) {
         document.documentElement.lang = hub.locale; // "vi" or "en"
-      });
+      }
+      GameHub.init().then(applyHub);
+      // Required: the hub re-sends INIT when the player connects a wallet / switches language, or when
+      // INIT arrives later than 3 seconds (init() already returned standalone: true) – without it the game keeps stale data
+      GameHub.on("init", applyHub);
+      GameHub.on("scoreResult", (r) => showMessage(r.message)); // score save result
 
       function onFirstInput() {
         GameHub.gameStart(); // the run starts – the hub starts timing
