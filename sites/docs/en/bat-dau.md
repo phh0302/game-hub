@@ -60,3 +60,4 @@ Game Hub ships 4 sample games built on this exact SDK; source code is in the [ph
 | [Snake](https://play.monlabs.fun/games/snake) | Canvas, tick-based loop | 10 points per food, handles `pause` |
 | [Neon Flap](https://play.monlabs.fun/games/neon-flap) | Canvas, fixed-step physics | pipes passed, handles `pause` / `resume` |
 | [Memory](https://play.monlabs.fun/games/memory) | DOM, card flipping | completion time, "lower is better" board |
+| [Star Jar](https://github.com/phh0302/game-hub/blob/main/public/uploads/games/save-demo/1.0.0/index.html) (source only) | single HTML file, full SDK v3 sample | `saveState` / `loadState`, `on("init")`, `pause` / `resume`, `scoreResult` |
