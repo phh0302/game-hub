@@ -44,6 +44,7 @@ type Game = {
   thumbnailKey: string | null;
   thumbnailUrl: string | null;
   versions: Version[];
+  currentVersionId: string | null;
   allowedOrigins: string[];
   scoreSubmission: "client" | "server";
   stats: { sessions: number; players: number; scores: number };
@@ -66,6 +67,7 @@ type Rules = {
     maxScorePerSecond: number | null;
     mirrorOf: string | null;
   }[];
+  rejected30d?: { reason: string; count: number }[];
 };
 
 export function DeveloperGame({ gameId }: { gameId: string }) {
@@ -123,7 +125,7 @@ export function DeveloperGame({ gameId }: { gameId: string }) {
       </div>
 
       <UploadVersion game={game} onDone={load} />
-      <VersionList game={game} />
+      <VersionList game={game} onChanged={load} />
       <GameRules rules={game.rules} />
       <GameInfoForm game={game} onSaved={setGame} />
       <ApiIntegration gameId={game.id} origins={game.allowedOrigins} scoreSubmission={game.scoreSubmission} />
@@ -229,10 +231,31 @@ function UploadVersion({ game, onDone }: { game: Game; onDone: () => void }) {
   );
 }
 
-function VersionList({ game }: { game: Game }) {
+function VersionList({ game, onChanged }: { game: Game; onChanged: () => void }) {
   const t = useTranslations("developer");
   const locale = useLocale();
+  const errorText = useErrorText();
   const date = new Intl.DateTimeFormat(locale === "vi" ? "vi-VN" : "en-US", { dateStyle: "short", timeStyle: "short" });
+  const [busy, setBusy] = useState<string | null>(null);
+  const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
+  // Developer tự đổi bản chạy (rollback) sau khi game đã phát hành; game bị khóa / lưu trữ thì không
+  const canSwitch = Boolean(game.currentVersionId) && game.status !== "SUSPENDED" && game.status !== "ARCHIVED";
+  const current = game.versions.find((v) => v.isCurrent);
+
+  async function activate(v: Version) {
+    if (!window.confirm(t("activateConfirm", { version: v.version, current: current?.version ?? "–" }))) return;
+    setBusy(v.id);
+    setMessage(null);
+    try {
+      await apiFetch(`/developer/games/${game.id}/versions/${v.id}/activate`, { method: "POST" });
+      setMessage({ ok: true, text: t("activated", { version: v.version }) });
+      onChanged();
+    } catch (err) {
+      setMessage({ ok: false, text: errorText(errorCode(err)) });
+    } finally {
+      setBusy(null);
+    }
+  }
 
   return (
     <Section title={t("versions")}>
@@ -260,13 +283,26 @@ function VersionList({ game }: { game: Game }) {
                   </p>
                 )}
               </div>
-              <a href={`/preview/${v.id}`} target="_blank" rel="noreferrer" className={ghostBtn}>
-                {t("preview")} ↗
-              </a>
+              <div className="flex flex-wrap gap-2">
+                {canSwitch && v.status === "APPROVED" && !v.isCurrent && (
+                  <button type="button" className={ghostBtn} disabled={busy !== null} onClick={() => void activate(v)}>
+                    {busy === v.id ? "…" : t("activate")}
+                  </button>
+                )}
+                <a href={`/preview/${v.id}`} target="_blank" rel="noreferrer" className={ghostBtn}>
+                  {t("preview")} ↗
+                </a>
+              </div>
             </li>
           ))}
         </ul>
       )}
+      {message && (
+        <p role="status" className={`mt-2 text-sm ${message.ok ? "text-neon-lime" : "text-neon-pink"}`}>
+          {message.text}
+        </p>
+      )}
+      {canSwitch && <p className="mt-2 text-xs text-muted">{t("activateHint")}</p>}
     </Section>
   );
 }
@@ -464,6 +500,23 @@ function GameRules({ rules }: { rules: Rules }) {
             ))}
           </tbody>
         </table>
+      </div>
+      <div className="mt-4" data-testid="rejected-30d">
+        <h3 className="text-sm font-semibold">{t("rejectedTitle")}</h3>
+        {!rules.rejected30d || rules.rejected30d.length === 0 ? (
+          <p className="text-sm text-muted">{t("rejectedNone")}</p>
+        ) : (
+          <>
+            <ul className="mt-1 flex flex-wrap gap-2 text-sm">
+              {rules.rejected30d.map((r) => (
+                <li key={r.reason} className="rounded-md border border-neon-pink/40 px-2 py-0.5">
+                  <code className="font-mono text-xs">{r.reason}</code> <span className="tabular-nums">× {num(r.count)}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-1 text-xs text-muted">{t("rejectedHint")}</p>
+          </>
+        )}
       </div>
     </Section>
   );

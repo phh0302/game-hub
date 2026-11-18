@@ -353,7 +353,10 @@
       "PLAN_REQUIRED": "This feature needs the Pro plan or higher – contact an admin to upgrade.",
       "QUOTA_PROJECTS": "Your plan's limit of games on the Platform API is reached – revoke every key of another game or upgrade.",
       "QUOTA_TOURNAMENTS": "Your plan's limit of open tournaments is reached.",
-      "IP_BLOCKED": "Too many requests – you are temporarily blocked for about 15 minutes."
+      "IP_BLOCKED": "Too many requests – you are temporarily blocked for about 15 minutes.",
+      "GAME_LOCKED": "The game is locked – contact the admin.",
+      "NOT_PUBLISHED_YET": "The game isn't published yet – the admin approves the first version.",
+      "VERSION_NOT_APPROVED": "Only approved versions can be made live."
     },
     "agreePrefix": "I have read and agree to the",
     "termsLink": "Developer Terms",
@@ -399,7 +402,7 @@
       "serverSnippetComment": "Runs on your server (Node.js) – the game gets sessionId from GameHub.gameStart()"
     },
     "log": {
-      "title": "Platform API log",
+      "title": "Activity log",
       "refresh": "Reload",
       "empty": "No events yet.",
       "more": "Load more",
@@ -417,8 +420,19 @@
         "platform_webhook": "Webhook changed",
         "platform_webhook_rotate": "Webhook secret rotated",
         "webhook_failed": "Webhook delivery failed",
-        "quota_warning": "Quota warning"
-      }
+        "quota_warning": "Quota warning",
+        "version_upload": "Version uploaded",
+        "version_review": "Admin review",
+        "version_activate": "Live version changed",
+        "game_status": "Game status changed",
+        "game_rules": "Admin changed rules"
+      },
+      "approved": "approved",
+      "rejected": "rejected",
+      "autoPublished": "live + published",
+      "autoLive": "made live",
+      "byDeveloper": "developer",
+      "byAdmin": "admin"
     },
     "usage": {
       "title": "Platform API usage",
@@ -508,8 +522,15 @@
       "duration": "time (ms)",
       "perSecond": "{n} points/s",
       "always": "Always open",
-      "mirror": "(receives scores from {key})"
-    }
+      "mirror": "(receives scores from {key})",
+      "rejectedTitle": "Rejected scores, last 30 days",
+      "rejectedNone": "No scores rejected.",
+      "rejectedHint": "Many PLAY_TOO_SHORT / SCORE_INVALID / SCORE_TOO_FAST from real players usually means the rules don't match real play – tell the admin with these numbers. Each case is in the Activity log."
+    },
+    "activate": "Make live",
+    "activateConfirm": "Make v{version} the live version instead of v{current}? Players get it on their next page load.",
+    "activated": "v{version} is now live.",
+    "activateHint": "You can switch the live version to any approved version yourself – to ship an update or roll back when a new version breaks."
   },
   "preview": {
     "title": "Playtest",

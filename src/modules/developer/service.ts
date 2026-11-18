@@ -279,8 +279,21 @@ export async function findStudioGame(studioId: string, gameId: string) {
 
 export async function getStudioGame(studioId: string, gameId: string, locale: string) {
   const game = await findStudioGame(studioId, gameId);
-  const stats = await gameStats([game.id]);
-  return toDevGameDto(game, locale, stats.get(game.id));
+  const [stats, rejected] = await Promise.all([gameStats([game.id]), rejectedByReason(game.id)]);
+  const dto = toDevGameDto(game, locale, stats.get(game.id));
+  return { ...dto, rules: { ...dto.rules, rejected30d: rejected } };
+}
+
+/** Điểm bị từ chối 30 ngày qua theo lý do (PLAY_TOO_SHORT, SCORE_INVALID…) – dấu hiệu luật đặt chưa khớp */
+async function rejectedByReason(gameId: string) {
+  const since = new Date(Date.now() - 30 * 24 * 3600 * 1000);
+  const rows = await prisma.$queryRaw<{ reason: string | null; count: number }[]>`
+    SELECT data->>'reason' AS reason, COUNT(*)::int AS count
+    FROM "Event"
+    WHERE type = 'score.rejected' AND "gameId" = ${gameId} AND "createdAt" >= ${since}
+    GROUP BY 1 ORDER BY 2 DESC
+  `;
+  return rows.map((r) => ({ reason: r.reason ?? "UNKNOWN", count: r.count }));
 }
 
 function assertOwnImage(thumbnailKey: string | null | undefined, userId: string) {
@@ -426,6 +439,34 @@ export async function submitVersion(studio: Studio, userId: string, gameId: stri
   return { id: version.id, version: version.version, status: version.status, files: files.length, sizeBytes: totalBytes };
 }
 
+/**
+ * Developer tự đổi bản đang chạy sang 1 phiên bản ĐÃ DUYỆT của game mình (rollback / đưa bản cập nhật lên).
+ * Chỉ khi game đã có bản chạy (đã phát hành ít nhất 1 lần) và không bị khóa / lưu trữ.
+ */
+export async function activateStudioVersion(studio: Studio, userId: string, gameId: string, versionId: string) {
+  const game = await findStudioGame(studio.id, gameId);
+  if (game.status === GameStatus.SUSPENDED || game.status === GameStatus.ARCHIVED) {
+    throw new ApiError(409, "GAME_LOCKED", "Game đang bị khóa – liên hệ admin");
+  }
+  if (!game.currentVersionId) {
+    throw new ApiError(409, "NOT_PUBLISHED_YET", "Game chưa phát hành – bản đầu tiên do admin duyệt");
+  }
+  const version = game.versions.find((v) => v.id === versionId);
+  if (!version) throw new ApiError(404, "VERSION_NOT_FOUND", "Không tìm thấy phiên bản");
+  if (version.status !== "APPROVED") throw new ApiError(409, "VERSION_NOT_APPROVED", "Chỉ đặt được phiên bản đã duyệt");
+  if (version.id === game.currentVersionId) return { versionId: version.id, changed: false };
+
+  const previous = game.versions.find((v) => v.id === game.currentVersionId);
+  await prisma.game.update({ where: { id: game.id }, data: { currentVersionId: version.id } });
+  await logEvent({
+    type: "version.activate",
+    userId,
+    gameId: game.id,
+    data: { versionId: version.id, version: version.version, previous: previous?.version ?? null, by: "developer" },
+  });
+  return { versionId: version.id, changed: true };
+}
+
 // ───────────── Chơi thử phiên bản ─────────────
 
 /** Admin hoặc thành viên studio sở hữu game được chơi thử mọi phiên bản (kể cả chưa duyệt) */
@@ -482,6 +523,12 @@ export async function revokeGameApiKey(studio: Studio, userId: string, gameId: s
 
 /** Loại sự kiện developer xem được trong nhật ký Platform API của game */
 const AUDIT_EVENT_TYPES = [
+  // Duyệt / đổi bản chạy / trạng thái / luật – để developer biết admin đã làm gì với game
+  "version.upload",
+  "version.review",
+  "version.activate",
+  "game.status",
+  "game.rules",
   "platform.key.create",
   "platform.key.revoke",
   "platform.origins",

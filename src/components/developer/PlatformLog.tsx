@@ -14,6 +14,11 @@ type LogEvent = {
 };
 
 const KNOWN = [
+  "version.upload",
+  "version.review",
+  "version.activate",
+  "game.status",
+  "game.rules",
   "platform.key.create",
   "platform.key.revoke",
   "platform.origins",
@@ -28,7 +33,7 @@ const KNOWN = [
   "quota.warning",
 ] as const;
 
-/** Nhật ký Platform API: key, domain, chế độ nộp điểm, điểm bị từ chối / xóa, cấm người chơi */
+/** Nhật ký hoạt động: phiên bản (upload / duyệt / đổi bản chạy), trạng thái & luật do admin đổi, key, domain, chế độ nộp điểm, điểm bị từ chối / xóa, cấm người chơi */
 export function PlatformLog({ gameId }: { gameId: string }) {
   const t = useTranslations("developer.log");
   const locale = useLocale();
@@ -72,6 +77,20 @@ export function PlatformLog({ gameId }: { gameId: string }) {
         return Array.isArray(d.origins) ? (d.origins as string[]).join(", ") || "—" : "";
       case "platform.scoring":
         return d.scoreSubmission === "server" ? t("scoringServer") : t("scoringClient");
+      case "version.upload":
+        return `v${String(d.version ?? "")}`;
+      case "version.review":
+        return `v${String(d.version ?? "")} · ${d.status === "APPROVED" ? t("approved") : t("rejected")}${
+          d.published ? ` · ${t("autoPublished")}` : d.activated ? ` · ${t("autoLive")}` : ""
+        }${d.reviewNote ? ` · ${String(d.reviewNote)}` : ""}`;
+      case "version.activate":
+        return `v${String(d.version ?? "")}${d.previous ? ` (← v${String(d.previous)})` : ""} · ${d.by === "developer" ? t("byDeveloper") : t("byAdmin")}`;
+      case "game.status":
+        return `${String(d.from ?? "")} → ${String(d.to ?? "")}`;
+      case "game.rules":
+        return Object.entries(d)
+          .map(([k, v]) => `${k}=${String(v)}`)
+          .join(" · ");
       case "score.rejected":
         return `${String(d.reason ?? "")} · ${String(d.value ?? "")} · ${String(d.durationSeconds ?? "")}s`;
       case "score.deleted":
