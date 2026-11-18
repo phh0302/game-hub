@@ -5,6 +5,7 @@ import { ApiError } from "@/lib/api";
 import { pickTranslation } from "@/lib/locale";
 import { gameInclude, toGameDto } from "./dto";
 import { readGameSettings } from "./settings";
+import { logEvent } from "@/modules/events/service";
 import type { GameCreateInput, GameUpdateInput, VersionCreateInput, VersionReviewInput } from "./schemas";
 
 /** Trạng thái người chơi nhìn thấy */
@@ -125,7 +126,7 @@ export async function adminCreateGame(input: GameCreateInput) {
   });
 }
 
-export async function adminUpdateGame(id: string, input: GameUpdateInput) {
+export async function adminUpdateGame(id: string, input: GameUpdateInput, actorId?: string) {
   const game = await prisma.game.findUnique({ where: { id } });
   if (!game || game.deletedAt) throw new ApiError(404, "GAME_NOT_FOUND", "Không tìm thấy game");
 
@@ -135,7 +136,7 @@ export async function adminUpdateGame(id: string, input: GameUpdateInput) {
     throw new ApiError(409, "NO_APPROVED_VERSION", "Cần có phiên bản đã duyệt trước khi phát hành");
   }
 
-  return prisma.$transaction(async (tx) => {
+  const updated = await prisma.$transaction(async (tx) => {
     if (input.translations) {
       for (const t of input.translations) {
         await tx.gameTranslation.upsert({
@@ -167,6 +168,13 @@ export async function adminUpdateGame(id: string, input: GameUpdateInput) {
       include: gameInclude,
     });
   });
+  if (input.status && input.status !== game.status) {
+    await logEvent({ type: "game.status", userId: actorId ?? null, gameId: id, data: { from: game.status, to: input.status } });
+  }
+  if (input.settings) {
+    await logEvent({ type: "game.rules", userId: actorId ?? null, gameId: id, data: { ...input.settings } as Prisma.InputJsonObject });
+  }
+  return updated;
 }
 
 /** Không xóa cứng: chuyển ARCHIVED + đánh dấu deletedAt, giữ lại lịch sử điểm */
@@ -210,7 +218,7 @@ export async function adminReviewVersion(
     throw new ApiError(409, "VERSION_IN_USE", "Không thể từ chối phiên bản đang chạy");
   }
 
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const updated = await tx.gameVersion.update({
       where: { id: versionId },
       data: { status: input.status, reviewNote: input.reviewNote, reviewedById: reviewerId, reviewedAt: new Date() },
@@ -218,30 +226,51 @@ export async function adminReviewVersion(
     // Duyệt bản đầu tiên của game đang chờ duyệt → tự đặt làm bản chạy + phát hành (khỏi quên 2 bước sau).
     // Game đã có bản chạy: admin vẫn tự bấm "Đặt làm bản chạy" khi muốn đổi bản.
     if (input.status === "APPROVED") {
-      const game = await tx.game.findUnique({ where: { id: gameId }, select: { currentVersionId: true, status: true } });
+      const game = await tx.game.findUnique({
+        where: { id: gameId },
+        select: { currentVersionId: true, status: true, publishedAt: true },
+      });
       if (game && !game.currentVersionId) {
+        const publish = game.status === GameStatus.PENDING_REVIEW;
         await tx.game.update({
           where: { id: gameId },
           data: {
             currentVersionId: versionId,
-            ...(game.status === GameStatus.PENDING_REVIEW ? { status: GameStatus.PUBLISHED } : {}),
+            ...(publish ? { status: GameStatus.PUBLISHED, publishedAt: game.publishedAt ?? new Date() } : {}),
           },
         });
-        return { ...updated, activated: true, published: game.status === GameStatus.PENDING_REVIEW };
+        return { ...updated, activated: true, published: publish };
       }
     }
     return { ...updated, activated: false, published: false };
   });
+  // Nhật ký cho developer (trang Developer → Nhật ký hoạt động)
+  await logEvent({
+    type: "version.review",
+    userId: reviewerId,
+    gameId,
+    data: {
+      versionId,
+      version: result.version,
+      status: input.status,
+      reviewNote: input.reviewNote ?? null,
+      activated: result.activated,
+      published: result.published,
+    },
+  });
+  return result;
 }
 
 /** Đổi phiên bản đang chạy (cũng dùng để quay lại bản cũ) – chỉ nhận bản đã duyệt */
-export async function adminActivateVersion(gameId: string, versionId: string) {
+export async function adminActivateVersion(gameId: string, versionId: string, actorId?: string) {
   const version = await prisma.gameVersion.findUnique({ where: { id: versionId } });
   if (!version || version.gameId !== gameId) throw new ApiError(404, "VERSION_NOT_FOUND", "Không tìm thấy phiên bản");
   if (version.status !== "APPROVED") {
     throw new ApiError(409, "VERSION_NOT_APPROVED", "Phiên bản chưa được duyệt");
   }
-  return prisma.game.update({ where: { id: gameId }, data: { currentVersionId: versionId }, include: gameInclude });
+  const game = await prisma.game.update({ where: { id: gameId }, data: { currentVersionId: versionId }, include: gameInclude });
+  await logEvent({ type: "version.activate", userId: actorId ?? null, gameId, data: { versionId, version: version.version, by: "admin" } });
+  return game;
 }
 
 async function currentVersionId(gameId: string) {

@@ -56,10 +56,12 @@ While reviewing, the admin also sets the game's [scoring rules](/en/bang-xep-han
 | --- | --- |
 | Does a new version need review again? | **Yes.** Every uploaded version starts as **Pending review** and is test-played by an admin first. |
 | Does the old version keep running meanwhile? | **Yes.** The game stays **Published** and players keep playing the live version (labelled *live* in the version list). A rejected update doesn't affect it either. |
-| Does the new version go live as soon as it's approved? | The admin clicks **Make live** to switch (usually right when approving). For updates this isn't automatic, so the admin can choose when to switch. |
-| Can I roll back? | **Yes.** All approved versions are kept; the admin makes an older one live again – no re-upload needed. You can't roll back yourself yet – message the admin with the version name. |
+| Does the new version go live as soon as it's approved? | Not automatically – so you choose when. An approved update has a **Make live** button in the version list: click it yourself (the admin can also do it for you). |
+| Can I roll back? | **Yes, yourself.** All approved versions are kept; click **Make live** on an older one to switch back instantly – no re-upload, no waiting for the admin. Players get it on their next page load. (Not possible while the game is **Suspended** / **Archived**.) |
 | Are scores and leaderboards affected? | No. Scores belong to the game, not to a version. If you change how scoring works, ask the admin to adjust the rules. |
 | Players mid-run when the version changes? | They keep playing the old version until they reload. Progress saved with [`saveState()`](/en/sdk#luu-tien-trinh) is kept – if you change the data format, make the new version read the old one. |
+
+Everything that happens to the game – uploads, admin approvals / rejections, live-version changes (who, from which version), status changes, rule changes, rejected scores – is recorded in the game page's **Activity log**.
 
 Tip: use increasing version names (`1.0.0` → `1.0.1` → `1.1.0`) and describe changes in the notes so the admin can review quickly.
 

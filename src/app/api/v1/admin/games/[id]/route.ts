@@ -8,10 +8,10 @@ type Ctx = { params: Promise<{ id: string }> };
 /** Admin: sửa game (bản dịch gửi lên sẽ ghi đè theo từng ngôn ngữ) */
 export async function PATCH(req: Request, { params }: Ctx) {
   return handle(async () => {
-    await requireAdmin();
+    const admin = await requireAdmin();
     const { id } = await params;
     const input = gameUpdateSchema.parse(await readJson(req));
-    return ok({ game: await adminUpdateGame(id, input) });
+    return ok({ game: await adminUpdateGame(id, input, admin.id) });
   });
 }
 
