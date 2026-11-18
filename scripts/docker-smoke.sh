@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Kiểm tra nhanh cả cụm Docker (app + nginx + redis + cron + postgres) sau khi `docker compose up`.
 # Dùng trong CI và trên VPS: bash scripts/docker-smoke.sh   (BASE_IP=ip-của-VPS nếu chạy từ máy khác)
-set -uo pipefail
+# Không dùng pipefail: grep -q thoát sớm làm curl nhận SIGPIPE với trang lớn → báo lỗi giả
+set -u
 IP="${BASE_IP:-127.0.0.1}"
 HUB="${HUB_HOST:-play.monlabs.fun}"; STATS="${STATS_HOST:-stats.monlabs.fun}"
 LANDING="${LANDING_HOST:-monlabs.fun}"; DOCS="${DOCS_HOST:-docs.monlabs.fun}"
