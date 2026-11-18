@@ -1,7 +1,7 @@
 // Ghi bất thường + gửi cảnh báo Telegram – chạy được ở middleware (edge) và route (Node)
 import { redisPipeline, redisRest } from "./redis";
 
-export type AnomalyType = "traffic_spike" | "error_rate" | "ip_dominant" | "rate_limited_spike" | "ip_blocked";
+export type AnomalyType = "traffic_spike" | "error_rate" | "ip_dominant" | "rate_limited_spike" | "ip_blocked" | "component_down";
 export type Anomaly = { id: string; type: AnomalyType; at: number; message: string; data?: Record<string, unknown>; alerted: boolean };
 
 const ANOMALIES_KEY = "traffic:anomalies";

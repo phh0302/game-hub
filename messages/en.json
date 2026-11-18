@@ -845,7 +845,8 @@
       "error_rate": "High errors",
       "ip_dominant": "Dominant IP",
       "rate_limited_spike": "Many blocked",
-      "ip_blocked": "IP blocked"
+      "ip_blocked": "IP blocked",
+      "component_down": "Component down"
     },
     "telegram": {
       "title": "Telegram alerts",

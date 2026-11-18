@@ -219,6 +219,33 @@
         white-space: nowrap;
       }
 
+      .comp .bars {
+        grid-column: 1 / -1;
+        display: flex;
+        gap: 2px;
+        height: 22px;
+        margin-top: 6px;
+      }
+
+      .comp .bars span {
+        flex: 1;
+        min-width: 2px;
+        border-radius: 2px;
+        background: var(--line);
+      }
+
+      .comp .bars span[data-level="ok"] { background: var(--lime); opacity: 0.85; }
+      .comp .bars span[data-level="minor"] { background: var(--amber); }
+      .comp .bars span[data-level="major"] { background: var(--pink); }
+
+      .comp .uptime {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: space-between;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
       .incident h3 {
         margin: 0 0 2px;
         font-size: 16px;
@@ -306,7 +333,7 @@
     <main class="wrap">
       <h1 data-i18n="title">Trạng thái hệ thống</h1>
       <p class="sub">
-        <span data-i18n="sub">Kiểm tra trực tiếp từ trình duyệt của bạn, tự cập nhật mỗi phút.</span>
+        <span data-i18n="sub">Kiểm tra trực tiếp từ trình duyệt của bạn, tự cập nhật mỗi phút. Thanh 90 ngày do máy chủ kiểm tra mỗi 10 phút.</span>
         <span id="checked"></span>
         <button type="button" class="refresh" id="refresh" data-i18n="refresh">Kiểm tra lại</button>
       </p>
@@ -342,7 +369,7 @@
         var T = {
           vi: {
             title: "Trạng thái hệ thống",
-            sub: "Kiểm tra trực tiếp từ trình duyệt của bạn, tự cập nhật mỗi phút.",
+            sub: "Kiểm tra trực tiếp từ trình duyệt của bạn, tự cập nhật mỗi phút. Thanh 90 ngày do máy chủ kiểm tra mỗi 10 phút.",
             refresh: "Kiểm tra lại",
             checking: "Đang kiểm tra…",
             components: "Thành phần",
@@ -356,6 +383,12 @@
             slow: "Chậm",
             down: "Gián đoạn",
             checkedAt: "Lần kiểm tra cuối: {t}.",
+            uptime: "{p}% hoạt động trong 90 ngày",
+            noHistory: "Chưa có lịch sử",
+            daysAgo: "90 ngày trước",
+            today: "Hôm nay",
+            dayTip: "{d}: {p}% kiểm tra thành công",
+            dayNone: "{d}: không có dữ liệu",
             noIncidents: "Không có sự cố nào được ghi nhận.",
             resolved: "đã xử lý",
             open: "đang xử lý",
@@ -370,7 +403,7 @@
           },
           en: {
             title: "System status",
-            sub: "Checked live from your browser, refreshed every minute.",
+            sub: "Checked live from your browser, refreshed every minute. The 90-day bars come from server checks every 10 minutes.",
             refresh: "Check again",
             checking: "Checking…",
             components: "Components",
@@ -384,6 +417,12 @@
             slow: "Slow",
             down: "Disrupted",
             checkedAt: "Last check: {t}.",
+            uptime: "{p}% uptime over 90 days",
+            noHistory: "No history yet",
+            daysAgo: "90 days ago",
+            today: "Today",
+            dayTip: "{d}: {p}% of checks passed",
+            dayNone: "{d}: no data",
             noIncidents: "No incidents recorded.",
             resolved: "resolved",
             open: "investigating",
@@ -401,6 +440,7 @@
         var lang = "vi";
         var results = {};
         var incidents = null;
+        var uptime = null; // { days: [{ date, hub: { ok, fail }, … }] } từ máy chủ (kiểm tra mỗi 10 phút)
         var checkedAt = null;
 
         function withTimeout(promise) {
@@ -498,6 +538,29 @@
             state.appendChild(el("span", "", r ? t[r.state] + (r.ms !== null && r.state !== "down" ? " · " + r.ms + " ms" : "") : "…"));
             li.appendChild(state);
             li.appendChild(el("span", "detail", t.c[key][1]));
+            if (uptime && uptime.days && uptime.days.length) {
+              var bars = el("div", "bars");
+              var ok = 0, total = 0;
+              uptime.days.forEach(function (d) {
+                var c = d[key];
+                var b = el("span");
+                if (c && c.ok + c.fail > 0) {
+                  var p = c.ok / (c.ok + c.fail);
+                  ok += c.ok; total += c.ok + c.fail;
+                  b.setAttribute("data-level", p >= 0.99 ? "ok" : p >= 0.9 ? "minor" : "major");
+                  b.title = t.dayTip.replace("{d}", fmtDate(d.date)).replace("{p}", (p * 100).toFixed(1));
+                } else {
+                  b.title = t.dayNone.replace("{d}", fmtDate(d.date));
+                }
+                bars.appendChild(b);
+              });
+              li.appendChild(bars);
+              var u = el("div", "uptime");
+              u.appendChild(el("span", "", t.daysAgo));
+              u.appendChild(el("span", "", total ? t.uptime.replace("{p}", ((ok / total) * 100).toFixed(2)) : t.noHistory));
+              u.appendChild(el("span", "", t.today));
+              li.appendChild(u);
+            }
             list.appendChild(li);
           });
 
@@ -564,6 +627,22 @@
             render();
           });
         }
+
+        function loadUptime() {
+          fetch(HUB + "/api/v1/status", { cache: "no-store" })
+            .then(function (r) {
+              return r.ok ? r.json() : null;
+            })
+            .then(function (j) {
+              if (j) uptime = j;
+              render();
+            })
+            .catch(function () {});
+        }
+        loadUptime();
+        setInterval(function () {
+          if (!document.hidden) loadUptime();
+        }, 300000);
 
         fetch("incidents.json", { cache: "no-store" })
           .then(function (r) {

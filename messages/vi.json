@@ -845,7 +845,8 @@
       "error_rate": "Lỗi cao",
       "ip_dominant": "1 IP chiếm nhiều",
       "rate_limited_spike": "Bị chặn nhiều",
-      "ip_blocked": "Chặn IP"
+      "ip_blocked": "Chặn IP",
+      "component_down": "Thành phần lỗi"
     },
     "telegram": {
       "title": "Cảnh báo Telegram",

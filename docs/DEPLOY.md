@@ -162,3 +162,30 @@ Cách làm cho domain khác:
 - **Xem lỗi**: Vercel → project → **Logs**
 - **Sao lưu database**: Neon có khôi phục theo thời điểm (point-in-time restore) – kiểm tra số ngày giữ lại của gói đang dùng
 - Mỗi lần push lên `main`: CI chạy kiểm tra **và** Vercel tự deploy. Nên mở trang *Actions* xem CI xanh trước khi chia sẻ link
+
+## Trạng thái hệ thống (monlabs.fun/status)
+
+- Trình duyệt người xem kiểm tra trực tiếp mỗi phút (hub, API, Platform API, docs, trang chủ).
+- Thanh **90 ngày**: workflow `.github/workflows/uptime.yml` gọi `POST /api/v1/status/check` mỗi 10 phút → hub tự kiểm tra từng thành phần, ghi số lần ok/lỗi theo ngày vào Redis (giữ 95 ngày), trang status đọc `GET /api/v1/status`.
+- Thành phần chuyển sang lỗi / hồi phục → tin Telegram (cần `TELEGRAM_BOT_TOKEN`, xem [TRAFFIC.md](TRAFFIC.md)) + hiện ở mục Bất thường của stats.monlabs.fun.
+- Hub sập hẳn (không tự kiểm tra được) → job Uptime đỏ → GitHub gửi email cho chủ repo. Bật ở GitHub → Settings → Notifications → Actions → "Send notifications for failed workflows only".
+- Sự cố có giải thích cho người dùng: thêm vào `sites/monlabs/status/incidents.json`.
+
+## Sao lưu & khôi phục database
+
+Neon có sẵn khôi phục theo thời điểm (Point-in-time restore – gói miễn phí giữ ~1 ngày). Thêm bản sao lưu riêng mỗi đêm:
+
+1. GitHub repo → **Settings → Secrets and variables → Actions → New repository secret**:
+   - `BACKUP_DATABASE_URL` = giá trị `DATABASE_URL_UNPOOLED` trên Vercel (kết nối trực tiếp, không qua pooler)
+   - `BACKUP_PASSPHRASE` = mật khẩu dài ngẫu nhiên (vd `openssl rand -base64 32`) – **cất ở nơi an toàn**, mất là không giải mã được
+2. Tab **Actions → Backup → Run workflow** để chạy thử. Sau đó tự chạy 02:30 mỗi đêm; mỗi bản giữ 30 ngày (artifact `db-backup-…`).
+
+Repo đang public nên artifact ai cũng tải được – vì vậy file luôn được **mã hóa AES256** trước khi lưu.
+
+Khôi phục (vào database trống, vd nhánh mới trên Neon hoặc Postgres trên VPS):
+
+```bash
+gpg --decrypt gamehub-2026-11-18.dump.gpg > gamehub.dump      # nhập BACKUP_PASSPHRASE
+docker run --rm -i -v "$PWD:/b" postgres:17-alpine \
+  pg_restore --no-owner --no-privileges --clean --if-exists -d "postgresql://…" /b/gamehub.dump
+```

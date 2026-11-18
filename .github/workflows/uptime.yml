@@ -1,0 +1,33 @@
+# Kiểm tra trạng thái mỗi 10 phút (GitHub có thể chạy trễ vài phút).
+# - Gọi hub chạy kiểm tra phía máy chủ → ghi uptime theo ngày cho monlabs.fun/status + báo Telegram khi đổi trạng thái
+# - Hub không trả lời → job đỏ → GitHub gửi email cho chủ repo (Settings → Notifications → Actions)
+name: Uptime
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Hub chạy kiểm tra
+        run: |
+          res=$(curl -sS --max-time 40 -X POST https://play.monlabs.fun/api/v1/status/check -w '\n%{http_code}')
+          code=$(echo "$res" | tail -1); body=$(echo "$res" | head -n -1)
+          echo "HTTP $code: $body"
+          test "$code" = 200
+          # Thành phần nào lỗi → job đỏ (kết quả "RECENT" = vừa có người kiểm tra trong 4 phút qua, bỏ qua)
+          if echo "$body" | grep -q '"ok":false'; then echo "::error::Có thành phần lỗi"; exit 1; fi
+
+      - name: Trang chính phản hồi
+        run: |
+          for url in https://play.monlabs.fun/api/v1/health https://monlabs.fun/ https://docs.monlabs.fun/; do
+            code=$(curl -sS -o /dev/null --max-time 20 -w '%{http_code}' "$url" || echo 000)
+            echo "$url → $code"
+            test "$code" = 200 || { echo "::error::$url trả $code"; exit 1; }
+          done
