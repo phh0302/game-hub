@@ -101,8 +101,10 @@ save.level = 2;
 const r = await GameHub.saveState(save);   // { saved: true, code: null }
 ```
 
-- `data` is any JSON value (object, array, number, string), up to **64KB** after `JSON.stringify`. Each save **overwrites** the previous one.
-- The hub stores it **in the player's browser**, one slot per game – not synced across devices / accounts yet. Clearing browser data removes it.
+- `data` is any JSON value (object, array, number, string), up to **64KB** (UTF-8) after `JSON.stringify`. Each save **overwrites** the previous one.
+- **Players with a connected wallet:** the hub stores it **per account** on the server (plus a copy in the browser) → it follows them to other devices and browsers. Progress made **before connecting a wallet** on that device is moved to the account on the first `loadState()` after connecting (if the account has no save for that game yet).
+- **Guests (no wallet):** stored in the browser, one slot per game; clearing browser data removes it.
+- If two devices save, the **last save wins** – merge in your game before calling `saveState()` if you need to.
 - The **Playtest** page uses a separate slot per build, so it never overwrites real progress.
 - Opened directly or [outside the hub](/en/ngoai-hub): stored in the page's `localStorage`.
 
@@ -111,6 +113,7 @@ const r = await GameHub.saveState(save);   // { saved: true, code: null }
 | `STATE_TOO_LARGE` | Data > 64KB |
 | `STATE_INVALID` | Can't be converted to JSON (e.g. circular references) |
 | `STORAGE_UNAVAILABLE` | The browser blocks storage (strict private mode, quota full) |
+| `SYNC_FAILED` | Comes with `saved: true`: saved in the browser but not yet on the server (offline) – the next save syncs |
 | `TIMEOUT` | The hub didn't reply within 5 seconds |
 
 ## Ads

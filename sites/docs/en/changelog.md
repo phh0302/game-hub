@@ -6,7 +6,7 @@ Each **major version** has its own URL (`/sdk/v1/`, `/sdk/v2/`, `/sdk/v3/`) – 
 
 `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`
 
-- **New:** `GameHub.saveState(data)` / `GameHub.loadState()` – save progress on the hub, where `localStorage` / IndexedDB always fail ([Saving progress](/en/sdk#luu-tien-trinh)). The protocol adds `STATE_SAVE`, `STATE_LOAD`, `STATE_RESULT`.
+- **New:** `GameHub.saveState(data)` / `GameHub.loadState()` – stored per account for players with a connected wallet (synced across devices, since 2026-11-18) – save progress on the hub, where `localStorage` / IndexedDB always fail ([Saving progress](/en/sdk#luu-tien-trinh)). The protocol adds `STATE_SAVE`, `STATE_LOAD`, `STATE_RESULT`.
 - **Changed:** in hub mode `gameOver()` returns a `Promise` of the result (previously `undefined`) – same as standalone mode; no reply from the hub within 20 seconds → `code: "TIMEOUT"`. Opened directly → `code: "STANDALONE"` and `scoreResult` is emitted.
 - **Changed:** `gameOver(score)` with a non-numeric `score` logs a console warning (still submits 0 as before).
 - Hub: network errors while submitting return `code: "NETWORK"` (previously `UNKNOWN`).

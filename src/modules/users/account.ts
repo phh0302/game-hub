@@ -54,6 +54,10 @@ export async function mergeGuestInto(guestId: string, targetId: string) {
     if (!guest?.isGuest) return; // chỉ gộp tài khoản khách
     await tx.gameSession.updateMany({ where: { userId: guestId }, data: { userId: targetId } });
     await tx.score.updateMany({ where: { userId: guestId }, data: { userId: targetId } });
+    // Tiến trình game: tài khoản đích đã có bản lưu của game nào thì giữ bản đó, còn lại chuyển từ khách sang
+    const targetSaves = await tx.gameSave.findMany({ where: { userId: targetId }, select: { gameId: true } });
+    await tx.gameSave.deleteMany({ where: { userId: guestId, gameId: { in: targetSaves.map((x) => x.gameId) } } });
+    await tx.gameSave.updateMany({ where: { userId: guestId }, data: { userId: targetId } });
     await tx.gameReport.updateMany({ where: { reporterId: guestId }, data: { reporterId: targetId } });
     for (const ban of await tx.projectBan.findMany({ where: { userId: guestId } })) {
       await tx.projectBan.upsert({

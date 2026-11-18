@@ -23,7 +23,7 @@ Khung cách ly **không có** `allow-same-origin`, nên trang game có origin l�
 - `localStorage`, `sessionStorage`, `indexedDB`, `document.cookie` **luôn ném lỗi** (`SecurityError`) – không phải "thỉnh thoảng", mà là mọi lần.
 - Unity: `PlayerPrefs` và tùy chọn **Data Caching** (cả hai dùng IndexedDB) không lưu được gì. Nên tắt *Data Caching* trong Player Settings.
 
-Dùng **`GameHub.saveState(data)` / `GameHub.loadState()`** của SDK thay cho localStorage: hub lưu hộ dữ liệu JSON (tối đa 64KB) trong trình duyệt của người chơi, mỗi game một ô riêng. Xem [Lưu tiến trình](/sdk#luu-tien-trinh).
+Dùng **`GameHub.saveState(data)` / `GameHub.loadState()`** của SDK thay cho localStorage: hub lưu hộ dữ liệu JSON (tối đa 64KB) – theo tài khoản nếu người chơi đã kết nối ví (đồng bộ giữa các máy), trong trình duyệt nếu là khách. Xem [Lưu tiến trình](/sdk#luu-tien-trinh).
 
 ```js
 const save = (await GameHub.loadState()) ?? { level: 1, coins: 0 };

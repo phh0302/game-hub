@@ -39,7 +39,7 @@
   var pendingScore = null; // resolve của gameOver() đang chờ SCORE_RESULT (chế độ hub)
   var SCORE_TIMEOUT_MS = 20000;
   var STATE_TIMEOUT_MS = 5000;
-  var STATE_MAX_CHARS = 64 * 1024;
+  var STATE_MAX_BYTES = 64 * 1024; // đo theo UTF-8 (tiếng Việt 1 ký tự có thể 2–3 byte)
 
   function send(type, payload) {
     if (!embedded) return;
@@ -175,8 +175,12 @@
       return { error: "STATE_INVALID" };
     }
     if (typeof text !== "string") return { error: "STATE_INVALID" };
-    if (text.length > STATE_MAX_CHARS) return { error: "STATE_TOO_LARGE" };
+    if (utf8Length(text) > STATE_MAX_BYTES) return { error: "STATE_TOO_LARGE" };
     return { text: text };
+  }
+  function utf8Length(text) {
+    if (typeof TextEncoder !== "undefined") return new TextEncoder().encode(text).length;
+    return unescape(encodeURIComponent(text)).length;
   }
   function parseState(text) {
     if (typeof text !== "string") return null;

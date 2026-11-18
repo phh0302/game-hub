@@ -6,7 +6,7 @@ Mỗi **bản chính** có đường dẫn riêng (`/sdk/v1/`, `/sdk/v2/`, `/sdk
 
 `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`
 
-- **Mới:** `GameHub.saveState(data)` / `GameHub.loadState()` – lưu tiến trình khi chạy trên hub, nơi `localStorage` / IndexedDB luôn lỗi ([Lưu tiến trình](/sdk#luu-tien-trinh)). Giao thức thêm tin `STATE_SAVE`, `STATE_LOAD`, `STATE_RESULT`.
+- **Mới:** `GameHub.saveState(data)` / `GameHub.loadState()` – người chơi đã kết nối ví được lưu theo tài khoản (đồng bộ giữa thiết bị, từ 18/11/2026) – lưu tiến trình khi chạy trên hub, nơi `localStorage` / IndexedDB luôn lỗi ([Lưu tiến trình](/sdk#luu-tien-trinh)). Giao thức thêm tin `STATE_SAVE`, `STATE_LOAD`, `STATE_RESULT`.
 - **Đổi:** chế độ hub, `gameOver()` trả về `Promise` kết quả (trước đây `undefined`) – giống chế độ độc lập; hub không trả lời sau 20 giây → `code: "TIMEOUT"`. Mở file trực tiếp → `code: "STANDALONE"` và phát `scoreResult`.
 - **Đổi:** `gameOver(score)` với `score` không phải số → in cảnh báo trong console (vẫn nộp 0 như cũ).
 - Hub: lỗi mạng khi nộp điểm trả `code: "NETWORK"` (trước đây `UNKNOWN`).

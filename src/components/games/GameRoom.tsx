@@ -9,7 +9,7 @@ import { ShareButton } from "./ShareButton";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { displayName } from "@/lib/format";
 import { formatScore, type ScoreFormat } from "@/lib/score-format";
-import { handleStateMessage } from "@/lib/game-state";
+import { handleStateMessage, readLocalState, writeLocalState } from "@/lib/game-state";
 
 /** Giao thức Game Hub SDK v1 – xem docs/GAME_SDK.md */
 const PROTOCOL = "gamehub";
@@ -197,8 +197,65 @@ function GamePlayer({
   );
 
   // Luôn dùng handler mới nhất mà không phải gỡ/gắn lại listener
-  const handlers = useRef({ sendInit, startSession, finishSession, post, slug });
-  handlers.current = { sendInit, startSession, finishSession, post, slug };
+  /**
+   * GameHub.saveState / loadState. Khách: lưu trong trình duyệt. Đã đăng nhập: lưu theo tài khoản trên máy chủ
+   * (đồng bộ giữa thiết bị) + bản sao trong trình duyệt; tiến trình chơi lúc chưa đăng nhập được chuyển sang tài khoản.
+   */
+  const handleState = useCallback(
+    async (type: "STATE_SAVE" | "STATE_LOAD", payload: Record<string, unknown>) => {
+      const requestId = payload.requestId;
+      const userId = user?.id;
+      const scope = userId ? `${slug}:u:${userId}` : slug;
+      const local = handleStateMessage(type, payload, scope);
+      if (!local) return;
+      if (!userId) return post("STATE_RESULT", local);
+
+      if (type === "STATE_SAVE") {
+        if (!local.saved && local.code !== "STORAGE_UNAVAILABLE") return post("STATE_RESULT", local); // quá lớn / sai kiểu
+        try {
+          await apiFetch(`/games/${slug}/state`, {
+            method: "PUT",
+            body: String(payload.data),
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+          });
+          return post("STATE_RESULT", { requestId, saved: true, code: null });
+        } catch (err) {
+          // Máy chủ lỗi: vẫn còn bản trong trình duyệt nếu lưu được
+          return post("STATE_RESULT", local.saved ? { requestId, saved: true, code: "SYNC_FAILED" } : { requestId, saved: false, code: errorCode(err) });
+        }
+      }
+
+      try {
+        const remote = await apiFetch<{ data: string | null }>(`/games/${slug}/state`);
+        if (remote.data !== null) {
+          writeLocalState(scope, remote.data);
+          return post("STATE_RESULT", { requestId, data: remote.data });
+        }
+        // Chưa có trên máy chủ: lấy bản của tài khoản trên máy này, hoặc tiến trình lúc chơi khách → đẩy lên tài khoản
+        const carried = (local.data as string | null) ?? readLocalState(slug);
+        if (carried !== null) {
+          await apiFetch(`/games/${slug}/state`, {
+            method: "PUT",
+            body: carried,
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+          }).then(
+            () => {
+              writeLocalState(scope, carried);
+              if (local.data === null) writeLocalState(slug, null); // tiến trình khách đã thuộc tài khoản này
+            },
+            () => undefined,
+          );
+        }
+        return post("STATE_RESULT", { requestId, data: carried });
+      } catch {
+        return post("STATE_RESULT", local); // mất mạng → dùng bản trong trình duyệt
+      }
+    },
+    [user?.id, slug, post],
+  );
+
+  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState });
+  handlers.current = { sendInit, startSession, finishSession, post, handleState };
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -221,11 +278,9 @@ function GamePlayer({
           void h.finishSession(payload);
           break;
         case "STATE_SAVE":
-        case "STATE_LOAD": {
-          const result = handleStateMessage(msg.type, payload, handlers.current.slug);
-          if (result) h.post("STATE_RESULT", result);
+        case "STATE_LOAD":
+          void h.handleState(msg.type, payload);
           break;
-        }
         case "AD_REQUEST":
           // Chưa bật quảng cáo (Phase 11)
           h.post("AD_RESULT", { requestId: payload.requestId, shown: false, rewarded: false, reason: "NO_ADS" });
