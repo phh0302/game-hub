@@ -47,6 +47,25 @@ type Game = {
   allowedOrigins: string[];
   scoreSubmission: "client" | "server";
   stats: { sessions: number; players: number; scores: number };
+  rules: Rules;
+};
+
+type Rules = {
+  minPlaySeconds: number;
+  maxSessionHours: number;
+  scoreSubmission: "client" | "server";
+  leaderboards: {
+    key: string;
+    name: string | null;
+    order: "ASC" | "DESC";
+    startsAt: string | null;
+    endsAt: string | null;
+    format: "number" | "duration_ms";
+    minScore: number | null;
+    maxScore: number | null;
+    maxScorePerSecond: number | null;
+    mirrorOf: string | null;
+  }[];
 };
 
 export function DeveloperGame({ gameId }: { gameId: string }) {
@@ -105,6 +124,7 @@ export function DeveloperGame({ gameId }: { gameId: string }) {
 
       <UploadVersion game={game} onDone={load} />
       <VersionList game={game} />
+      <GameRules rules={game.rules} />
       <GameInfoForm game={game} onSaved={setGame} />
       <ApiIntegration gameId={game.id} origins={game.allowedOrigins} scoreSubmission={game.scoreSubmission} />
       <UsageStats gameId={game.id} />
@@ -378,6 +398,73 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
           {state.error && <span role="alert" className="text-sm text-neon-pink">{state.error}</span>}
         </div>
       </form>
+    </Section>
+  );
+}
+
+/** Luật chấm điểm do admin đặt – chỉ xem. Luật sai khiến điểm thật bị từ chối → developer cần thấy để báo admin. */
+function GameRules({ rules }: { rules: Rules }) {
+  const t = useTranslations("developer.rules");
+  const locale = useLocale();
+  const num = (v: number) => v.toLocaleString(locale === "vi" ? "vi-VN" : "en-US");
+  const date = (v: string) => new Date(v).toLocaleDateString(locale === "vi" ? "vi-VN" : "en-US");
+  const none = t("none");
+  return (
+    <Section title={t("title")}>
+      <p className="mb-3 text-sm text-muted">{t("hint")}</p>
+      <dl className="mb-4 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-3" data-testid="game-rules">
+        <div>
+          <dt className="text-muted">{t("minPlay")}</dt>
+          <dd className="font-semibold tabular-nums">{rules.minPlaySeconds ? t("seconds", { n: rules.minPlaySeconds }) : none}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">{t("maxSession")}</dt>
+          <dd className="font-semibold tabular-nums">{t("hours", { n: rules.maxSessionHours })}</dd>
+        </div>
+        <div>
+          <dt className="text-muted">{t("submission")}</dt>
+          <dd className="font-semibold">{t(`submissionValue.${rules.scoreSubmission}`)}</dd>
+        </div>
+      </dl>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead className="text-left text-xs uppercase tracking-wider text-muted">
+            <tr>
+              <th className="py-1 pr-4">{t("board")}</th>
+              <th className="py-1 pr-4">{t("order")}</th>
+              <th className="py-1 pr-4">{t("range")}</th>
+              <th className="py-1 pr-4">{t("speed")}</th>
+              <th className="py-1">{t("time")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rules.leaderboards.map((b) => (
+              <tr key={b.key} className="border-t border-line/60">
+                <td className="py-2 pr-4">
+                  <code className="font-mono text-xs">{b.key}</code>
+                  {b.name && <span className="ml-2 text-muted">{b.name}</span>}
+                  {b.mirrorOf && <span className="ml-2 text-xs text-muted">{t("mirror", { key: b.mirrorOf })}</span>}
+                </td>
+                <td className="py-2 pr-4">
+                  {t(b.order === "DESC" ? "desc" : "asc")}
+                  {b.format === "duration_ms" && <span className="text-muted"> · {t("duration")}</span>}
+                </td>
+                <td className="py-2 pr-4 tabular-nums">
+                  {b.minScore === null && b.maxScore === null
+                    ? none
+                    : `${num(b.minScore ?? 0)} – ${b.maxScore === null ? "∞" : num(b.maxScore)}`}
+                </td>
+                <td className="py-2 pr-4 tabular-nums">
+                  {b.maxScorePerSecond === null ? none : t("perSecond", { n: num(b.maxScorePerSecond) })}
+                </td>
+                <td className="py-2 tabular-nums">
+                  {b.startsAt || b.endsAt ? `${b.startsAt ? date(b.startsAt) : "…"} → ${b.endsAt ? date(b.endsAt) : "…"}` : t("always")}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </Section>
   );
 }

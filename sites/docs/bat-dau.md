@@ -26,12 +26,17 @@ Bạn có game HTML5 (viết tay, Phaser, PixiJS, Construct, Godot, Unity WebGL�
 <html>
   <body>
     <canvas id="game"></canvas>
-    <script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+    <script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
     <script>
       let score = 0;
-      GameHub.init().then((hub) => {
+      function applyHub(hub) {
         document.documentElement.lang = hub.locale; // "vi" hoặc "en"
-      });
+      }
+      GameHub.init().then(applyHub);
+      // Bắt buộc: hub gửi lại INIT khi người chơi kết nối ví / đổi ngôn ngữ, hoặc khi INIT
+      // đến chậm hơn 3 giây (init() đã trả standalone: true) – không có dòng này game kẹt ở dữ liệu cũ
+      GameHub.on("init", applyHub);
+      GameHub.on("scoreResult", (r) => showMessage(r.message)); // kết quả lưu điểm
 
       function onFirstInput() {
         GameHub.gameStart(); // ván bắt đầu – hub bắt đầu tính giờ

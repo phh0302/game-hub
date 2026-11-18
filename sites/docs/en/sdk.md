@@ -5,10 +5,20 @@ The SDK is a small JavaScript file that lets your game talk to the hub: receive 
 ## Include the SDK
 
 ```html
-<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
 ```
 
 Use the **full URL** as above – your build is served from a different domain than the hub. The SDK creates a global `window.GameHub`.
+
+### SDK versions {#phien-ban}
+
+| URL | Use it when |
+| --- | --- |
+| `/sdk/v3/gamehub-sdk.js` | **Recommended.** Pinned to major v3: only bug fixes and additive features, never breaking changes |
+| `/sdk/v2/…`, `/sdk/v1/…` | Older games that want to keep exactly the behaviour they were tested with (frozen, no updates) |
+| `/sdk/gamehub-sdk.js` | Always the latest major – it will move to v4 when that ships. Only for experiments |
+
+Breaking changes only ship in a **new major** (`/sdk/v4/`), with a migration guide in the [SDK changelog](/en/changelog). Games on `/sdk/v3/` are unaffected. `GameHub.version` tells you which version is running.
 
 ## Functions
 
@@ -50,6 +60,8 @@ No reply from the hub within 20 seconds → `{ saved: false, code: "TIMEOUT" }`.
   canSubmitScore: true    // false = the player hasn't connected a wallet, scores won't be saved
 }
 ```
+
+`init()` waits up to **3 seconds** for the hub; after that it returns `standalone: true`. The hub can still send `INIT` later (slow device, slow network) through the `init` event – so **always register `GameHub.on("init", …)`** with the same handler.
 
 When `canSubmitScore` is `false`, show a small hint such as *"Connect your wallet on Game Hub to save your score"* – the game still plays normally.
 
@@ -110,7 +122,7 @@ If the hub doesn't reply (e.g. the game is embedded in another page), both ad fu
 ## Full example
 
 ```html
-<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
 <script>
   let score = 0;
   let playing = false;
@@ -129,6 +141,7 @@ If the hub doesn't reply (e.g. the game is embedded in another page), both ad fu
     result.className = r.saved ? "ok" : "error";
   });
   GameHub.on("pause", () => pauseGame());
+  GameHub.on("resume", () => resumeGame()); // always handle pause / resume as a pair
 
   function onFirstInput() {
     if (!playing) {

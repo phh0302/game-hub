@@ -15,7 +15,7 @@ import { displayName } from "@/lib/format";
 import { primaryWallet } from "@/modules/users/dto";
 import { generateApiKey } from "@/modules/platform/keys";
 import { normalizeOrigin } from "@/modules/platform/origins";
-import { readGameSettings } from "@/modules/games/settings";
+import { readGameSettings, readLeaderboardSettings } from "@/modules/games/settings";
 import { assertCanAddProject, assertFeature, planOf } from "@/modules/platform/quota";
 import { DEVELOPER_TERMS_VERSION, isTermsUpToDate } from "./terms";
 import type {
@@ -181,6 +181,7 @@ const devGameInclude = {
   translations: true,
   categories: { include: { category: true } },
   versions: { orderBy: { createdAt: "desc" } },
+  leaderboards: { where: { deletedAt: null }, include: { translations: true }, orderBy: { createdAt: "asc" } },
 } satisfies Prisma.GameInclude;
 
 type DevGame = Prisma.GameGetPayload<{ include: typeof devGameInclude }>;
@@ -210,6 +211,32 @@ function toDevGameDto(game: DevGame, locale: string, stats?: { sessions: number;
       isCurrent: v.id === game.currentVersionId,
     })),
     stats: stats ?? { sessions: 0, players: 0, scores: 0 },
+    rules: devRules(game, locale),
+  };
+}
+
+/** Luật chấm điểm admin đã đặt – developer chỉ xem (đặt sai thì điểm thật bị từ chối → cần biết để báo admin) */
+function devRules(game: DevGame, locale: string) {
+  const g = readGameSettings(game.settings);
+  return {
+    minPlaySeconds: g.minPlaySeconds,
+    maxSessionHours: g.maxSessionHours,
+    scoreSubmission: g.scoreSubmission,
+    leaderboards: game.leaderboards.map((b) => {
+      const s = readLeaderboardSettings(b.settings);
+      return {
+        key: b.key,
+        name: pickTranslation(b.translations, locale)?.name ?? null,
+        order: b.order,
+        startsAt: b.startsAt,
+        endsAt: b.endsAt,
+        format: s.format ?? "number",
+        minScore: s.minScore ?? null,
+        maxScore: s.maxScore ?? null,
+        maxScorePerSecond: s.maxScorePerSecond ?? null,
+        mirrorOf: s.mirrorOf ?? null,
+      };
+    }),
   };
 }
 

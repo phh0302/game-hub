@@ -45,8 +45,23 @@ Mỗi lần sửa game là một phiên bản mới; phiên bản cũ được g
 
 Admin chơi thử từng phiên bản rồi:
 
-- **Duyệt** → admin đặt phiên bản đó làm bản đang chạy và phát hành game; game xuất hiện ở trang chủ với bảng xếp hạng riêng
+- **Duyệt** bản đầu tiên → phiên bản đó tự thành **bản đang chạy** và game **tự phát hành**; game xuất hiện ở trang chủ với bảng xếp hạng riêng
 - **Từ chối** → lý do hiện ngay dưới phiên bản trong trang Developer; sửa rồi upload phiên bản mới
+
+Khi duyệt, admin cũng đặt [luật chấm điểm](/bang-xep-hang#luat) cho game. Bạn xem luật hiện tại ở trang game → mục **Luật chấm điểm** (chỉ xem). Luật không khớp cách chơi thật (vd người chơi giỏi vượt điểm tối đa) sẽ làm **điểm thật bị từ chối** – hãy báo admin hoặc ghi vào ghi chú phiên bản.
+
+## Cập nhật game đã phát hành {#cap-nhat}
+
+| Câu hỏi | Trả lời |
+| --- | --- |
+| Bản mới có phải duyệt lại không? | **Có.** Mỗi phiên bản upload lên đều ở trạng thái **Chờ duyệt** và được admin chơi thử trước. |
+| Trong lúc chờ duyệt, bản cũ có chạy không? | **Có.** Game vẫn **Đã phát hành**, người chơi vẫn chơi bản đang chạy (nhãn *đang chạy* trong danh sách phiên bản). Bản mới bị từ chối cũng không ảnh hưởng bản cũ. |
+| Duyệt xong thì bản mới chạy ngay chứ? | Admin bấm **Đặt làm bản chạy** để chuyển (thường làm ngay khi duyệt). Với bản cập nhật, việc này không tự động để admin chọn được thời điểm chuyển. |
+| Rollback được không? | **Được.** Mọi phiên bản đã duyệt đều được giữ lại; admin đặt lại một bản cũ làm bản chạy là xong, không cần upload lại. Bạn chưa tự rollback được – nhắn admin kèm tên phiên bản. |
+| Điểm và bảng xếp hạng có bị ảnh hưởng? | Không. Điểm gắn với game, không gắn với phiên bản. Đổi cách tính điểm thì báo admin để chỉnh luật cho khớp. |
+| Người chơi đang chơi dở lúc đổi bản? | Ván đang chơi tiếp tục ở bản cũ đến khi tải lại trang. Tiến trình lưu bằng [`saveState()`](/sdk#luu-tien-trinh) được giữ – nếu đổi cấu trúc dữ liệu, hãy để bản mới đọc được dữ liệu của bản cũ. |
+
+Mẹo: đặt tên phiên bản tăng dần (`1.0.0` → `1.0.1` → `1.1.0`) và ghi rõ thay đổi trong ghi chú để admin duyệt nhanh.
 
 Trạng thái game:
 

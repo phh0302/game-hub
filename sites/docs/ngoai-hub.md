@@ -12,7 +12,7 @@ Xem thử game mẫu: [play.monlabs.fun/demo/index.html](https://play.monlabs.fu
 4. Nhúng SDK và gọi `init` kèm key:
 
 ```html
-<script src="https://play.monlabs.fun/sdk/gamehub-sdk.js"></script>
+<script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
 <script type="module">
   // type="module" mới dùng được await ở ngoài cùng; với <script> thường hãy bọc trong async function
   const hub = await GameHub.init({ projectKey: "pk_live_…" });

@@ -104,7 +104,7 @@ Cần khi mở cho developer đăng game. Vercel không cho ghi file, nên bản
 7. **Redeploy**. Kiểm tra: tạo studio → tạo game → upload `.zip` → **Chơi thử** chạy được
 
 > Bản build chạy ở domain R2 (khác hub) nên tự cô lập với cookie đăng nhập của hub – đây là lý do không phục vụ game của developer từ chính domain hub.
-> Nhắc developer nhúng SDK bằng đường dẫn đầy đủ `https://<domain-hub>/sdk/gamehub-sdk.js`.
+> Nhắc developer nhúng SDK bằng đường dẫn đầy đủ `https://<domain-hub>/sdk/v3/gamehub-sdk.js` (đường dẫn có phiên bản).
 
 ## 3c. Chống spam + theo dõi lỗi (Upstash Redis, Sentry) – miễn phí
 

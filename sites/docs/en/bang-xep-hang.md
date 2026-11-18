@@ -15,7 +15,7 @@ Each session can submit a score **once**. A rejected run is over – it can't be
 Not on page load. If a player opens the game and leaves it for a few minutes, the play time will be wrong and may exceed the limits.
 :::
 
-## Leaderboard rules
+## Leaderboard rules {#luat}
 
 The admin sets these rules per game, based on how the game is actually played:
 
@@ -28,6 +28,8 @@ The admin sets these rules per game, based on how the game is actually played:
 | Order | "Higher is better" or "lower is better" | Memory: lower is better |
 
 When submitting a game for review, put in the **release notes** the maximum achievable score and the fastest scoring rate of a skilled player, so the admin can set tight rules.
+
+**See your game's rules:** Developer page → your game → **Scoring rules** (read-only): minimum play time, maximum run length, and per board the score range, max scoring speed, order and open period. Wrong rules make real scores get rejected (`SCORE_INVALID`, `SCORE_TOO_FAST`, `PLAY_TOO_SHORT`) – if they don't match, tell the admin.
 
 ## Time-based games
 
