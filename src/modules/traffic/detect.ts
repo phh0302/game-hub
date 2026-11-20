@@ -42,6 +42,9 @@ export async function maybeDetect(now = Date.now()) {
     ];
     if (lock !== "OK") return;
     await detect(now);
+    // Cùng nhịp tối đa 1 lần / phút: chạy kiểm tra trạng thái nếu lịch GitHub bỏ lượt
+    const { checkIfStale } = await import("@/modules/status/uptime");
+    await checkIfStale(now);
   } catch (err) {
     console.error("[traffic] Phát hiện bất thường lỗi", err);
   }

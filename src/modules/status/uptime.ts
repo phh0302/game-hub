@@ -13,6 +13,8 @@ export type Component = (typeof COMPONENTS)[number];
 type Result = { ok: boolean; ms: number | null; error?: string };
 
 const DAY_TTL = 95 * 86400;
+/** Lịch GitHub Actions hay chạy trễ / bỏ lượt → hub tự kiểm tra khi lần gần nhất cũ hơn mức này */
+export const STALE_MS = 10 * 60_000;
 const LOCK_SEC = 240;
 const TIMEOUT_MS = 8000;
 
@@ -122,4 +124,22 @@ export async function getUptime(days = 90, now = Date.now()) {
     return { date, ...comps };
   });
   return { last, days: out };
+}
+
+/**
+ * Dự phòng cho lịch GitHub: lần kiểm tra gần nhất đã cũ hơn 10 phút → chạy luôn (khóa 4 phút trong checkAndRecord
+ * chống chạy trùng). Gọi từ request thật của người chơi (tối đa 1 lần / phút) và khi có người mở trang status.
+ */
+export async function checkIfStale(now = Date.now()) {
+  const redis = redisRest();
+  if (!redis) return null;
+  try {
+    const [raw] = await redisPipeline(redis, [["GET", "status:last"]]);
+    const last = parseLast(raw);
+    if (last && now - last.at < STALE_MS) return null;
+    return await checkAndRecord(now);
+  } catch (err) {
+    console.error("[status] Kiểm tra dự phòng lỗi", err);
+    return null;
+  }
 }
