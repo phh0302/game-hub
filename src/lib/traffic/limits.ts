@@ -45,6 +45,17 @@ export function allowsLargeBody(pathname: string): boolean {
   return LARGE_BODY_PATHS.some((p) => pathname.startsWith(p));
 }
 
+/** Lưu tiến trình (saveState): dữ liệu ≤ 64KB UTF-8 nhưng gói trong JSON có thể dài hơn (escape) → nới cho riêng route này */
+const STATE_BODY_BYTES = 256 * 1024;
+const STATE_PATH = /^\/api\/(p1\/state|v1\/games\/[^/]+\/state)$/;
+
+/** Body tối đa middleware cho phép với 1 đường dẫn */
+export function maxBodyBytes(pathname: string): number {
+  if (allowsLargeBody(pathname)) return Number.POSITIVE_INFINITY;
+  if (STATE_PATH.test(pathname)) return STATE_BODY_BYTES;
+  return MAX_BODY_BYTES;
+}
+
 /** Số giây tới hết cửa sổ cố định hiện tại (cho header Retry-After) */
 export function secondsToWindowEnd(windowSec: number, nowMs = Date.now()): number {
   const windowMs = windowSec * 1000;

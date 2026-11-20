@@ -2,10 +2,9 @@ import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server
 import { SESSION_COOKIE, verifySession } from "@/modules/auth/jwt";
 import { isCrossSiteWrite } from "@/modules/auth/csrf";
 import {
-  allowsLargeBody,
   BLOCK_SEC,
   classifyRequest,
-  MAX_BODY_BYTES,
+  maxBodyBytes,
   parseExemptIps,
   type TrafficGroup,
 } from "@/lib/traffic/limits";
@@ -143,7 +142,7 @@ async function trafficGuard(
     group === "platform" && origin && origin !== "null" ? { "Access-Control-Allow-Origin": origin, Vary: "Origin" } : {};
 
   const declared = Number(req.headers.get("content-length") ?? 0);
-  if (declared > MAX_BODY_BYTES && !allowsLargeBody(pathname)) {
+  if (declared > maxBodyBytes(pathname)) {
     event.waitUntil(recordBlocked({ code: "PAYLOAD_TOO_LARGE" }));
     return NextResponse.json(
       { error: { code: "PAYLOAD_TOO_LARGE", message: "Dữ liệu gửi lên quá lớn" } },

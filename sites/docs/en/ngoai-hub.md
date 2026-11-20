@@ -50,7 +50,7 @@ It's fine to put it in your game's code: the key **only works on the domains you
 | `GameHub.gameOver(score, { leaderboard? })` | `Promise<{ saved, code, message, … }>` – also emits `scoreResult` |
 | `GameHub.leaderboard({ board?, period?, limit? })` | Top players + your rank (`me`). Defaults: `board: "default"`, `period: "all"` (or `"week"`, `"day"`), `limit: 50` |
 | `GameHub.leaderboards()` | Main board + visible [events](/en/bang-xep-hang#giai-dau) |
-| `GameHub.saveState(data)` / `GameHub.loadState()` | Save / load progress (JSON ≤ 64KB) in your domain's `localStorage` – see [Saving progress](/en/sdk#luu-tien-trinh) |
+| `GameHub.saveState(data)` / `GameHub.loadState()` | Save / load progress (JSON ≤ 64KB): after `login()` → per account, shared with the hub version; not logged in → your domain's `localStorage` – see [Saving progress](/en/sdk#luu-tien-trinh) |
 | `GameHub.on("init", cb)` | Called when the player signs in / out |
 
 Without `projectKey` the SDK runs in **hub mode** as before (game inside Game Hub). One build works in both places if you mind the differences:
@@ -62,7 +62,7 @@ Without `projectKey` the SDK runs in **hub mode** as before (game inside Game Hu
 | `gameOver()` | `Promise<result>` (SDK v3) + `scoreResult` event | `Promise<result>` + `scoreResult` event |
 | Not signed in | `code: "NOT_SIGNED_IN"` | `code: "PLAYER_UNAUTHORIZED"` |
 | Signed in mid-run | `code: "STARTED_BEFORE_LOGIN"` | `code: "SESSION_NOT_STARTED"` |
-| The game's `localStorage` | **Not available** (sandboxed frame) – use `saveState()` | Available |
+| The game's `localStorage` | **Not available** (sandboxed frame) – use `saveState()` | Available, but prefer `saveState()` so progress follows the account (shared with the hub) |
 
 To behave the same in both: show results from `GameHub.on("scoreResult", r => …)` and rely on `r.saved` + `r.message` rather than checking specific codes. Full code list: [Leaderboards](/en/bang-xep-hang#ma-loi).
 

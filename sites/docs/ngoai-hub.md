@@ -50,7 +50,7 @@ const top = await GameHub.leaderboard({ period: "week", limit: 10 });
 | `GameHub.gameOver(score, { leaderboard? })` | `Promise<{ saved, code, message, … }>` – cũng phát sự kiện `scoreResult` |
 | `GameHub.leaderboard({ board?, period?, limit? })` | Top người chơi + hạng của bạn (`me`). Mặc định `board: "default"`, `period: "all"` (hoặc `"week"`, `"day"`), `limit: 50` |
 | `GameHub.leaderboards()` | Bảng chính + các [giải đấu](/bang-xep-hang#giai-dau) đang hiển thị |
-| `GameHub.saveState(data)` / `GameHub.loadState()` | Lưu / đọc tiến trình (JSON ≤ 64KB) trong `localStorage` của domain game – xem [Lưu tiến trình](/sdk#luu-tien-trinh) |
+| `GameHub.saveState(data)` / `GameHub.loadState()` | Lưu / đọc tiến trình (JSON ≤ 64KB): đã `login()` → theo tài khoản, đồng bộ với bản trên hub; chưa login → `localStorage` của domain game – xem [Lưu tiến trình](/sdk#luu-tien-trinh) |
 | `GameHub.on("init", cb)` | Gọi lại khi người chơi đăng nhập / đăng xuất |
 
 Không truyền `projectKey` thì SDK chạy **chế độ hub** như cũ (game nằm trong Game Hub). Một bản build dùng được cho cả hai nơi nếu chú ý mấy chỗ khác nhau:
@@ -62,7 +62,7 @@ Không truyền `projectKey` thì SDK chạy **chế độ hub** như cũ (game 
 | `gameOver()` | `Promise<kết quả>` (SDK v3) + sự kiện `scoreResult` | `Promise<kết quả>` + sự kiện `scoreResult` |
 | Chưa đăng nhập | `code: "NOT_SIGNED_IN"` | `code: "PLAYER_UNAUTHORIZED"` |
 | Đăng nhập giữa ván | `code: "STARTED_BEFORE_LOGIN"` | `code: "SESSION_NOT_STARTED"` |
-| `localStorage` của game | **Không dùng được** (khung sandbox) – dùng `saveState()` | Dùng được |
+| `localStorage` của game | **Không dùng được** (khung sandbox) – dùng `saveState()` | Dùng được, nhưng nên dùng `saveState()` để tiến trình theo tài khoản (chung với hub) |
 
 Cách viết chạy đúng ở cả hai nơi: hiện kết quả trong `GameHub.on("scoreResult", r => …)` và dựa vào `r.saved` + `r.message` thay vì so sánh mã lỗi cụ thể. Bảng mã lỗi đầy đủ: [Bảng xếp hạng](/bang-xep-hang#ma-loi).
 

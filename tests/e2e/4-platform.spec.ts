@@ -89,6 +89,25 @@ test("Platform API: game ngoài hub đăng nhập khách / ví, nộp điểm, b
   await expect(game2.getByTestId("result")).toContainText("Đã lưu 7 điểm", { timeout: 20_000 });
   await expect(game2.getByTestId("board")).toContainText("e2e_player – 7");
 
+  // ── Lưu tiến trình theo tài khoản (saveState ở chế độ độc lập) ──
+  const saved = await game2.evaluate(async () => {
+    const G = (window as unknown as { GameHub: { saveState: (d: unknown) => Promise<unknown>; loadState: () => Promise<unknown> } }).GameHub;
+    return { save: await G.saveState({ level: 4, ten: "tiếng Việt" }), load: await G.loadState() };
+  });
+  expect(saved).toEqual({ save: { saved: true, code: null }, load: { level: 4, ten: "tiếng Việt" } });
+  // Máy khác: đăng nhập cùng ví → đọc từ máy chủ
+  const ctx3 = await browser.newContext({ locale: "vi-VN" });
+  const game3 = await ctx3.newPage();
+  await installWallet(game3, "player");
+  await game3.goto(`${GAME_ORIGIN}/demo/index.html?key=${key}&api=${encodeURIComponent(HUB)}`);
+  await game3.getByRole("button", { name: "Đăng nhập ví" }).click();
+  await expect(game3.getByTestId("player")).toContainText("e2e_player");
+  const other = await game3.evaluate(() =>
+    (window as unknown as { GameHub: { loadState: () => Promise<unknown> } }).GameHub.loadState(),
+  );
+  expect(other).toEqual({ level: 4, ten: "tiếng Việt" });
+  await ctx3.close();
+
   // ── Bảo mật ──
   const token = await game2.evaluate(() => {
     for (let i = 0; i < localStorage.length; i++) {
@@ -110,6 +129,8 @@ test("Platform API: game ngoài hub đăng nhập khách / ví, nộp điểm, b
   expect(await probe("/project", { "x-gamehub-key": "pk_live_" + "x".repeat(32) })).toBe("401 INVALID_API_KEY");
   // Token người chơi chỉ dùng cho đúng project
   expect(await probe("/me", { "x-gamehub-key": key, authorization: `Bearer ${token}` })).toBe("200 OK");
+  expect(await probe("/state", { "x-gamehub-key": key, authorization: `Bearer ${token}` })).toBe("200 OK");
+  expect(await probe("/state", { "x-gamehub-key": key })).toBe("401 PLAYER_UNAUTHORIZED");
   // Domain chưa khai báo (gọi từ chính hub) → bị chặn
   const fromHub = await page.evaluate(async (k) => {
     const res = await fetch("/api/p1/project", { headers: { "x-gamehub-key": k } });

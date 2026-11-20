@@ -751,6 +751,97 @@
         ]
       }
     },
+    "/api/p1/state": {
+      "get": {
+        "tags": [
+          "Client API"
+        ],
+        "security": [
+          {
+            "publishableKey": [],
+            "playerToken": []
+          }
+        ],
+        "summary": "Tiến trình đã lưu của người chơi (GameHub.loadState)",
+        "operationId": "p1GetState",
+        "responses": {
+          "200": {
+            "description": "{ data: chuỗi JSON | null, updatedAt }",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "updatedAt": {
+                      "type": [
+                        "string",
+                        "null"
+                      ],
+                      "format": "date-time"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "PLAYER_UNAUTHORIZED"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "security": [
+          {
+            "publishableKey": [],
+            "playerToken": []
+          }
+        ],
+        "summary": "Lưu tiến trình (GameHub.saveState) – ghi đè, ≤ 64KB UTF-8, chung với bản trên hub",
+        "operationId": "p1PutState",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "data"
+                ],
+                "properties": {
+                  "data": {
+                    "type": "string",
+                    "description": "Chuỗi JSON"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ updatedAt }"
+          },
+          "400": {
+            "description": "STATE_INVALID"
+          },
+          "413": {
+            "description": "STATE_TOO_LARGE"
+          },
+          "401": {
+            "description": "PLAYER_UNAUTHORIZED"
+          }
+        }
+      }
+    },
     "/api/s1/project": {
       "get": {
         "tags": [

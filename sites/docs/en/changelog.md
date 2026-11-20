@@ -10,6 +10,7 @@ Each **major version** has its own URL (`/sdk/v1/`, `/sdk/v2/`, `/sdk/v3/`) – 
 - **Changed:** in hub mode `gameOver()` returns a `Promise` of the result (previously `undefined`) – same as standalone mode; no reply from the hub within 20 seconds → `code: "TIMEOUT"`. Opened directly → `code: "STANDALONE"` and `scoreResult` is emitted.
 - **Changed:** `gameOver(score)` with a non-numeric `score` logs a console warning (still submits 0 as before).
 - Hub: network errors while submitting return `code: "NETWORK"` (previously `UNKNOWN`).
+- 2026-11-20: standalone mode – `saveState()` / `loadState()` are stored per account once the player has called `login()` (`/api/p1/state`), sharing data with the hub version.
 
 Migrating from v2: nothing is required – code that ignores `gameOver()`'s return value behaves exactly as before. Games saving with `localStorage` should switch to `saveState()`.
 

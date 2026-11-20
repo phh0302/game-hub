@@ -10,6 +10,7 @@ Mỗi **bản chính** có đường dẫn riêng (`/sdk/v1/`, `/sdk/v2/`, `/sdk
 - **Đổi:** chế độ hub, `gameOver()` trả về `Promise` kết quả (trước đây `undefined`) – giống chế độ độc lập; hub không trả lời sau 20 giây → `code: "TIMEOUT"`. Mở file trực tiếp → `code: "STANDALONE"` và phát `scoreResult`.
 - **Đổi:** `gameOver(score)` với `score` không phải số → in cảnh báo trong console (vẫn nộp 0 như cũ).
 - Hub: lỗi mạng khi nộp điểm trả `code: "NETWORK"` (trước đây `UNKNOWN`).
+- 20/11/2026: chế độ độc lập – `saveState()` / `loadState()` lưu theo tài khoản khi người chơi đã `login()` (API `/api/p1/state`), chung dữ liệu với bản trên hub.
 
 Chuyển từ v2: không bắt buộc sửa gì – code không dùng giá trị trả về của `gameOver()` chạy y như cũ. Game đang lưu bằng `localStorage` nên chuyển sang `saveState()`.
 

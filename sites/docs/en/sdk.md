@@ -106,7 +106,8 @@ const r = await GameHub.saveState(save);   // { saved: true, code: null }
 - **Guests (no wallet):** stored in the browser, one slot per game; clearing browser data removes it.
 - If two devices save, the **last save wins** – merge in your game before calling `saveState()` if you need to.
 - The **Playtest** page uses a separate slot per build, so it never overwrites real progress.
-- Opened directly or [outside the hub](/en/ngoai-hub): stored in the page's `localStorage`.
+- [Outside the hub](/en/ngoai-hub) (standalone mode): players who called `login()` (wallet or guest) → stored **per account** like on the hub (`GET/POST /api/p1/state`); not logged in → the page's `localStorage`, moved to the account on the first `loadState()` after login.
+- Opened directly (no hub, no `projectKey`): the page's `localStorage`.
 
 | `code` when `saved: false` | Meaning |
 | --- | --- |
