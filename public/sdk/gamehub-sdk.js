@@ -146,24 +146,33 @@
    * Lưu tiến trình. Trên hub game chạy trong khung sandbox (origin "null") nên localStorage / IndexedDB
    * luôn lỗi → hub lưu hộ (trong trình duyệt của người chơi, theo từng game). Ngoài hub: localStorage của trang.
    */
-  function localKey() {
-    return "gamehub:state:" + (project ? project.key.slice(0, 16) : "standalone");
+  function localKey(owner) {
+    return "gamehub:state:" + (project ? project.key.slice(0, 16) : "standalone") + (owner ? ":u:" + owner : "");
   }
-  function localSave(text) {
+  function localSave(text, owner) {
     try {
-      global.localStorage.setItem(localKey(), text);
+      global.localStorage.setItem(localKey(owner), text);
       return { saved: true, code: null };
     } catch (e) {
       memoryState = text;
       return { saved: false, code: "STORAGE_UNAVAILABLE" };
     }
   }
-  function localLoad() {
+  function localLoad(owner) {
     try {
-      return global.localStorage.getItem(localKey());
+      return global.localStorage.getItem(localKey(owner));
     } catch (e) {
       return memoryState;
     }
+  }
+  function localRemove(owner) {
+    try {
+      global.localStorage.removeItem(localKey(owner));
+    } catch (e) {}
+  }
+  /** Chế độ độc lập + đã login (ví hoặc khách) → lưu theo tài khoản trên máy chủ Monlabs */
+  function cloudOwner() {
+    return project && project.token && project.player ? project.player.id : null;
   }
   var memoryState = null;
 
@@ -573,6 +582,20 @@
           return { saved: !!r.saved, code: r.saved ? null : r.code || "ERROR" };
         });
       }
+      var owner = cloudOwner();
+      if (owner) {
+        // Theo tài khoản (đồng bộ giữa thiết bị) + bản sao trong trình duyệt; mất mạng → còn bản sao
+        var local = localSave(t.text, owner);
+        return api("POST", "/state", { data: t.text }).then(
+          function () {
+            return { saved: true, code: null };
+          },
+          function (err) {
+            if (err && (err.code === "STATE_TOO_LARGE" || err.code === "STATE_INVALID")) return { saved: false, code: err.code };
+            return local.saved ? { saved: true, code: "SYNC_FAILED" } : { saved: false, code: (err && err.code) || "ERROR" };
+          },
+        );
+      }
       return Promise.resolve(localSave(t.text));
     },
 
@@ -582,6 +605,33 @@
         return requestHub("STATE_LOAD", {}, STATE_TIMEOUT_MS, { data: null }).then(function (r) {
           return parseState(r.data);
         });
+      }
+      var owner = cloudOwner();
+      if (owner) {
+        return api("GET", "/state").then(
+          function (r) {
+            if (r && typeof r.data === "string") {
+              localSave(r.data, owner);
+              return parseState(r.data);
+            }
+            // Chưa có trên máy chủ: bản của tài khoản trên máy này, hoặc tiến trình lúc chưa login → đẩy lên tài khoản
+            var mine = localLoad(owner);
+            var carried = mine !== null && mine !== undefined ? mine : localLoad();
+            if (typeof carried === "string") {
+              api("POST", "/state", { data: carried }).then(
+                function () {
+                  localSave(carried, owner);
+                  if (mine === null || mine === undefined) localRemove();
+                },
+                function () {},
+              );
+            }
+            return parseState(carried);
+          },
+          function () {
+            return parseState(localLoad(owner));
+          },
+        );
       }
       return Promise.resolve(parseState(localLoad()));
     },

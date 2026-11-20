@@ -106,7 +106,8 @@ const r = await GameHub.saveState(save);   // { saved: true, code: null }
 - **Khách (chưa kết nối ví):** lưu trong trình duyệt, mỗi game 1 ô riêng; xóa dữ liệu trình duyệt là mất.
 - Hai máy cùng lưu thì bản lưu **sau cùng thắng** – nếu cần, tự gộp dữ liệu trong game trước khi `saveState()`.
 - Trang **Chơi thử** dùng ô riêng theo từng bản build, không đè tiến trình thật.
-- Mở file trực tiếp hoặc [chạy ngoài hub](/ngoai-hub): lưu vào `localStorage` của trang.
+- [Chạy ngoài hub](/ngoai-hub) (chế độ độc lập): người chơi đã `login()` (ví hoặc khách) → lưu **theo tài khoản** như trên hub (`GET/POST /api/p1/state`); chưa login → `localStorage` của trang, được chuyển lên tài khoản ở lần `loadState()` đầu tiên sau khi login.
+- Mở file trực tiếp (không qua hub, không `projectKey`): `localStorage` của trang.
 
 | `code` khi `saved: false` | Nghĩa |
 | --- | --- |

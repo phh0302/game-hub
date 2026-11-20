@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { allowsLargeBody, classifyRequest, parseExemptIps, secondsToWindowEnd } from "../../src/lib/traffic/limits.ts";
+import { allowsLargeBody, classifyRequest, maxBodyBytes, parseExemptIps, secondsToWindowEnd } from "../../src/lib/traffic/limits.ts";
 
 test("classifyRequest: nhóm theo đường dẫn + phương thức", () => {
   assert.equal(classifyRequest("/api/v1/auth/nonce", "POST"), "auth");
@@ -31,4 +31,12 @@ test("secondsToWindowEnd", () => {
 test("parseExemptIps", () => {
   assert.deepEqual([...parseExemptIps(" 127.0.0.1, ::1 ,,unknown")], ["127.0.0.1", "::1", "unknown"]);
   assert.equal(parseExemptIps(undefined).size, 0);
+});
+
+test("maxBodyBytes: route lưu tiến trình được 256KB, route khác 64KB, kho file không giới hạn", () => {
+  assert.equal(maxBodyBytes("/api/v1/me"), 64 * 1024);
+  assert.equal(maxBodyBytes("/api/p1/state"), 256 * 1024);
+  assert.equal(maxBodyBytes("/api/v1/games/star-jar/state"), 256 * 1024);
+  assert.equal(maxBodyBytes("/api/v1/games/star-jar/state/x"), 64 * 1024);
+  assert.equal(maxBodyBytes("/api/v1/storage/local"), Number.POSITIVE_INFINITY);
 });
