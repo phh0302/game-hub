@@ -112,7 +112,7 @@ test("Platform API: game ngoài hub đăng nhập khách / ví, nộp điểm, b
   const token = await game2.evaluate(() => {
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)!;
-      if (k.startsWith("gamehub:")) return localStorage.getItem(k);
+      if (k.startsWith("gamehub:") && k.endsWith(":token")) return localStorage.getItem(k);
     }
     return null;
   });
