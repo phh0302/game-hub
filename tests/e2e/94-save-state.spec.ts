@@ -19,9 +19,12 @@ test("saveState: tiến trình còn sau khi tải lại; localStorage của game
       );
     const list = (await call("/api/v1/admin/games", "GET")).games as { id: string; slug: string; currentVersionId: string | null }[];
     let game = list.find((g) => g.slug === "e2e-star-jar");
+    // Gắn vào studio của ví admin (tạo ở 4-platform) để xem được thống kê sự kiện ở trang Developer
+    const studio = (await call("/api/v1/developer/studio", "GET")).studio as { id: string } | null;
     if (!game) {
       game = (await call("/api/v1/admin/games", "POST", {
         slug: "e2e-star-jar",
+        ...(studio ? { studioId: studio.id } : {}),
         status: "PENDING_REVIEW",
         translations: [{ locale: "vi", name: "E2E Star Jar" }],
       })).game;
@@ -29,7 +32,7 @@ test("saveState: tiến trình còn sau khi tải lại; localStorage của game
     const v = (await call(`/api/v1/admin/games/${game!.id}/versions`, "POST", { version: `1.0.${Date.now() % 100000}`, storageKey: "games/save-demo/1.0.0" })).version;
     await call(`/api/v1/admin/games/${game!.id}/versions/${v.id}`, "PATCH", { status: "APPROVED" });
     await call(`/api/v1/admin/games/${game!.id}/versions/${v.id}/activate`, "POST");
-    return { versionId: v.id as string };
+    return { versionId: v.id as string, gameId: game!.id as string, hasStudio: Boolean(studio) };
   });
 
   // Người chơi (khách) chơi 1 ván 10 giây
@@ -39,13 +42,25 @@ test("saveState: tiến trình còn sau khi tải lại; localStorage của game
   const game = p.frameLocator('iframe[title="E2E Star Jar"]');
   const log = game.getByTestId("log");
   await expect(log).toContainText("localStorage: blocked");
+  await expect(log).toContainText('ads={"rewarded":false,"interstitial":false}'); // hub báo chưa có quảng cáo
   await expect(log).toContainText("loadState: null");
+  const tracked = p.waitForResponse((r) => r.url().endsWith("/api/v1/games/e2e-star-jar/events") && r.request().method() === "POST", { timeout: 25_000 });
   for (let i = 0; i < 5; i++) await game.getByRole("button", { name: "jar" }).click();
   await expect(log).toContainText('saveState: {"saved":true,"code":null}', { timeout: 15_000 });
   await expect(game.locator("#total")).toHaveText("5");
 
+  // Sự kiện run_end (GameHub.track) – SDK gom và gửi sau 5 giây → admin (chủ studio) thấy ở thống kê
+  expect((await tracked).ok()).toBe(true);
   // Tải lại trang → tiến trình đọc lại từ hub
   await p.reload();
+  if (ids.hasStudio) {
+    const stats = (await page.evaluate(
+      async (id) => (await fetch(`/api/v1/developer/games/${id}/analytics?days=7`)).json(),
+      ids.gameId,
+    )) as { events: { name: string; total: number }[]; recent: { name: string; props: { stars: number } }[] };
+    expect(stats.events.find((e) => e.name === "run_end")?.total).toBeGreaterThanOrEqual(1);
+    expect(stats.recent[0]).toMatchObject({ name: "run_end", props: { stars: 5 } });
+  }
   await expect(game.getByTestId("log")).toContainText('loadState: {"total":5,"runs":1}');
   await expect(game.locator("#total")).toHaveText("5");
 

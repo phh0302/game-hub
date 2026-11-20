@@ -66,6 +66,7 @@
 
     switch (msg.type) {
       case "INIT":
+        if (!payload.ads) payload.ads = NO_ADS;
         initData = payload;
         emit("init", payload);
         break;
@@ -99,6 +100,9 @@
     }
   });
 
+  /** Quảng cáo nào đang có: game nên ẩn nút "xem quảng cáo" khi false (hub cũ không gửi → coi như không có) */
+  var NO_ADS = { rewarded: false, interstitial: false };
+
   function standaloneData() {
     var lang = (global.navigator && global.navigator.language) || "vi";
     return {
@@ -107,6 +111,7 @@
       locale: lang.toLowerCase().indexOf("vi") === 0 ? "vi" : "en",
       player: null,
       canSubmitScore: false,
+      ads: NO_ADS,
     };
   }
 
@@ -198,6 +203,43 @@
     } catch (e) {
       return null;
     }
+  }
+
+  // ───────────── Sự kiện game (GameHub.track) ─────────────
+  var trackQueue = [];
+  var trackTimer = null;
+  var TRACK_FLUSH_MS = 5000;
+  var TRACK_BATCH = 20;
+
+  /** Gửi các sự kiện đang chờ: hub (postMessage) / Platform API / mở file trực tiếp thì chỉ in ra console */
+  function flushEvents() {
+    if (trackTimer) {
+      clearTimeout(trackTimer);
+      trackTimer = null;
+    }
+    var batch = trackQueue.splice(0, 50);
+    if (!batch.length) return Promise.resolve({ sent: 0 });
+    if (embedded && !project) {
+      send("TRACK", { events: batch });
+      return Promise.resolve({ sent: batch.length });
+    }
+    if (project) {
+      return api("POST", "/events", { events: batch }).then(
+        function (r) {
+          return { sent: (r && r.accepted) || 0 };
+        },
+        function () {
+          return { sent: 0 };
+        },
+      );
+    }
+    console.info("[GameHub SDK] track (standalone, không gửi):", batch);
+    return Promise.resolve({ sent: 0 });
+  }
+  if (global.addEventListener) {
+    global.addEventListener("pagehide", function () {
+      flushEvents();
+    });
   }
 
   // ───────────── Chế độ độc lập (Platform API) ─────────────
@@ -305,6 +347,7 @@
       project: project.info,
       player: project.player,
       canSubmitScore: !!project.player,
+      ads: NO_ADS, // chế độ độc lập: Monlabs không cung cấp quảng cáo
     };
   }
 
@@ -567,6 +610,26 @@
       return api("GET", "/leaderboards").then(function (r) {
         return r.leaderboards;
       });
+    },
+
+    /**
+     * Ghi 1 sự kiện (vd "level_complete", { level: 3 }). Gom lại gửi mỗi 5 giây / 20 sự kiện / khi rời trang.
+     * Tên: chữ, số, _ . : - (tối đa 64 ký tự). props: ≤ 10 khóa, giá trị chuỗi (≤ 100 ký tự) / số / boolean.
+     * Xem số liệu ở trang Developer → game → Sự kiện game.
+     */
+    track: function (name, props) {
+      if (typeof name !== "string" || !/^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$/.test(name)) {
+        console.warn("[GameHub SDK] track(name): tên sự kiện không hợp lệ – " + String(name));
+        return;
+      }
+      trackQueue.push(props && typeof props === "object" ? { name: name, props: props } : { name: name });
+      if (trackQueue.length >= TRACK_BATCH) flushEvents();
+      else if (!trackTimer) trackTimer = setTimeout(flushEvents, TRACK_FLUSH_MS);
+    },
+
+    /** Gửi ngay các sự kiện đang chờ → Promise<{ sent }> */
+    flush: function () {
+      return flushEvents();
     },
 
     /**

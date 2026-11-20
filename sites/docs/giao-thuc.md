@@ -18,7 +18,7 @@ Game và hub nói chuyện qua `window.postMessage`. Mọi tin nhắn có dạng
 | Chiều | `type` | `payload` |
 | --- | --- | --- |
 | game → hub | `READY` | `{ sdkVersion }` |
-| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore }` |
+| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore, ads: { rewarded, interstitial } }` |
 | game → hub | `GAME_START` | `{}` |
 | game → hub | `GAME_OVER` | `{ score, leaderboard }` |
 | game → hub | `AD_REQUEST` | `{ requestId, kind: "rewarded" \| "interstitial" }` |
@@ -27,6 +27,7 @@ Game và hub nói chuyện qua `window.postMessage`. Mọi tin nhắn có dạng
 | game → hub | `STATE_SAVE` | `{ requestId, data }` – `data` là **chuỗi** JSON ≤ 65.536 ký tự |
 | game → hub | `STATE_LOAD` | `{ requestId }` |
 | hub → game | `STATE_RESULT` | Trả lời `STATE_SAVE`: `{ requestId, saved, code }` · trả lời `STATE_LOAD`: `{ requestId, data: string \| null }` |
+| game → hub | `TRACK` | `{ events: [{ name, props? }] }` – tối đa 50 sự kiện / tin, không cần trả lời |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Trình tự

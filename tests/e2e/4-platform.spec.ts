@@ -95,6 +95,24 @@ test("Platform API: game ngoài hub đăng nhập khách / ví, nộp điểm, b
     return { save: await G.saveState({ level: 4, ten: "tiếng Việt" }), load: await G.loadState() };
   });
   expect(saved).toEqual({ save: { saved: true, code: null }, load: { level: 4, ten: "tiếng Việt" } });
+  // ── Sự kiện game (GameHub.track) ngoài hub + hub báo không có quảng cáo ──
+  const tracked = await game2.evaluate(async () => {
+    const G = (window as unknown as {
+      GameHub: { track: (n: string, p?: unknown) => void; flush: () => Promise<{ sent: number }>; init: () => Promise<{ ads?: unknown }> };
+    }).GameHub;
+    G.track("e2e_level", { level: 3 });
+    G.track("e2e_level", { level: 4, bad: { nested: true } });
+    G.track("tên sai");
+    return { flushed: await G.flush(), ads: (await G.init()).ads };
+  });
+  expect(tracked).toEqual({ flushed: { sent: 2 }, ads: { rewarded: false, interstitial: false } });
+  const ev = (await page.evaluate(
+    async (id) => (await fetch(`/api/v1/developer/games/${id}/analytics?days=7`)).json(),
+    gameId,
+  )) as { events: { name: string; total: number }[]; recent: { name: string; props: unknown; source: string }[] };
+  expect(ev.events.find((e) => e.name === "e2e_level")?.total).toBe(2);
+  expect(ev.recent[0]).toMatchObject({ name: "e2e_level", props: { level: 4 }, source: "api" });
+
   // Máy khác: đăng nhập cùng ví → đọc từ máy chủ
   const ctx3 = await browser.newContext({ locale: "vi-VN" });
   const game3 = await ctx3.newPage();

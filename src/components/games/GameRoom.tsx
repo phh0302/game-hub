@@ -110,6 +110,8 @@ function GamePlayer({
       locale,
       player: user ? { displayName: displayName(user) } : null,
       canSubmitScore,
+      // Chưa có nhà cung cấp quảng cáo → game ẩn nút "xem quảng cáo nhận thưởng"
+      ads: { rewarded: false, interstitial: false },
     });
   }, [post, locale, user, canSubmitScore]);
 
@@ -254,8 +256,8 @@ function GamePlayer({
     [user?.id, slug, post],
   );
 
-  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState });
-  handlers.current = { sendInit, startSession, finishSession, post, handleState };
+  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState, slug });
+  handlers.current = { sendInit, startSession, finishSession, post, handleState, slug };
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -280,6 +282,15 @@ function GamePlayer({
         case "STATE_SAVE":
         case "STATE_LOAD":
           void h.handleState(msg.type, payload);
+          break;
+        case "TRACK":
+          // Sự kiện game (GameHub.track) → máy chủ đếm theo ngày cho trang Developer; lỗi thì bỏ qua (không ảnh hưởng game)
+          if (Array.isArray(payload.events) && payload.events.length > 0) {
+            void apiFetch(`/games/${handlers.current.slug}/events`, {
+              method: "POST",
+              json: { events: payload.events.slice(0, 50) },
+            }).catch(() => undefined);
+          }
           break;
         case "AD_REQUEST":
           // Chưa bật quảng cáo (Phase 11)

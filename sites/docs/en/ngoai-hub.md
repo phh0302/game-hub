@@ -51,6 +51,7 @@ It's fine to put it in your game's code: the key **only works on the domains you
 | `GameHub.leaderboard({ board?, period?, limit? })` | Top players + your rank (`me`). Defaults: `board: "default"`, `period: "all"` (or `"week"`, `"day"`), `limit: 50` |
 | `GameHub.leaderboards()` | Main board + visible [events](/en/bang-xep-hang#giai-dau) |
 | `GameHub.saveState(data)` / `GameHub.loadState()` | Save / load progress (JSON ≤ 64KB): after `login()` → per account, shared with the hub version; not logged in → your domain's `localStorage` – see [Saving progress](/en/sdk#luu-tien-trinh) |
+| `GameHub.track(name, props?)` / `GameHub.flush()` | Count game events (no sign-in needed) – see [Game events](/en/sdk#su-kien-game) |
 | `GameHub.on("init", cb)` | Called when the player signs in / out |
 
 Without `projectKey` the SDK runs in **hub mode** as before (game inside Game Hub). One build works in both places if you mind the differences:

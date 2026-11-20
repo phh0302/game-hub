@@ -537,7 +537,23 @@
     "activate": "Make live",
     "activateConfirm": "Make v{version} the live version instead of v{current}? Players get it on their next page load.",
     "activated": "v{version} is now live.",
-    "activateHint": "You can switch the live version to any approved version yourself – to ship an update or roll back when a new version breaks."
+    "activateHint": "You can switch the live version to any approved version yourself – to ship an update or roll back when a new version breaks.",
+    "events": {
+      "title": "Game events",
+      "hint": "Sent by the game with GameHub.track(name, data) – counted per day (UTC), on and outside the hub. Playtest isn't counted.",
+      "days": "{n} days",
+      "refresh": "Refresh",
+      "error": "Couldn't load ({code})",
+      "empty": "No events yet. Call GameHub.track in your game, e.g.:",
+      "perDay": "Events per day",
+      "unit": "events",
+      "name": "Event",
+      "total": "{n} days",
+      "today": "Today",
+      "recent": "{n} most recent events (with data)",
+      "sourceHub": "on the hub",
+      "sourceApi": "outside the hub"
+    }
   },
   "preview": {
     "title": "Playtest",

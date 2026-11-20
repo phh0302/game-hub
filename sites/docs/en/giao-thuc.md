@@ -18,7 +18,7 @@ The game and the hub talk through `window.postMessage`. Every message looks like
 | Direction | `type` | `payload` |
 | --- | --- | --- |
 | game → hub | `READY` | `{ sdkVersion }` |
-| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore }` |
+| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore, ads: { rewarded, interstitial } }` |
 | game → hub | `GAME_START` | `{}` |
 | game → hub | `GAME_OVER` | `{ score, leaderboard }` |
 | game → hub | `AD_REQUEST` | `{ requestId, kind: "rewarded" \| "interstitial" }` |
@@ -27,6 +27,7 @@ The game and the hub talk through `window.postMessage`. Every message looks like
 | game → hub | `STATE_SAVE` | `{ requestId, data }` – `data` is a JSON **string** ≤ 65,536 characters |
 | game → hub | `STATE_LOAD` | `{ requestId }` |
 | hub → game | `STATE_RESULT` | Reply to `STATE_SAVE`: `{ requestId, saved, code }` · reply to `STATE_LOAD`: `{ requestId, data: string \| null }` |
+| game → hub | `TRACK` | `{ events: [{ name, props? }] }` – up to 50 events per message, no reply |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Sequence
