@@ -12,6 +12,7 @@ import { assertNotBanned } from "@/modules/platform/bans";
 import { trackUsage } from "@/modules/platform/usage";
 import { enqueueWebhook } from "@/modules/platform/webhooks";
 import { admitPlayer, assertCanSaveScore, planForGame, recordScore } from "@/modules/platform/quota";
+import { watchRejected } from "./reject-watch";
 
 const REJECT_STATUS: Record<ScoreRuleError, number> = {
   SESSION_EXPIRED: 410,
@@ -123,6 +124,7 @@ export async function submitScoreForGame(
       data: { sessionId: session.id, leaderboard: board.key, reason: rejected, value: input.score, durationSeconds, via },
     });
     await trackUsage(game.id, "rejected");
+    await watchRejected(game, rejected);
     throw new ApiError(REJECT_STATUS[rejected], rejected, REJECT_MESSAGE[rejected]);
   }
 

@@ -59,4 +59,26 @@ test("developer: rollback về bản cũ đã duyệt; bản chưa duyệt thì 
   await expect(page.getByTestId("rejected-30d")).toContainText("Chưa có điểm nào bị từ chối.");
   const events = await page.evaluate(async (gameId) => (await fetch(`/api/v1/developer/games/${gameId}/events`)).json(), ids.gameId);
   expect(JSON.stringify(events)).toContain("version.activate");
+
+  // ── Admin đổi luật bảng → developer thấy trong nhật ký (trước → sau) ──
+  // ── Điểm bị từ chối vượt ngưỡng (CI: 3 / giờ) → nhật ký + khung cảnh báo trên trang game ──
+  await page.evaluate(async ({ gameId, slug }) => {
+    const call = (url: string, method: string, body?: unknown) =>
+      fetch(url, { method, headers: { "content-type": "application/json" }, body: body ? JSON.stringify(body) : undefined }).then((r) => r.json());
+    const boards = (await call(`/api/v1/admin/games/${gameId}/leaderboards`, "GET")).leaderboards as { id: string; key: string }[];
+    const def = boards.find((b) => b.key === "default")!;
+    await call(`/api/v1/admin/leaderboards/${def.id}`, "PATCH", { maxScore: 5 });
+    for (let i = 0; i < 3; i++) {
+      const { sessionId } = await call(`/api/v1/games/${slug}/sessions`, "POST", {});
+      await call(`/api/v1/games/${slug}/scores`, "POST", { sessionId, score: 999 }); // > maxScore → SCORE_INVALID
+    }
+  }, { gameId: ids.gameId, slug: ids.slug });
+  await page.reload();
+  await expect(page.getByTestId("reject-warning")).toContainText("3 điểm bị từ chối trong 24 giờ qua");
+  await expect(page.getByTestId("reject-warning")).toContainText("SCORE_INVALID");
+  const log = page.getByTestId("platform-log");
+  await expect(log).toContainText("Admin đổi luật bảng");
+  await expect(log).toContainText("maxScore: – → 5");
+  await expect(log).toContainText("Điểm bị từ chối tăng");
+  await expect(page.getByTestId("rejected-30d")).toContainText("SCORE_INVALID");
 });

@@ -145,6 +145,8 @@ jobs:
       # Kiểm tra trạng thái: trỏ docs / trang chủ về chính server test (không phụ thuộc mạng ngoài)
       STATUS_SITE_URL: http://localhost:3000/
       STATUS_DOCS_URL: http://localhost:3000/
+      # Cảnh báo điểm bị từ chối tăng: 3 lần / giờ cho test nhanh (production 20)
+      REJECT_SPIKE_THRESHOLD: "3"
     steps:
       - uses: actions/checkout@v5
 

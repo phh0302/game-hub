@@ -190,7 +190,22 @@ export async function adminUpdateBoard(id: string, input: z.infer<typeof boardUp
       data: { startsAt, endsAt, settings: limitsJson(input, board.settings as Record<string, unknown>) },
     });
   });
-  await logEvent({ type: "leaderboard.update", userId: actorId, gameId: board.gameId, data: { key: board.key } });
+  // Ghi luật trước / sau để developer thấy admin đổi gì (Nhật ký hoạt động)
+  const before = (board.settings ?? {}) as Record<string, unknown>;
+  const after = limitsJson(input, before) as Record<string, unknown>;
+  const changes: Record<string, { from: unknown; to: unknown }> = {};
+  for (const k of new Set([...Object.keys(before), ...Object.keys(after)])) {
+    if (JSON.stringify(before[k] ?? null) !== JSON.stringify(after[k] ?? null)) changes[k] = { from: before[k] ?? null, to: after[k] ?? null };
+  }
+  const iso = (d: Date | null) => (d ? d.toISOString() : null);
+  if (iso(board.startsAt) !== iso(startsAt)) changes.startsAt = { from: iso(board.startsAt), to: iso(startsAt) };
+  if (iso(board.endsAt) !== iso(endsAt)) changes.endsAt = { from: iso(board.endsAt), to: iso(endsAt) };
+  await logEvent({
+    type: "leaderboard.update",
+    userId: actorId,
+    gameId: board.gameId,
+    data: { key: board.key, changes } as Prisma.InputJsonObject,
+  });
 }
 
 /** Xóa mềm (giữ điểm để tra cứu). Không xóa được bảng default */

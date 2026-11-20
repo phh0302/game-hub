@@ -19,6 +19,10 @@ const KNOWN = [
   "version.activate",
   "game.status",
   "game.rules",
+  "leaderboard.create",
+  "leaderboard.update",
+  "leaderboard.delete",
+  "score.rejected_spike",
   "platform.key.create",
   "platform.key.revoke",
   "platform.origins",
@@ -85,6 +89,16 @@ export function PlatformLog({ gameId }: { gameId: string }) {
         }${d.reviewNote ? ` · ${String(d.reviewNote)}` : ""}`;
       case "version.activate":
         return `v${String(d.version ?? "")}${d.previous ? ` (← v${String(d.previous)})` : ""} · ${d.by === "developer" ? t("byDeveloper") : t("byAdmin")}`;
+      case "leaderboard.create":
+      case "leaderboard.delete":
+        return `${String(d.key ?? "")}${d.mirrorOf ? ` ← ${String(d.mirrorOf)}` : ""}`;
+      case "leaderboard.update": {
+        const ch = (d.changes ?? {}) as Record<string, { from: unknown; to: unknown }>;
+        const parts = Object.entries(ch).map(([k, v]) => `${k}: ${v.from ?? "–"} → ${v.to ?? "–"}`);
+        return `${String(d.key ?? "")}${parts.length ? ` · ${parts.join(" · ")}` : ""}`;
+      }
+      case "score.rejected_spike":
+        return t("spikeDetail", { count: Number(d.count ?? 0), reason: String(d.topReason ?? "") });
       case "game.status":
         return `${String(d.from ?? "")} → ${String(d.to ?? "")}`;
       case "game.rules":
