@@ -70,6 +70,7 @@ export function PreviewPlayer({
             locale: loc,
             player: u ? { displayName: displayName(u) } : null,
             canSubmitScore: false,
+            ads: { rewarded: false, interstitial: false },
           };
           post("INIT", init);
           add("→ INIT", init);
@@ -94,6 +95,9 @@ export function PreviewPlayer({
           }
           break;
         }
+        case "TRACK":
+          // Chơi thử: chỉ hiện trong nhật ký, không ghi vào thống kê
+          break;
         case "AD_REQUEST": {
           const result = { requestId: payload.requestId, shown: false, rewarded: false, reason: "NO_ADS" };
           post("AD_RESULT", result);

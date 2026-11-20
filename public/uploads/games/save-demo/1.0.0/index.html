@@ -36,7 +36,7 @@
     </main>
     <script src="/sdk/v3/gamehub-sdk.js"></script>
     <script>
-      // Mẫu tích hợp SDK v3: init + on("init"), gameStart/gameOver, scoreResult, pause/resume, saveState/loadState
+      // Mẫu tích hợp SDK v3: init + on("init"), gameStart/gameOver, scoreResult, pause/resume, saveState/loadState, track; hub.ads cho biết có quảng cáo không
       var RUN_SECONDS = 10;
       var save = { total: 0, runs: 0 };
       var run = 0, left = RUN_SECONDS, timer = null, paused = false;
@@ -60,7 +60,7 @@
 
       GameHub.init().then(function (hub) {
         applyHub(hub);
-        log("init: standalone=" + hub.standalone + " canSubmitScore=" + hub.canSubmitScore);
+        log("init: standalone=" + hub.standalone + " canSubmitScore=" + hub.canSubmitScore + " ads=" + JSON.stringify(hub.ads));
         return GameHub.loadState();
       }).then(function (data) {
         if (data && typeof data.total === "number") save = data;
@@ -80,6 +80,7 @@
       function end() {
         clearInterval(timer); timer = null;
         save.total += run; save.runs += 1;
+        GameHub.track("run_end", { stars: run }); // sự kiện cho trang Developer → Sự kiện game
         GameHub.saveState(save).then(function (r) { log("saveState: " + JSON.stringify(r)); });
         GameHub.gameOver(run);
         run = 0; left = RUN_SECONDS; render();

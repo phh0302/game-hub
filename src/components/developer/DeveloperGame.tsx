@@ -19,6 +19,7 @@ import {
   type VersionStatus,
 } from "./shared";
 import { PlatformLog } from "./PlatformLog";
+import { GameEvents } from "./GameEvents";
 import { UsageStats } from "./UsageStats";
 import { WebhookSettings } from "./WebhookSettings";
 import { ApiIntegration } from "./ApiIntegration";
@@ -131,6 +132,7 @@ export function DeveloperGame({ gameId }: { gameId: string }) {
       {(game.rules.rejected24h ?? 0) >= (game.rules.rejectWarnAt ?? 20) && <RejectWarning rules={game.rules} />}
       <VersionList game={game} onChanged={load} />
       <GameRules rules={game.rules} />
+      <GameEvents gameId={game.id} />
       <GameInfoForm game={game} onSaved={setGame} />
       <ApiIntegration gameId={game.id} origins={game.allowedOrigins} scoreSubmission={game.scoreSubmission} />
       <UsageStats gameId={game.id} />

@@ -537,7 +537,23 @@
     "activate": "Đặt làm bản chạy",
     "activateConfirm": "Đặt v{version} làm bản đang chạy thay cho v{current}? Người chơi tải lại trang sẽ chơi bản này.",
     "activated": "Đã đặt v{version} làm bản đang chạy.",
-    "activateHint": "Bạn tự đổi được bản đang chạy sang bất kỳ phiên bản đã duyệt nào – dùng để đưa bản cập nhật lên hoặc quay lại bản cũ khi bản mới lỗi."
+    "activateHint": "Bạn tự đổi được bản đang chạy sang bất kỳ phiên bản đã duyệt nào – dùng để đưa bản cập nhật lên hoặc quay lại bản cũ khi bản mới lỗi.",
+    "events": {
+      "title": "Sự kiện game",
+      "hint": "Game gửi bằng GameHub.track(tên, dữ liệu) – đếm theo ngày (UTC), cả trên hub và ngoài hub. Trang Chơi thử không tính.",
+      "days": "{n} ngày",
+      "refresh": "Tải lại",
+      "error": "Không tải được ({code})",
+      "empty": "Chưa có sự kiện nào. Gọi GameHub.track trong game, ví dụ:",
+      "perDay": "Sự kiện mỗi ngày",
+      "unit": "sự kiện",
+      "name": "Sự kiện",
+      "total": "{n} ngày",
+      "today": "Hôm nay",
+      "recent": "{n} sự kiện gần nhất (kèm dữ liệu)",
+      "sourceHub": "trên hub",
+      "sourceApi": "ngoài hub"
+    }
   },
   "preview": {
     "title": "Chơi thử",

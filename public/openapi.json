@@ -842,6 +842,65 @@
         }
       }
     },
+    "/api/p1/events": {
+      "post": {
+        "tags": [
+          "Client API"
+        ],
+        "summary": "Gửi lô sự kiện game (GameHub.track) – không cần token người chơi",
+        "operationId": "p1Events",
+        "security": [
+          {
+            "publishableKey": [],
+            "playerToken": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "events": {
+                    "type": "array",
+                    "maxItems": 50,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "name"
+                      ],
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,63}$"
+                        },
+                        "props": {
+                          "type": "object",
+                          "maxProperties": 10,
+                          "additionalProperties": {
+                            "type": [
+                              "string",
+                              "number",
+                              "boolean"
+                            ]
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "{ accepted, dropped, reason? }"
+          }
+        }
+      }
+    },
     "/api/s1/project": {
       "get": {
         "tags": [

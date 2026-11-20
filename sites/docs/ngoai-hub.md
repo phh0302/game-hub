@@ -51,6 +51,7 @@ const top = await GameHub.leaderboard({ period: "week", limit: 10 });
 | `GameHub.leaderboard({ board?, period?, limit? })` | Top người chơi + hạng của bạn (`me`). Mặc định `board: "default"`, `period: "all"` (hoặc `"week"`, `"day"`), `limit: 50` |
 | `GameHub.leaderboards()` | Bảng chính + các [giải đấu](/bang-xep-hang#giai-dau) đang hiển thị |
 | `GameHub.saveState(data)` / `GameHub.loadState()` | Lưu / đọc tiến trình (JSON ≤ 64KB): đã `login()` → theo tài khoản, đồng bộ với bản trên hub; chưa login → `localStorage` của domain game – xem [Lưu tiến trình](/sdk#luu-tien-trinh) |
+| `GameHub.track(name, props?)` / `GameHub.flush()` | Đếm sự kiện game (không cần đăng nhập) – xem [Sự kiện game](/sdk#su-kien-game) |
 | `GameHub.on("init", cb)` | Gọi lại khi người chơi đăng nhập / đăng xuất |
 
 Không truyền `projectKey` thì SDK chạy **chế độ hub** như cũ (game nằm trong Game Hub). Một bản build dùng được cho cả hai nơi nếu chú ý mấy chỗ khác nhau:

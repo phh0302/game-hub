@@ -29,6 +29,8 @@ Thay đổi phá vỡ tương thích chỉ ra ở **bản chính mới** (`/sdk/
 | `GameHub.gameOver(score, { leaderboard })` | Ván kết thúc | Hub nộp điểm lên bảng `leaderboard` (mặc định `"default"`) → `Promise<kết quả>` (giống [`scoreResult`](#du-lieu-scoreresult)) |
 | `GameHub.saveState(data)` | Lưu tiến trình (màn, vật phẩm, cài đặt) | `Promise<{ saved, code }>` – xem [Lưu tiến trình](#luu-tien-trinh) |
 | `GameHub.loadState()` | Lúc tải game | `Promise<data \| null>` |
+| `GameHub.track(name, props?)` | Ghi 1 sự kiện (qua màn, mua đồ, xem quảng cáo…) | Gom lại gửi sau 5 giây – xem [Sự kiện game](#su-kien-game) |
+| `GameHub.flush()` | Muốn gửi ngay các sự kiện đang chờ | `Promise<{ sent }>` |
 | `GameHub.showRewardedAd()` | Người chơi chọn xem quảng cáo để nhận thưởng | `Promise<{ shown, rewarded, reason? }>` – **chỉ thưởng khi `rewarded === true`** |
 | `GameHub.showInterstitialAd()` | Giữa các màn | `Promise<{ shown }>` |
 | `GameHub.on(event, callback)` | Lắng nghe hub | Xem [Sự kiện](#su-kien) |
@@ -57,7 +59,8 @@ Không nhận được trả lời của hub sau 20 giây → `{ saved: false, c
   standalone: false,      // true khi mở game trực tiếp, không qua hub
   locale: "vi",           // "vi" | "en"
   player: { displayName: "ha_pham" } | null,
-  canSubmitScore: true    // false = người chơi chưa kết nối ví, điểm sẽ không được lưu
+  canSubmitScore: true,   // false = người chơi chưa kết nối ví, điểm sẽ không được lưu
+  ads: { rewarded: false, interstitial: false } // loại quảng cáo đang có – false thì ẩn nút "xem quảng cáo"
 }
 ```
 
@@ -117,9 +120,27 @@ const r = await GameHub.saveState(save);   // { saved: true, code: null }
 | `SYNC_FAILED` | Đi kèm `saved: true`: đã lưu trong trình duyệt nhưng chưa lên được máy chủ (mất mạng) – lần lưu sau sẽ đồng bộ |
 | `TIMEOUT` | Hub không trả lời trong 5 giây |
 
+## Sự kiện game (track) {#su-kien-game}
+
+Đếm hành vi người chơi trong game – không cần thư viện analytics riêng (Google Analytics, Amplitude… dùng cookie / localStorage nên **không chạy được** trong khung cách ly của hub).
+
+```js
+GameHub.track("level_complete", { level: 3, mode: "normal" });
+GameHub.track("revive_offer_shown");
+GameHub.track("ad_rewarded");
+```
+
+- **Tên:** chữ, số và `_ . : -`, tối đa 64 ký tự (vd `level_complete`, `shop:buy`). Tên sai → cảnh báo trong console, bỏ qua.
+- **props** (không bắt buộc): tối đa 10 khóa; giá trị chuỗi (≤ 100 ký tự), số hoặc `true`/`false`. Kiểu khác bị bỏ.
+- SDK gom sự kiện và gửi **sau 5 giây / mỗi 20 sự kiện / khi rời trang**; `GameHub.flush()` gửi ngay.
+- Xem ở trang **Developer → game → Sự kiện game**: tổng mỗi ngày (theo giờ UTC), tổng theo tên trong 7 / 30 ngày, 50 sự kiện gần nhất kèm props để kiểm tra tích hợp. Giữ 95 ngày.
+- Chạy cả trên hub và [ngoài hub](/ngoai-hub). Trang **Chơi thử** chỉ hiện trong nhật ký SDK, không tính vào thống kê. Mở file trực tiếp: chỉ in ra console.
+- Không gửi thông tin cá nhân (email, số điện thoại, địa chỉ ví) trong props.
+- Giới hạn chống lạm dụng: 200 tên sự kiện khác nhau và 200.000 sự kiện mỗi game mỗi ngày.
+
 ## Quảng cáo
 
-Hiện Game Hub **chưa bật quảng cáo**: `showRewardedAd()` trả về `{ shown: false, rewarded: false }`, `showInterstitialAd()` trả về `{ shown: false }`. Hãy thiết kế để game vẫn chơi bình thường khi không có quảng cáo – ví dụ ẩn nút "Xem quảng cáo nhận thưởng" khi `shown` là `false`.
+Hiện Game Hub **chưa bật quảng cáo** – dữ liệu `init` có `ads: { rewarded: false, interstitial: false }`, nên **ẩn nút "xem quảng cáo nhận thưởng" khi `hub.ads.rewarded` là `false`** (đừng hiện lời mời rồi để người chơi bấm mà không có gì). Gọi thử vẫn an toàn: `showRewardedAd()` trả về `{ shown: false, rewarded: false }`, `showInterstitialAd()` trả về `{ shown: false }`. Hãy thiết kế để game vẫn chơi bình thường khi không có quảng cáo – ví dụ ẩn nút "Xem quảng cáo nhận thưởng" khi `shown` là `false`.
 
 Nếu hub không trả lời (vd game được nhúng ở trang khác), hai hàm quảng cáo chờ tối đa **60 giây** rồi trả về `{ shown: false, rewarded: false, reason: "TIMEOUT" }` – đừng khóa giao diện trong lúc chờ. Mở file trực tiếp thì trả về ngay với `reason: "STANDALONE"`.
 

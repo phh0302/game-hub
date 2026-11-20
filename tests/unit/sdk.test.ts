@@ -31,6 +31,7 @@ function loadSdk(embedded: boolean) {
     document: { currentScript: null },
     console: { ...console, warn: (m: string) => warns.push(m) },
     setTimeout,
+    clearTimeout,
     Promise,
     JSON,
     URL,
@@ -90,4 +91,26 @@ test("/sdk/gamehub-sdk.js (mới nhất) trùng /sdk/v3/gamehub-sdk.js; v1, v2 g
   assert.equal(read("gamehub-sdk.js"), read("v3/gamehub-sdk.js"), "Sửa SDK thì chép sang public/sdk/v3/ (hoặc tạo v4 nếu phá tương thích)");
   assert.match(read("v1/gamehub-sdk.js"), /Game Hub SDK v1/);
   assert.match(read("v2/gamehub-sdk.js"), /Game Hub SDK v2/);
+});
+
+test("track(): gom sự kiện, flush() gửi TRACK lên hub; tên sai bị bỏ", async () => {
+  const { G, sent, warns } = loadSdk(true);
+  G.track("level_complete", { level: 3 });
+  G.track("ad_rewarded");
+  G.track("tên sai");
+  assert.equal(warns.length, 1);
+  assert.equal(sent.filter((m) => m.type === "TRACK").length, 0); // chưa gửi (chờ 5 giây)
+  assert.deepEqual({ ...(await G.flush()) }, { sent: 2 });
+  const msg = sent.find((m) => m.type === "TRACK")!;
+  assert.deepEqual(JSON.parse(JSON.stringify(msg.payload.events)), [
+    { name: "level_complete", props: { level: 3 } },
+    { name: "ad_rewarded" },
+  ]);
+});
+
+test("INIT không có ads (hub cũ) → SDK điền { rewarded: false, interstitial: false }", async () => {
+  const { G, hub } = loadSdk(true);
+  const p = G.init();
+  hub("INIT", { protocolVersion: 1, standalone: false, locale: "vi", player: null, canSubmitScore: false });
+  assert.deepEqual(JSON.parse(JSON.stringify((await p).ads)), { rewarded: false, interstitial: false });
 });

@@ -29,6 +29,8 @@ Breaking changes only ship in a **new major** (`/sdk/v4/`), with a migration gui
 | `GameHub.gameOver(score, { leaderboard })` | The run ends | The hub submits the score to leaderboard `leaderboard` (default `"default"`) → `Promise<result>` (same as [`scoreResult`](#du-lieu-scoreresult)) |
 | `GameHub.saveState(data)` | Save progress (levels, items, settings) | `Promise<{ saved, code }>` – see [Saving progress](#luu-tien-trinh) |
 | `GameHub.loadState()` | When the game loads | `Promise<data \| null>` |
+| `GameHub.track(name, props?)` | Record an event (level cleared, item bought, ad watched…) | Batched and sent after 5 seconds – see [Game events](#su-kien-game) |
+| `GameHub.flush()` | Send pending events now | `Promise<{ sent }>` |
 | `GameHub.showRewardedAd()` | The player chooses to watch an ad for a reward | `Promise<{ shown, rewarded, reason? }>` – **only reward when `rewarded === true`** |
 | `GameHub.showInterstitialAd()` | Between levels | `Promise<{ shown }>` |
 | `GameHub.on(event, callback)` | Listen to the hub | See [Events](#su-kien) |
@@ -57,7 +59,8 @@ No reply from the hub within 20 seconds → `{ saved: false, code: "TIMEOUT" }`.
   standalone: false,      // true when the game is opened directly, not through the hub
   locale: "en",           // "vi" | "en"
   player: { displayName: "ha_pham" } | null,
-  canSubmitScore: true    // false = the player hasn't connected a wallet, scores won't be saved
+  canSubmitScore: true,   // false = the player hasn't connected a wallet, scores won't be saved
+  ads: { rewarded: false, interstitial: false } // which ads are available – false: hide "watch an ad" buttons
 }
 ```
 
@@ -117,9 +120,27 @@ const r = await GameHub.saveState(save);   // { saved: true, code: null }
 | `SYNC_FAILED` | Comes with `saved: true`: saved in the browser but not yet on the server (offline) – the next save syncs |
 | `TIMEOUT` | The hub didn't reply within 5 seconds |
 
+## Game events (track) {#su-kien-game}
+
+Count what players do in your game – no separate analytics library needed (Google Analytics, Amplitude… rely on cookies / localStorage and **don't work** inside the hub's isolated frame).
+
+```js
+GameHub.track("level_complete", { level: 3, mode: "normal" });
+GameHub.track("revive_offer_shown");
+GameHub.track("ad_rewarded");
+```
+
+- **Name:** letters, digits and `_ . : -`, up to 64 characters (e.g. `level_complete`, `shop:buy`). Invalid names → console warning, ignored.
+- **props** (optional): up to 10 keys; values are strings (≤ 100 characters), numbers or `true`/`false`. Other types are dropped.
+- The SDK batches events and sends them **after 5 seconds / every 20 events / when the page closes**; `GameHub.flush()` sends right away.
+- See them on **Developer → your game → Game events**: totals per day (UTC), totals per name over 7 / 30 days, and the 50 most recent events with props to check your integration. Kept 95 days.
+- Works on the hub and [outside the hub](/en/ngoai-hub). **Playtest** only shows them in the SDK log (not counted). Opened directly: printed to the console only.
+- Don't put personal data (email, phone, wallet address) in props.
+- Abuse limits: 200 distinct event names and 200,000 events per game per day.
+
 ## Ads
 
-Game Hub **doesn't show ads yet**: `showRewardedAd()` returns `{ shown: false, rewarded: false }` and `showInterstitialAd()` returns `{ shown: false }`. Make sure the game plays normally without ads – for example, hide the "Watch an ad for a reward" button when `shown` is `false`.
+Game Hub **doesn't show ads yet** – the `init` data has `ads: { rewarded: false, interstitial: false }`, so **hide "watch an ad for a reward" buttons when `hub.ads.rewarded` is `false`** (don't offer something the player can't get). Calling them is still safe: `showRewardedAd()` returns `{ shown: false, rewarded: false }` and `showInterstitialAd()` returns `{ shown: false }`. Make sure the game plays normally without ads – for example, hide the "Watch an ad for a reward" button when `shown` is `false`.
 
 If the hub doesn't reply (e.g. the game is embedded in another page), both ad functions wait up to **60 seconds** before returning `{ shown: false, rewarded: false, reason: "TIMEOUT" }` – don't lock the UI while waiting. Opened directly, they return immediately with `reason: "STANDALONE"`.
 
