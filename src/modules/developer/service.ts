@@ -18,8 +18,8 @@ import { normalizeOrigin } from "@/modules/platform/origins";
 import { readGameSettings, readLeaderboardSettings } from "@/modules/games/settings";
 import { assertCanAddProject, assertFeature, planOf } from "@/modules/platform/quota";
 import { DEVELOPER_TERMS_VERSION, isTermsUpToDate } from "./terms";
-import type {
 import { SPIKE_THRESHOLD } from "@/modules/scores/reject-watch";
+import type {
   ApiKeyCreateInput,
   MemberAddInput,
   DevGameCreateInput,
