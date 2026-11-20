@@ -187,6 +187,6 @@ Khôi phục (vào database trống, vd nhánh mới trên Neon hoặc Postgres 
 
 ```bash
 gpg --decrypt gamehub-2026-11-18.dump.gpg > gamehub.dump      # nhập BACKUP_PASSPHRASE
-docker run --rm -i -v "$PWD:/b" postgres:17-alpine \
+docker run --rm -i -v "$PWD:/b" postgres:18-alpine \
   pg_restore --no-owner --no-privileges --clean --if-exists -d "postgresql://…" /b/gamehub.dump
 ```
