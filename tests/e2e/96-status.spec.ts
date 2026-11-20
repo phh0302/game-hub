@@ -21,4 +21,9 @@ test("status: chạy kiểm tra (khóa 4 phút), ghi uptime theo ngày, API côn
   expect(data.days).toHaveLength(90);
   expect(data.days.at(-1)?.hub?.ok).toBeGreaterThanOrEqual(1);
   expect(data.last.results.api.ok).toBe(true);
+
+  // Dự phòng: GET /api/v1/status khi lần kiểm tra cũ hơn 10 phút sẽ tự chạy kiểm tra (ở đây vừa chạy → không chạy lại)
+  const lastAt = data.last ? (data.last as unknown as { at: number }).at : 0;
+  const again2 = (await (await request.get("/api/v1/status")).json()) as { last: { at: number } };
+  expect(again2.last.at).toBe(lastAt);
 });

@@ -168,6 +168,7 @@ Cách làm cho domain khác:
 - Trình duyệt người xem kiểm tra trực tiếp mỗi phút (hub, API, Platform API, docs, trang chủ).
 - Thanh **90 ngày**: workflow `.github/workflows/uptime.yml` gọi `POST /api/v1/status/check` mỗi 10 phút → hub tự kiểm tra từng thành phần, ghi số lần ok/lỗi theo ngày vào Redis (giữ 95 ngày), trang status đọc `GET /api/v1/status`.
 - Thành phần chuyển sang lỗi / hồi phục → tin Telegram (cần `TELEGRAM_BOT_TOKEN`, xem [TRAFFIC.md](TRAFFIC.md)) + hiện ở mục Bất thường của stats.monlabs.fun.
+- Lịch của GitHub hay chạy trễ / bỏ lượt (repo public, giờ cao điểm) → hub tự kiểm tra **dự phòng** khi lần gần nhất cũ hơn 10 phút: kích hoạt bởi request thật của người chơi (tối đa 1 lần / phút) và khi có người mở trang status.
 - Hub sập hẳn (không tự kiểm tra được) → job Uptime đỏ → GitHub gửi email cho chủ repo. Bật ở GitHub → Settings → Notifications → Actions → "Send notifications for failed workflows only".
 - Sự cố có giải thích cho người dùng: thêm vào `sites/monlabs/status/incidents.json`.
 
