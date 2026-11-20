@@ -425,14 +425,19 @@
         "version_review": "Admin review",
         "version_activate": "Live version changed",
         "game_status": "Game status changed",
-        "game_rules": "Admin changed rules"
+        "game_rules": "Admin changed rules",
+        "leaderboard_create": "Admin created a board",
+        "leaderboard_update": "Admin changed board rules",
+        "leaderboard_delete": "Admin deleted a board",
+        "score_rejected_spike": "⚠ Rejected scores spiking"
       },
       "approved": "approved",
       "rejected": "rejected",
       "autoPublished": "live + published",
       "autoLive": "made live",
       "byDeveloper": "developer",
-      "byAdmin": "admin"
+      "byAdmin": "admin",
+      "spikeDetail": "{count} scores rejected in 1 hour, mostly: {reason}"
     },
     "usage": {
       "title": "Platform API usage",
@@ -525,7 +530,9 @@
       "mirror": "(receives scores from {key})",
       "rejectedTitle": "Rejected scores, last 30 days",
       "rejectedNone": "No scores rejected.",
-      "rejectedHint": "Many PLAY_TOO_SHORT / SCORE_INVALID / SCORE_TOO_FAST from real players usually means the rules don't match real play – tell the admin with these numbers. Each case is in the Activity log."
+      "rejectedHint": "Many PLAY_TOO_SHORT / SCORE_INVALID / SCORE_TOO_FAST from real players usually means the rules don't match real play – tell the admin with these numbers. Each case is in the Activity log.",
+      "warnTitle": "⚠ {count} scores rejected in the last 24 hours",
+      "warnBody": "Most common reason: {reason}. If these are real players, the scoring rules may be stricter than real play – see Scoring rules below and tell the admin."
     },
     "activate": "Make live",
     "activateConfirm": "Make v{version} the live version instead of v{current}? Players get it on their next page load.",
@@ -846,7 +853,8 @@
       "ip_dominant": "Dominant IP",
       "rate_limited_spike": "Many blocked",
       "ip_blocked": "IP blocked",
-      "component_down": "Component down"
+      "component_down": "Component down",
+      "rejected_spike": "Rejected scores spike"
     },
     "telegram": {
       "title": "Telegram alerts",

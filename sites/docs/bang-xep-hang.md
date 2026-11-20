@@ -29,7 +29,7 @@ Admin đặt các luật này cho từng game, theo cách chơi thật của gam
 
 Khi gửi game duyệt, hãy ghi vào **ghi chú phiên bản** điểm tối đa có thể đạt và tốc độ ghi điểm nhanh nhất của người chơi giỏi, để admin đặt luật vừa khít.
 
-**Xem luật của game bạn:** trang Developer → game → mục **Luật chấm điểm** (chỉ xem): thời gian chơi tối thiểu, lượt chơi dài tối đa, và từng bảng với khoảng điểm, tốc độ tối đa, thứ tự, thời gian mở. Luật đặt sai làm điểm thật bị từ chối (`SCORE_INVALID`, `SCORE_TOO_FAST`, `PLAY_TOO_SHORT`) – thấy không khớp thì báo admin.
+**Xem luật của game bạn:** trang Developer → game → mục **Luật chấm điểm** (chỉ xem): thời gian chơi tối thiểu, lượt chơi dài tối đa, và từng bảng với khoảng điểm, tốc độ tối đa, thứ tự, thời gian mở. Luật đặt sai làm điểm thật bị từ chối (`SCORE_INVALID`, `SCORE_TOO_FAST`, `PLAY_TOO_SHORT`) – thấy không khớp thì báo admin. Khi có từ **20 điểm bị từ chối trong 1 giờ**, trang game hiện khung cảnh báo đỏ, Nhật ký hoạt động ghi "Điểm bị từ chối tăng" và admin cũng nhận cảnh báo; mỗi lần admin đổi luật của game hay của từng bảng đều ghi vào nhật ký (luật cũ → luật mới).
 
 ## Game tính theo thời gian
 

@@ -425,14 +425,19 @@
         "version_review": "Admin duyệt",
         "version_activate": "Đổi bản đang chạy",
         "game_status": "Đổi trạng thái game",
-        "game_rules": "Admin đổi luật"
+        "game_rules": "Admin đổi luật",
+        "leaderboard_create": "Admin tạo bảng",
+        "leaderboard_update": "Admin đổi luật bảng",
+        "leaderboard_delete": "Admin xóa bảng",
+        "score_rejected_spike": "⚠ Điểm bị từ chối tăng"
       },
       "approved": "đã duyệt",
       "rejected": "bị từ chối",
       "autoPublished": "tự chạy + phát hành",
       "autoLive": "tự đặt làm bản chạy",
       "byDeveloper": "developer",
-      "byAdmin": "admin"
+      "byAdmin": "admin",
+      "spikeDetail": "{count} điểm bị từ chối trong 1 giờ, nhiều nhất: {reason}"
     },
     "usage": {
       "title": "Số liệu Platform API",
@@ -525,7 +530,9 @@
       "mirror": "(nhận điểm từ {key})",
       "rejectedTitle": "Điểm bị từ chối 30 ngày qua",
       "rejectedNone": "Chưa có điểm nào bị từ chối.",
-      "rejectedHint": "Nhiều PLAY_TOO_SHORT / SCORE_INVALID / SCORE_TOO_FAST từ người chơi thật thường là do luật chưa khớp cách chơi – báo admin kèm số liệu này. Chi tiết từng lần ở Nhật ký hoạt động."
+      "rejectedHint": "Nhiều PLAY_TOO_SHORT / SCORE_INVALID / SCORE_TOO_FAST từ người chơi thật thường là do luật chưa khớp cách chơi – báo admin kèm số liệu này. Chi tiết từng lần ở Nhật ký hoạt động.",
+      "warnTitle": "⚠ {count} điểm bị từ chối trong 24 giờ qua",
+      "warnBody": "Lý do nhiều nhất: {reason}. Nếu là người chơi thật, luật chấm điểm có thể đang chặt hơn cách chơi thực tế – xem mục Luật chấm điểm bên dưới và báo admin."
     },
     "activate": "Đặt làm bản chạy",
     "activateConfirm": "Đặt v{version} làm bản đang chạy thay cho v{current}? Người chơi tải lại trang sẽ chơi bản này.",
@@ -846,7 +853,8 @@
       "ip_dominant": "1 IP chiếm nhiều",
       "rate_limited_spike": "Bị chặn nhiều",
       "ip_blocked": "Chặn IP",
-      "component_down": "Thành phần lỗi"
+      "component_down": "Thành phần lỗi",
+      "rejected_spike": "Điểm bị từ chối tăng"
     },
     "telegram": {
       "title": "Cảnh báo Telegram",

@@ -19,6 +19,7 @@ import { readGameSettings, readLeaderboardSettings } from "@/modules/games/setti
 import { assertCanAddProject, assertFeature, planOf } from "@/modules/platform/quota";
 import { DEVELOPER_TERMS_VERSION, isTermsUpToDate } from "./terms";
 import type {
+import { SPIKE_THRESHOLD } from "@/modules/scores/reject-watch";
   ApiKeyCreateInput,
   MemberAddInput,
   DevGameCreateInput,
@@ -279,9 +280,15 @@ export async function findStudioGame(studioId: string, gameId: string) {
 
 export async function getStudioGame(studioId: string, gameId: string, locale: string) {
   const game = await findStudioGame(studioId, gameId);
-  const [stats, rejected] = await Promise.all([gameStats([game.id]), rejectedByReason(game.id)]);
+  const [stats, rejected, rejected24h] = await Promise.all([
+    gameStats([game.id]),
+    rejectedByReason(game.id),
+    prisma.event.count({
+      where: { type: "score.rejected", gameId: game.id, createdAt: { gte: new Date(Date.now() - 24 * 3600 * 1000) } },
+    }),
+  ]);
   const dto = toDevGameDto(game, locale, stats.get(game.id));
-  return { ...dto, rules: { ...dto.rules, rejected30d: rejected } };
+  return { ...dto, rules: { ...dto.rules, rejected30d: rejected, rejected24h, rejectWarnAt: SPIKE_THRESHOLD } };
 }
 
 /** Điểm bị từ chối 30 ngày qua theo lý do (PLAY_TOO_SHORT, SCORE_INVALID…) – dấu hiệu luật đặt chưa khớp */
@@ -529,6 +536,10 @@ const AUDIT_EVENT_TYPES = [
   "version.activate",
   "game.status",
   "game.rules",
+  "leaderboard.create",
+  "leaderboard.update",
+  "leaderboard.delete",
+  "score.rejected_spike",
   "platform.key.create",
   "platform.key.revoke",
   "platform.origins",

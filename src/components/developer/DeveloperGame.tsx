@@ -68,6 +68,9 @@ type Rules = {
     mirrorOf: string | null;
   }[];
   rejected30d?: { reason: string; count: number }[];
+  rejected24h?: number;
+  /** Ngưỡng cảnh báo (máy chủ quyết định, mặc định 20) */
+  rejectWarnAt?: number;
 };
 
 export function DeveloperGame({ gameId }: { gameId: string }) {
@@ -125,6 +128,7 @@ export function DeveloperGame({ gameId }: { gameId: string }) {
       </div>
 
       <UploadVersion game={game} onDone={load} />
+      {(game.rules.rejected24h ?? 0) >= (game.rules.rejectWarnAt ?? 20) && <RejectWarning rules={game.rules} />}
       <VersionList game={game} onChanged={load} />
       <GameRules rules={game.rules} />
       <GameInfoForm game={game} onSaved={setGame} />
@@ -519,5 +523,17 @@ function GameRules({ rules }: { rules: Rules }) {
         )}
       </div>
     </Section>
+  );
+}
+
+/** Khung cảnh báo: nhiều điểm bị từ chối trong 24 giờ – thường do luật chưa khớp cách chơi thật */
+function RejectWarning({ rules }: { rules: Rules }) {
+  const t = useTranslations("developer.rules");
+  const top = rules.rejected30d?.[0]?.reason ?? "";
+  return (
+    <div role="alert" data-testid="reject-warning" className="rounded-2xl border border-neon-pink/50 bg-neon-pink/10 px-5 py-4 text-sm">
+      <p className="font-semibold text-neon-pink">{t("warnTitle", { count: rules.rejected24h ?? 0 })}</p>
+      <p className="mt-1 text-muted">{t("warnBody", { reason: top })}</p>
+    </div>
   );
 }

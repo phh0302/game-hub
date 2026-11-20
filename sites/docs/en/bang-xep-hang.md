@@ -29,7 +29,7 @@ The admin sets these rules per game, based on how the game is actually played:
 
 When submitting a game for review, put in the **release notes** the maximum achievable score and the fastest scoring rate of a skilled player, so the admin can set tight rules.
 
-**See your game's rules:** Developer page → your game → **Scoring rules** (read-only): minimum play time, maximum run length, and per board the score range, max scoring speed, order and open period. Wrong rules make real scores get rejected (`SCORE_INVALID`, `SCORE_TOO_FAST`, `PLAY_TOO_SHORT`) – if they don't match, tell the admin.
+**See your game's rules:** Developer page → your game → **Scoring rules** (read-only): minimum play time, maximum run length, and per board the score range, max scoring speed, order and open period. Wrong rules make real scores get rejected (`SCORE_INVALID`, `SCORE_TOO_FAST`, `PLAY_TOO_SHORT`) – if they don't match, tell the admin. When **20 scores are rejected within an hour**, the game page shows a red warning, the Activity log records "Rejected scores spiking" and the admin is alerted too; every rule change the admin makes to the game or a board is logged (old → new).
 
 ## Time-based games
 
