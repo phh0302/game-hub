@@ -38,7 +38,8 @@ export async function createFeedback(user: UserWithIdentities | null, input: z.i
     data: { userId: user?.id ?? null, email, category: input.category, message: input.message, page: input.page ?? null },
   });
 
-  const who = user ? `${displayName(user)} (${primaryWallet(user) ?? user.id})` : "Khách";
+  const wallet = user ? primaryWallet(user) : null;
+  const who = user ? `${displayName({ id: user.id, username: user.username, walletAddress: wallet })} (${wallet ?? user.id})` : "Khách";
   const text = [
     `Loại: ${CATEGORY_LABEL[input.category]}`,
     `Người gửi: ${who}`,
@@ -77,7 +78,7 @@ export async function adminListFeedback(status: "OPEN" | "DONE") {
       status: f.status,
       emailed: f.emailed,
       createdAt: f.createdAt.toISOString(),
-      user: f.user ? displayName(f.user) : null,
+      user: f.user ? displayName({ id: f.user.id, username: f.user.username, walletAddress: primaryWallet(f.user) }) : null,
     })),
   };
 }
