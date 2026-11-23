@@ -34,7 +34,10 @@ test("chia sẻ + mời bạn: bảng chia sẻ của hub, link mời ghi nhận
   await page.getByRole("button", { name: "Đóng" }).click();
   await game.locator("#share").click();
   await page.waitForTimeout(1500);
-  console.log("[debug] game log:", await game.getByTestId("log").textContent());
+  console.log("[debug] game log:", JSON.stringify(await game.getByTestId("log").textContent()));
+  const f = page.frames().find((x) => x !== page.mainFrame());
+  console.log("[debug] initData:", await f?.evaluate(() => JSON.stringify((window as unknown as { GameHub: { getInitData: () => unknown; version: number } }).GameHub.getInitData())));
+  console.log("[debug] share fn:", await f?.evaluate(() => String((window as unknown as { GameHub: { share: unknown } }).GameHub.share).slice(0, 200)));
   console.log("[debug] sheet count:", await sheet.count());
   await expect(sheet).toContainText("Mình nhặt được 2 sao");
   expect(await sheet.locator("input").inputValue()).toMatch(/\?score=2&ref=/);
