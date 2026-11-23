@@ -7,6 +7,8 @@ import { installWallet, login } from "./wallet";
  */
 test("chia sẻ + mời bạn: bảng chia sẻ của hub, link mời ghi nhận ví mới", async ({ page, browser }) => {
   test.setTimeout(90_000);
+  page.on("console", (m) => (m.type() === "error" || m.type() === "warning") && console.log("[console]", m.type(), m.text()));
+  page.on("pageerror", (e) => console.log("[pageerror]", e.message));
   await installWallet(page, "player");
   await page.goto("/");
   await login(page, "player");
@@ -31,6 +33,9 @@ test("chia sẻ + mời bạn: bảng chia sẻ của hub, link mời ghi nhận
   // Thông báo "đã lưu điểm" của hub nằm đè đáy khung game → đóng trước khi bấm nút trong game
   await page.getByRole("button", { name: "Đóng" }).click();
   await game.locator("#share").click();
+  await page.waitForTimeout(1500);
+  console.log("[debug] game log:", await game.getByTestId("log").textContent());
+  console.log("[debug] sheet count:", await sheet.count());
   await expect(sheet).toContainText("Mình nhặt được 2 sao");
   expect(await sheet.locator("input").inputValue()).toMatch(/\?score=2&ref=/);
   await sheet.getByRole("button", { name: "Đóng" }).click();
