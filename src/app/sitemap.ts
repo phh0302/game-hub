@@ -9,6 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const pages: MetadataRoute.Sitemap = [
     { url: `${base}/`, changeFrequency: "daily", priority: 1 },
     { url: `${base}/terms/developer`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${base}/contact`, changeFrequency: "yearly", priority: 0.3 },
   ];
   try {
     const games = await prisma.game.findMany({

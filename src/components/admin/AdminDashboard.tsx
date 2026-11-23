@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { AdminReports } from "./AdminReports";
+import { AdminFeedback } from "./AdminFeedback";
 import { AdminLeaderboards } from "./AdminLeaderboards";
 import { AdminStats } from "./AdminStats";
 import { AdminUsers } from "./AdminUsers";
@@ -102,6 +103,7 @@ export function AdminDashboard() {
 
       <AdminStats />
       <AdminReports />
+      <AdminFeedback />
       <AdminUsers />
       <AdminPlans />
       <AdminTrafficBlocks />

@@ -25,7 +25,8 @@
     "noGames": "Chưa có game nào trong mục này."
   },
   "footer": {
-    "rights": "© {year} Game Hub. Mọi quyền được bảo lưu."
+    "rights": "© {year} Game Hub. Mọi quyền được bảo lưu.",
+    "feedback": "Góp ý & liên hệ"
   },
   "auth": {
     "connect": "Kết nối ví",
@@ -896,5 +897,50 @@
       "samples": "Số mẫu",
       "errors": "Lỗi 5xx"
     }
+  },
+  "contact": {
+    "title": "Góp ý & liên hệ",
+    "intro": "Bạn gặp lỗi, có ý tưởng hay muốn hợp tác? Gửi cho Monlabs – mọi góp ý đều được đọc.",
+    "mailTitle": "Gửi email trực tiếp",
+    "mailBody": "Hợp tác, đăng game, vấn đề tài khoản – trả lời trong 1–2 ngày làm việc.",
+    "formTitle": "Gửi góp ý nhanh",
+    "category": "Bạn muốn gửi gì?",
+    "categories": {
+      "BUG": "Báo lỗi",
+      "IDEA": "Ý tưởng / góp ý",
+      "OTHER": "Khác"
+    },
+    "message": "Nội dung",
+    "messagePlaceholder": "Mô tả lỗi (game nào, bạn đã làm gì) hoặc ý tưởng của bạn…",
+    "email": "Email để nhận phản hồi",
+    "optional": "không bắt buộc",
+    "emailHint": "Chỉ dùng để trả lời góp ý này.",
+    "submit": "Gửi góp ý",
+    "sending": "Đang gửi…",
+    "done": {
+      "title": "Đã gửi, cảm ơn bạn!",
+      "body": "Monlabs sẽ xem sớm. Nếu bạn để lại email, chúng mình sẽ trả lời qua đó.",
+      "again": "Gửi góp ý khác"
+    },
+    "errors": {
+      "TOO_SHORT": "Nội dung cần ít nhất 5 ký tự.",
+      "VALIDATION_ERROR": "Kiểm tra lại nội dung và email.",
+      "RATE_LIMITED": "Bạn gửi hơi nhiều, thử lại sau ít phút nhé.",
+      "UNKNOWN": "Chưa gửi được, thử lại hoặc gửi email trực tiếp."
+    }
+  },
+  "adminFeedback": {
+    "title": "Góp ý",
+    "status": {
+      "OPEN": "Chưa xử lý",
+      "DONE": "Đã xử lý"
+    },
+    "empty": "Chưa có góp ý.",
+    "guest": "Khách",
+    "emailed": "đã gửi mail",
+    "reply": "Trả lời",
+    "markDone": "Đã xử lý",
+    "reopen": "Mở lại",
+    "loadError": "Không tải được góp ý ({code})"
   }
 }
