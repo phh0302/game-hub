@@ -28,6 +28,8 @@ test("chia sẻ + mời bạn: bảng chia sẻ của hub, link mời ghi nhận
   await game.locator("#jar").click();
   await game.locator("#jar").click();
   await expect(game.getByTestId("log")).toContainText("scoreResult", { timeout: 20_000 });
+  // Thông báo "đã lưu điểm" của hub nằm đè đáy khung game → đóng trước khi bấm nút trong game
+  await page.getByRole("button", { name: "Đóng" }).click();
   await game.locator("#share").click();
   await expect(sheet).toContainText("Mình nhặt được 2 sao");
   expect(await sheet.locator("input").inputValue()).toMatch(/\?score=2&ref=/);
