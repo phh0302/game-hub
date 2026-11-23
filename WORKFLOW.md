@@ -283,6 +283,11 @@ Từ review tài liệu: game chạy trong sandbox (origin `null`) nên localSto
 - [x] Độ trễ + lỗi theo route → bảng "API chậm nhất" trên stats.monlabs.fun
 - [x] Bật Dependabot alerts; vá thư viện (sharp, postcss trong next, effect, deepmerge-ts) → `npm audit` 0 lỗ hổng; GitHub Actions lên v7 (PR #55)
 
+## Phase 16 – Thương hiệu & liên hệ (23/11)
+- [x] Logo Monlabs mới cho hub, monlabs.fun, docs, icon app, ảnh chia sẻ (PR #57)
+- [x] Trang Góp ý & liên hệ `/contact` (khách gửi được), email admin@monlabs.fun ở cuối mọi trang; admin xem/đánh dấu trong Quản trị; báo Telegram
+- [ ] Nhận mail tại admin@monlabs.fun (Cloudflare Email Routing) + gửi mail góp ý tự động (`RESEND_API_KEY`) – người dùng cấu hình
+
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking

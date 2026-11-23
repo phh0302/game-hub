@@ -54,6 +54,7 @@ model User {
   scores        Score[]
   events        Event[]
   reports       GameReport[]
+  feedbacks     Feedback[]
   authSessions  AuthSession[]
   projectBans   ProjectBan[]
   gameSaves     GameSave[]
@@ -580,4 +581,35 @@ model GameSave {
 
   @@id([userId, gameId])
   @@index([gameId])
+}
+
+enum FeedbackCategory {
+  BUG
+  IDEA
+  OTHER
+}
+
+enum FeedbackStatus {
+  OPEN
+  DONE
+}
+
+/// Góp ý / liên hệ từ trang /contact (khách hoặc người đã đăng nhập). Gửi kèm email tới admin nếu có cấu hình
+model Feedback {
+  id        String           @id @default(cuid())
+  userId    String?
+  /// Email để admin trả lời (không bắt buộc)
+  email     String?
+  category  FeedbackCategory
+  message   String
+  /// Trang người dùng đang xem khi gửi (đường dẫn, không có query)
+  page      String?
+  status    FeedbackStatus   @default(OPEN)
+  /// Đã gửi mail tới hộp thư admin chưa
+  emailed   Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status, createdAt])
 }

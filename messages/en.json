@@ -25,7 +25,8 @@
     "noGames": "No games in this category yet."
   },
   "footer": {
-    "rights": "© {year} Game Hub. All rights reserved."
+    "rights": "© {year} Game Hub. All rights reserved.",
+    "feedback": "Feedback & contact"
   },
   "auth": {
     "connect": "Connect wallet",
@@ -896,5 +897,50 @@
       "samples": "Samples",
       "errors": "5xx errors"
     }
+  },
+  "contact": {
+    "title": "Feedback & contact",
+    "intro": "Found a bug, have an idea or want to work together? Tell Monlabs – every message is read.",
+    "mailTitle": "Email us directly",
+    "mailBody": "Partnerships, publishing games, account issues – we reply within 1–2 business days.",
+    "formTitle": "Quick feedback",
+    "category": "What is it about?",
+    "categories": {
+      "BUG": "Bug report",
+      "IDEA": "Idea / suggestion",
+      "OTHER": "Other"
+    },
+    "message": "Message",
+    "messagePlaceholder": "Describe the bug (which game, what you did) or your idea…",
+    "email": "Email for a reply",
+    "optional": "optional",
+    "emailHint": "Only used to reply to this message.",
+    "submit": "Send feedback",
+    "sending": "Sending…",
+    "done": {
+      "title": "Sent – thank you!",
+      "body": "Monlabs will take a look soon. If you left an email, we'll reply there.",
+      "again": "Send another"
+    },
+    "errors": {
+      "TOO_SHORT": "Please write at least 5 characters.",
+      "VALIDATION_ERROR": "Please check the message and email.",
+      "RATE_LIMITED": "Too many messages, please try again in a few minutes.",
+      "UNKNOWN": "Couldn't send – try again or email us directly."
+    }
+  },
+  "adminFeedback": {
+    "title": "Feedback",
+    "status": {
+      "OPEN": "Open",
+      "DONE": "Done"
+    },
+    "empty": "No feedback yet.",
+    "guest": "Guest",
+    "emailed": "emailed",
+    "reply": "Reply",
+    "markDone": "Mark done",
+    "reopen": "Reopen",
+    "loadError": "Could not load feedback ({code})"
   }
 }

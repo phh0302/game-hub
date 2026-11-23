@@ -85,7 +85,7 @@ export default defineConfig({
           linkText: "Go to home",
         },
         footer: {
-          message: `Questions? Send a report right on the game page at <a href="${HUB}">Game Hub</a>.`,
+          message: `Questions or feedback? <a href="${HUB}/contact">Send feedback</a> or email <a href="mailto:admin@monlabs.fun">admin@monlabs.fun</a>.`,
           copyright: "© 2026 Monlabs",
         },
       },
@@ -178,7 +178,7 @@ export default defineConfig({
       },
     },
     footer: {
-      message: `Có thắc mắc? Gửi báo cáo ngay trên trang game ở <a href="${HUB}">Game Hub</a>.`,
+      message: `Có thắc mắc, góp ý? <a href="${HUB}/contact">Gửi góp ý</a> hoặc email <a href="mailto:admin@monlabs.fun">admin@monlabs.fun</a>.`,
       copyright: "© 2026 Monlabs",
     },
   },
