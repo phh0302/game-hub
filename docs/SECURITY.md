@@ -32,6 +32,28 @@ Kết quả `npm audit --omit=dev` ngày 09/11/2026 sau khi nâng Next.js 15.5.2
 
 CI chặn lỗ hổng mức **critical**; mức **high** được in báo cáo ở mỗi lần chạy để xem lại.
 
+## Rà soát bảo mật 23/11/2026
+
+Phạm vi: đăng nhập SIWE / phiên, phân quyền từng API (hub, developer, admin, p1, s1), upload + zip,
+webhook, header bảo mật, rate limit, bí mật trong lịch sử git, thư viện.
+
+| # | Phát hiện | Mức | Trạng thái |
+|---|---|---|---|
+| 1 | Webhook: kiểm tra DNS rồi mới `fetch` → tên miền có thể đổi sang IP nội bộ giữa 2 bước (DNS rebinding, SSRF) | Trung bình | **Đã sửa**: kiểm tra địa chỉ ngay trong hàm `lookup` của socket, IP viết thẳng cũng bị chặn, không theo redirect, không giữ kết nối (`webhook-http.ts` + unit test) |
+| 2 | Trang hub chưa có Content-Security-Policy | Thấp | **Đã sửa**: CSP nền `frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'` (không đụng script để không hỏng Next/ví) |
+| 3 | Thiếu HSTS khi tự host (Vercel tự thêm) | Thấp | **Đã sửa**: `Strict-Transport-Security` trong `next.config.ts` + nginx (landing, docs) |
+| 4 | Chưa có cập nhật thư viện tự động | Thấp | **Đã sửa**: `.github/dependabot.yml` (npm hằng tuần, GitHub Actions hằng tháng). Cảnh báo Dependabot của repo đang **tắt** → bật ở Settings → Advanced Security |
+| 5 | Lỗi 500 không có mã để đối chiếu log | Thấp | **Đã sửa**: mã request (`x-request-id`) ở mọi API + trong body lỗi 500 |
+
+Đã kiểm tra, không có lỗi:
+
+- SIWE: nonce dùng 1 lần + hết hạn, kiểm tra domain, JWT HS256 (≥ 32 ký tự) có `jti` đối chiếu database, cookie httpOnly/secure/lax; token p1 không dùng được làm phiên hub; tài khoản bị khóa/xóa bị chặn
+- Phân quyền theo đối tượng (IDOR): thu hồi API key, gửi lại webhook, thành viên studio, chuyển chủ sở hữu, rollback phiên bản, cấm người chơi (s1) đều lọc theo game/studio của người gọi
+- Upload: zip chặn `../` và đường dẫn tuyệt đối, giới hạn số file + dung lượng giải nén, chỉ nhận đuôi file cho phép; ảnh đại diện chỉ PNG/JPEG/WebP (không SVG) và phải là file chính user đó upload
+- File game: luôn có CSP `sandbox` (origin `null`), không đọc được cookie của hub
+- IP cho rate limit: Vercel và nginx đều ghi đè `X-Forwarded-For` → client không giả được
+- Lịch sử git: không có khóa / mật khẩu thật (chỉ mật khẩu giả của CI)
+
 ## Hạn chế đã biết (sẽ làm)
 
 - Middleware (Edge) chỉ kiểm tra chữ ký JWT để chặn trang `/profile`, `/admin`…; phiên đã thu hồi vẫn mở được khung trang nhưng mọi dữ liệu/API đều bị từ chối (kiểm tra ở server)

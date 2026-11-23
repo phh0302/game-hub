@@ -62,3 +62,28 @@ export function parseSampleRate(raw: string | undefined): number {
   const n = Number(raw);
   return Number.isFinite(n) && n > 0 && n <= 1 ? n : 0.2;
 }
+
+export type RouteLatency = { name: string; avgMs: number; samples: number; errors: number };
+
+/** Route cần ít nhất chừng này mẫu mới xếp hạng (tránh 1 request lẻ làm nhiễu) */
+export const SLOW_ROUTE_MIN_SAMPLES = 3;
+
+/** Từ các bucket (rt: tổng ms, rc: số mẫu, re: lỗi 5xx theo route) → route chậm nhất theo độ trễ trung bình */
+export function slowRoutes(buckets: Record<string, number>[], limit = 10, minSamples = SLOW_ROUTE_MIN_SAMPLES): RouteLatency[] {
+  const ms = new Map<string, number>();
+  const n = new Map<string, number>();
+  const err = new Map<string, number>();
+  const add = (m: Map<string, number>, k: string, v: number) => m.set(k, (m.get(k) ?? 0) + v);
+  for (const b of buckets) {
+    for (const [k, v] of Object.entries(b)) {
+      if (k.startsWith("rt:")) add(ms, k.slice(3), v);
+      else if (k.startsWith("rc:")) add(n, k.slice(3), v);
+      else if (k.startsWith("re:")) add(err, k.slice(3), v);
+    }
+  }
+  return [...n.entries()]
+    .filter(([, count]) => count >= minSamples)
+    .map(([name, count]) => ({ name, avgMs: Math.round((ms.get(name) ?? 0) / count), samples: count, errors: err.get(name) ?? 0 }))
+    .sort((a, b) => b.avgMs - a.avgMs)
+    .slice(0, limit);
+}

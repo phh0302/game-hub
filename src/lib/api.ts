@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { ZodError } from "zod";
 import { Prisma } from "@prisma/client";
 import { reportError } from "./monitoring";
+import { log, REQUEST_ID_HEADER } from "./log";
 
 /**
  * Lỗi nghiệp vụ trả về cho client.
@@ -35,29 +36,52 @@ function errorResponse(status: number, code: string, message: string, details?: 
   );
 }
 
-/** Bọc handler của route: chuyển mọi lỗi thành JSON thống nhất (+ ghi số liệu cho request được lấy mẫu) */
+/** Request chậm hơn mức này được ghi log cảnh báo (mặc định 2 giây) */
+const SLOW_MS = Number(process.env.SLOW_REQUEST_MS) > 0 ? Number(process.env.SLOW_REQUEST_MS) : 2000;
+
+type RequestMeta = { requestId: string | null; route: string | null; started: number | null; sampled: boolean };
+
+/** Thông tin middleware gắn vào request: mã request, route đã chuẩn hóa, thời điểm bắt đầu, có lấy mẫu hay không */
+async function requestMeta(): Promise<RequestMeta | null> {
+  try {
+    const h = await headers();
+    const started = Number(h.get("x-mon-t"));
+    return {
+      requestId: h.get(REQUEST_ID_HEADER),
+      route: h.get("x-mon-r"),
+      started: Number.isFinite(started) && started > 0 ? started : null,
+      sampled: h.get("x-mon-s") === "1",
+    };
+  } catch {
+    return null; // ngoài ngữ cảnh request (test)
+  }
+}
+
+/** Bọc handler của route: chuyển mọi lỗi thành JSON thống nhất, ghi log request lỗi/chậm, ghi số liệu khi được lấy mẫu */
 export async function handle(fn: () => Promise<Response>): Promise<Response> {
-  const res = await run(fn);
-  await trackSampled(res.status);
+  const meta = await requestMeta();
+  const res = await run(fn, meta);
+  if (meta) observe(res.status, meta);
   return res;
 }
 
 /**
- * Middleware đánh dấu request được lấy mẫu (x-mon-s) và thời điểm bắt đầu (x-mon-t).
- * Sau khi trả lời: ghi mã trạng thái + độ trễ, rồi chạy phát hiện bất thường (tối đa 1 lần/phút).
+ * Sau khi trả lời: request lỗi 5xx / chậm → 1 dòng log JSON (kèm mã request);
+ * request được lấy mẫu → ghi mã trạng thái + độ trễ (tổng và theo route), rồi chạy phát hiện bất thường.
  */
-async function trackSampled(status: number) {
+function observe(status: number, meta: RequestMeta) {
+  const ms = meta.started ? Math.max(0, Date.now() - meta.started) : 0;
+  const fields = { requestId: meta.requestId, route: meta.route, status, ms };
+  if (status >= 500) log.error("request.failed", fields);
+  else if (ms >= SLOW_MS) log.warn("request.slow", fields);
+  if (!meta.sampled) return;
   try {
-    const h = await headers();
-    if (h.get("x-mon-s") !== "1") return;
-    const started = Number(h.get("x-mon-t"));
-    const ms = Number.isFinite(started) && started > 0 ? Math.max(0, Date.now() - started) : 0;
     after(async () => {
       const [{ recordResult }, { maybeDetect }] = await Promise.all([
         import("./traffic/recorder"),
         import("@/modules/traffic/detect"),
       ]);
-      await recordResult({ status, ms });
+      await recordResult({ status, ms, route: meta.route ?? undefined });
       await maybeDetect();
     });
   } catch {
@@ -65,7 +89,7 @@ async function trackSampled(status: number) {
   }
 }
 
-async function run(fn: () => Promise<Response>): Promise<Response> {
+async function run(fn: () => Promise<Response>, meta: RequestMeta | null): Promise<Response> {
   try {
     return await fn();
   } catch (err) {
@@ -80,8 +104,12 @@ async function run(fn: () => Promise<Response>): Promise<Response> {
       if (err.code === "P2025") return errorResponse(404, "NOT_FOUND", "Không tìm thấy dữ liệu");
       if (err.code === "P2003") return errorResponse(400, "INVALID_REFERENCE", "Dữ liệu liên kết không tồn tại");
     }
-    await reportError(err, { tags: { area: "api" } });
-    return errorResponse(500, "INTERNAL_ERROR", "Lỗi máy chủ");
+    const requestId = meta?.requestId ?? undefined;
+    await reportError(err, {
+      tags: { area: "api", ...(meta?.route ? { route: meta.route } : {}), ...(requestId ? { request_id: requestId } : {}) },
+    });
+    // Mã request trong body: người dùng gửi kèm khi báo lỗi → tra đúng dòng log / sự kiện Sentry
+    return errorResponse(500, "INTERNAL_ERROR", "Lỗi máy chủ", requestId ? { requestId } : undefined);
   }
 }
 

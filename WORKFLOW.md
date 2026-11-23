@@ -275,6 +275,14 @@ Từ review tài liệu: game chạy trong sandbox (origin `null`) nên localSto
 - [ ] Sao lưu database mỗi đêm (workflow có sẵn) – người dùng thêm secret `BACKUP_DATABASE_URL`, `BACKUP_PASSPHRASE`
 - [ ] Flying Miso 0.1.1: dùng `saveState`, thêm bảng cho Thử thách ngày / chế độ Trẻ em – cần mã nguồn game
 
+## Phase 15 – Rà soát bảo mật & observability (23/11)
+- [x] Rà soát bảo mật toàn bộ API + upload + webhook + header, báo cáo trong `docs/SECURITY.md`
+- [x] Webhook chống DNS rebinding (kiểm tra địa chỉ lúc kết nối); CSP nền + HSTS; Dependabot
+- [x] Mã request `x-request-id` cho mọi API (header + body lỗi 500 + tag Sentry)
+- [x] Log JSON 1 dòng (`src/lib/log.ts`), ẩn trường nhạy cảm; log request lỗi 5xx / chậm
+- [x] Độ trễ + lỗi theo route → bảng "API chậm nhất" trên stats.monlabs.fun
+- [ ] Bật Dependabot alerts trong Settings của repo (người dùng)
+
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking

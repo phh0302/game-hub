@@ -4,6 +4,8 @@
  * Dùng được ở cả Node lẫn Edge runtime (chỉ dùng fetch + crypto.randomUUID).
  */
 
+import { log } from "./log.ts";
+
 type ReportContext = {
   level?: "error" | "warning";
   tags?: Record<string, string>;
@@ -50,7 +52,13 @@ function scrub(value: Record<string, unknown> | undefined) {
 
 export async function reportError(err: unknown, ctx: ReportContext = {}): Promise<void> {
   const error = err instanceof Error ? err : new Error(typeof err === "string" ? err : JSON.stringify(err));
-  console.error(`[error]${ctx.tags?.area ? ` [${ctx.tags.area}]` : ""}`, error);
+  log.error("exception", {
+    ...ctx.tags,
+    error: { name: error.name, message: error.message },
+    stack: error.stack?.split("\n").slice(1, 6).map((l) => l.trim()),
+    path: ctx.request?.url?.split("?")[0],
+    userId: ctx.userId,
+  });
 
   const dsn = parseDsn(process.env.SENTRY_DSN);
   if (!dsn) return;

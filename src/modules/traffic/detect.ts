@@ -2,6 +2,7 @@ import "server-only";
 import { raiseAnomaly } from "@/lib/traffic/alerts";
 import { redisPipeline, redisRest } from "@/lib/traffic/redis";
 import { hourKey, hourOf, minuteIpKey, minuteKey, minuteOf } from "@/lib/traffic/stats-keys";
+import { log } from "@/lib/log";
 
 /** Ngưỡng phát hiện bất thường (5 phút gần nhất) */
 export const THRESHOLDS = {
@@ -46,7 +47,7 @@ export async function maybeDetect(now = Date.now()) {
     const { checkIfStale } = await import("@/modules/status/uptime");
     await checkIfStale(now);
   } catch (err) {
-    console.error("[traffic] Phát hiện bất thường lỗi", err);
+    log.warn("traffic.detect_failed", { area: "traffic", error: err });
   }
 }
 

@@ -3,6 +3,7 @@ import { ApiError, handle, ok } from "@/lib/api";
 import { runRetentionCleanup } from "@/modules/maintenance/cleanup";
 import { processDueWebhooks } from "@/modules/platform/webhooks";
 import { rollupTrafficDay } from "@/modules/traffic/stats";
+import { log } from "@/lib/log";
 
 /**
  * Cron hằng ngày (vercel.json): gửi lại webhook lỗi đến hạn + dọn dữ liệu quá hạn giữ + gộp số liệu lưu lượng hôm qua.
@@ -21,7 +22,7 @@ export async function GET(req: Request) {
     const webhooks = await processDueWebhooks({ limit: 100 });
     const cleanup = await runRetentionCleanup();
     const traffic = await rollupTrafficDay().catch((err) => {
-      console.error("[cron] Gộp số liệu lưu lượng lỗi", err);
+      log.error("cron.traffic_rollup_failed", { area: "cron", error: err });
       return null;
     });
     return ok({ webhooks, cleanup, traffic });

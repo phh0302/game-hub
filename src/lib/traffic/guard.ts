@@ -8,6 +8,7 @@ import {
   type TrafficGroup,
 } from "./limits";
 import { redisPipeline, redisRest } from "./redis";
+import { log } from "../log";
 
 type GuardBlocked = { ok: false; code: "RATE_LIMITED" | "IP_BLOCKED"; retryAfter: number; justBlocked?: boolean };
 export type GuardResult = { ok: true } | GuardBlocked;
@@ -24,7 +25,7 @@ export async function guardRequest(ip: string, group: TrafficGroup, now = Date.n
     try {
       return await guardRedis(redis, ip, group, now);
     } catch (err) {
-      console.error("[traffic] Redis lỗi, dùng bộ nhớ", err);
+      log.warn("traffic.redis_fallback", { area: "traffic", error: err });
     }
   }
   return guardMemory(ip, group, now);

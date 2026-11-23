@@ -1,7 +1,16 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import { redisPipeline, redisRest, type RedisCommand } from "@/lib/traffic/redis";
-import { hourIpKey, hourKey, hourOf, minuteKey, minuteOf, percentileFromHistogram } from "@/lib/traffic/stats-keys";
+import {
+  hourIpKey,
+  hourKey,
+  hourOf,
+  minuteKey,
+  minuteOf,
+  percentileFromHistogram,
+  slowRoutes,
+  type RouteLatency,
+} from "@/lib/traffic/stats-keys";
 import { listAnomalies } from "@/lib/traffic/alerts";
 import { listBlockedIps } from "@/lib/traffic/guard";
 import { est, toBucket, type Bucket } from "./detect";
@@ -27,6 +36,8 @@ export type TrafficStats = {
   latency: { p50: number | null; p95: number | null; p99: number | null };
   groups: { name: string; requests: number }[];
   routes: { name: string; requests: number }[];
+  /** Route chậm nhất (theo độ trễ trung bình của request được lấy mẫu) */
+  slowRoutes: RouteLatency[];
   topIps: { ipHash: string; requests: number }[];
   blockedCodes: { code: string; count: number }[];
 };
@@ -113,6 +124,7 @@ export function summarize(range: StatsRange, step: TrafficStats["step"], buckets
     },
     groups: sorted(groups, 10),
     routes: sorted(routes, 15),
+    slowRoutes: slowRoutes(buckets),
     topIps: [],
     blockedCodes: [...codes.entries()].sort((a, b) => b[1] - a[1]).map(([code, count]) => ({ code, count })),
   };
@@ -146,12 +158,20 @@ function empty(range: StatsRange, step: TrafficStats["step"], source: TrafficSta
     latency: { p50: null, p95: null, p99: null },
     groups: [],
     routes: [],
+    slowRoutes: [],
     topIps: [],
     blockedCodes: [],
   };
 }
 
-type DailyData = { groups?: Record<string, number>; routes?: Record<string, number>; blocked?: Record<string, number>; hist?: Record<string, number> };
+type DailyData = {
+  groups?: Record<string, number>;
+  routes?: Record<string, number>;
+  blocked?: Record<string, number>;
+  hist?: Record<string, number>;
+  /** Độ trễ theo route: [tổng ms, số mẫu, số lỗi 5xx] */
+  routeLatency?: Record<string, [number, number, number]>;
+};
 
 async function fromDatabase(now: number): Promise<TrafficStats> {
   const today = startOfUtcDay(now);
@@ -165,6 +185,11 @@ async function fromDatabase(now: number): Promise<TrafficStats> {
     for (const [k, v] of Object.entries(d.routes ?? {})) b[`r:${k}`] = v;
     for (const [k, v] of Object.entries(d.blocked ?? {})) b[`blk:${k}`] = v;
     for (const [k, v] of Object.entries(d.hist ?? {})) b[`lat:${k}`] = v;
+    for (const [k, [ms, n, e]] of Object.entries(d.routeLatency ?? {})) {
+      b[`rt:${k}`] = ms;
+      b[`rc:${k}`] = n;
+      b[`re:${k}`] = e;
+    }
     b["s:2xx"] = Math.max(0, r.requests - r.errors - r.clientErrors);
     return b;
   });
@@ -193,14 +218,22 @@ export async function rollupTrafficDay(now = Date.now()): Promise<{ day: string;
   if (s.totals.requests === 0 && s.totals.blocked === 0) return { day: new Date(dayStart).toISOString().slice(0, 10), requests: 0 };
 
   const hist: Record<string, number> = {};
+  const routeLatency: Record<string, [number, number, number]> = {};
+  const slot = (k: string) => (routeLatency[k] ??= [0, 0, 0]);
   for (const b of res.map(toBucket)) {
-    for (const [k, v] of Object.entries(b)) if (k.startsWith("lat:")) hist[k.slice(4)] = (hist[k.slice(4)] ?? 0) + v;
+    for (const [k, v] of Object.entries(b)) {
+      if (k.startsWith("lat:")) hist[k.slice(4)] = (hist[k.slice(4)] ?? 0) + v;
+      else if (k.startsWith("rt:")) slot(k.slice(3))[0] += v;
+      else if (k.startsWith("rc:")) slot(k.slice(3))[1] += v;
+      else if (k.startsWith("re:")) slot(k.slice(3))[2] += v;
+    }
   }
   const data: DailyData = {
     groups: Object.fromEntries(s.groups.map((g) => [g.name, g.requests])),
     routes: Object.fromEntries(s.routes.map((r) => [r.name, r.requests])),
     blocked: Object.fromEntries(s.blockedCodes.map((c) => [c.code, c.count])),
     hist,
+    routeLatency,
   };
   const day = new Date(dayStart);
   const values = {

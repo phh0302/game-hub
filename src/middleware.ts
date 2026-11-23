@@ -12,6 +12,7 @@ import { guardRequest } from "@/lib/traffic/guard";
 import { recordBlocked, recordHit } from "@/lib/traffic/recorder";
 import { raiseAnomaly } from "@/lib/traffic/alerts";
 import { normalizeRoute, parseSampleRate } from "@/lib/traffic/stats-keys";
+import { pickRequestId, REQUEST_ID_HEADER } from "@/lib/log";
 
 const LANDING_ORIGINS = new Set(["https://monlabs.fun", "https://www.monlabs.fun"]);
 
@@ -21,6 +22,16 @@ const LANDING_ORIGINS = new Set(["https://monlabs.fun", "https://www.monlabs.fun
  * API tự kiểm tra quyền bên trong handler (requireUser / requireAdmin).
  */
 export async function middleware(req: NextRequest, event: NextFetchEvent) {
+  if (!req.nextUrl.pathname.startsWith("/api/")) return route(req, event, null);
+  // API: mỗi request có mã riêng – gắn vào request (route ghi log / báo lỗi kèm mã) và response (người dùng báo lỗi kèm mã)
+  // Chỉ tin x-vercel-id khi chạy trên Vercel (Vercel tự ghi đè header này; tự host thì client gửi được)
+  const requestId = pickRequestId(process.env.VERCEL ? req.headers.get("x-vercel-id") : null);
+  const res = await route(req, event, requestId);
+  res.headers.set(REQUEST_ID_HEADER, requestId);
+  return res;
+}
+
+async function route(req: NextRequest, event: NextFetchEvent, requestId: string | null): Promise<NextResponse> {
   const { pathname } = req.nextUrl;
 
   // stats.monlabs.fun → trang theo dõi (chỉ admin, trang tự kiểm tra đăng nhập)
@@ -39,10 +50,12 @@ export async function middleware(req: NextRequest, event: NextFetchEvent) {
     const stopped = group ? await trafficGuard(req, pathname, group, ip, event) : null;
     if (stopped) return stopped;
     forward = new Headers(req.headers);
-    for (const h of ["x-mon-s", "x-mon-t"]) forward.delete(h); // không tin header client tự gửi
+    for (const h of ["x-mon-s", "x-mon-t", "x-mon-r", REQUEST_ID_HEADER]) forward.delete(h); // không tin header client tự gửi
+    if (requestId) forward.set(REQUEST_ID_HEADER, requestId);
+    forward.set("x-mon-t", String(Date.now()));
+    forward.set("x-mon-r", normalizeRoute(pathname));
     if (group && Math.random() < SAMPLE_RATE) {
       forward.set("x-mon-s", "1");
-      forward.set("x-mon-t", String(Date.now()));
       event.waitUntil(recordHit({ group, route: normalizeRoute(pathname), ip, rate: SAMPLE_RATE }));
     }
   }

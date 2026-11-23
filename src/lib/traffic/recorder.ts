@@ -13,6 +13,7 @@ import {
   MINUTE_TTL_SEC,
   statusClass,
 } from "./stats-keys";
+import { log } from "../log";
 
 const IP_SALT = process.env.TRAFFIC_IP_SALT || process.env.JWT_SECRET || "monlabs";
 
@@ -36,7 +37,7 @@ async function run(commands: RedisCommand[]) {
   try {
     await redisPipeline(redis, commands, 1500);
   } catch (err) {
-    console.error("[traffic] Không ghi được thống kê", err);
+    log.warn("traffic.record_failed", { area: "traffic", error: err });
   }
 }
 
@@ -61,13 +62,24 @@ export async function recordHit(input: { group: string; route: string; ip: strin
   ]);
 }
 
-/** Kết quả của request được lấy mẫu (ở route): mã trả về + thời gian xử lý */
-export async function recordResult(input: { status: number; ms: number; now?: number }) {
+/**
+ * Kết quả của request được lấy mẫu (ở route): mã trả về + thời gian xử lý.
+ * Có route → thêm độ trễ theo route (rt: tổng ms, rc: số mẫu, re: số lỗi 5xx) để tìm API chậm / hay lỗi.
+ */
+export async function recordResult(input: { status: number; ms: number; route?: string; now?: number }) {
   const now = input.now ?? Date.now();
+  const ms = Math.max(0, Math.round(input.ms));
   await run(
     both(now, (k, ttl) => [
       ["HINCRBY", k, `s:${statusClass(input.status)}`, 1],
-      ["HINCRBY", k, `lat:${latencyBucket(input.ms)}`, 1],
+      ["HINCRBY", k, `lat:${latencyBucket(ms)}`, 1],
+      ...(input.route
+        ? ([
+            ["HINCRBY", k, `rt:${input.route}`, ms],
+            ["HINCRBY", k, `rc:${input.route}`, 1],
+            ...(input.status >= 500 ? [["HINCRBY", k, `re:${input.route}`, 1]] : []),
+          ] as RedisCommand[])
+        : []),
       ["EXPIRE", k, ttl],
     ]),
   );
