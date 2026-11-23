@@ -367,6 +367,10 @@ function GamePlayer({
       }
     }
     window.addEventListener("message", onMessage);
+    // Game tải xong trước khi hub sẵn sàng nghe (máy nhanh / game nhỏ) → READY bị lỡ và game tự chuyển sang
+    // chế độ độc lập. Gửi INIT ngay khi bắt đầu nghe; game chưa tải thì bỏ qua, READY đến sau vẫn được trả lời.
+    readyRef.current = true;
+    handlers.current.sendInit();
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
@@ -411,7 +415,11 @@ function GamePlayer({
           allow="autoplay; gamepad; fullscreen"
           referrerPolicy="no-referrer"
           loading="eager"
-          onLoad={() => iframeRef.current?.focus()}
+          onLoad={() => {
+            iframeRef.current?.focus();
+            // Game tải lại (đổi trang trong khung) → gửi lại INIT
+            if (readyRef.current) handlers.current.sendInit();
+          }}
           className="block h-[min(78vh,720px)] min-h-[480px] w-full"
         />
         {shareReq && <ShareSheet request={shareReq} onClose={closeShare} />}
