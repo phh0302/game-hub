@@ -1,0 +1,32 @@
+# Tạm thời: chạy npm audit fix (không --force) trên Linux rồi commit package-lock. Xóa sau khi xong.
+name: tmp-audit-fix
+on:
+  push:
+    branches: [deps-audit-fix]
+    paths: [.github/workflows/tmp-audit-fix.yml]
+permissions:
+  contents: write
+jobs:
+  fix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: deps-audit-fix
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm ls sharp postcss || true
+      - run: npm install --no-audit --no-fund
+      - run: npm ls postcss effect deepmerge-ts || true
+      - run: npm audit --omit=dev || true
+      - run: git diff --stat
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git rm -q .github/workflows/tmp-audit-fix.yml
+          git add package.json package-lock.json
+          git commit -m "deps: ghi đè postcss (trong next), effect, deepmerge-ts lên bản vá" || true
+          git push origin HEAD:deps-audit-fix
