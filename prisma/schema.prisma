@@ -47,6 +47,8 @@ model User {
   /// Admin khóa tài khoản: không đăng nhập được, mọi phiên đăng nhập bị thu hồi
   suspendedAt   DateTime?
   suspendReason String?
+  /// Mã mời bạn bè (link ?ref=…), tạo khi cần
+  inviteCode    String?   @unique
 
   identities    AuthIdentity[]
   studioMembers StudioMember[]
@@ -58,6 +60,8 @@ model User {
   authSessions  AuthSession[]
   projectBans   ProjectBan[]
   gameSaves     GameSave[]
+  invitesSent   Referral[] @relation("inviter")
+  invitedBy     Referral?  @relation("invitee")
 }
 
 /// Phiên đăng nhập (id nằm trong JWT dưới dạng jti) → đăng xuất / khóa tài khoản có hiệu lực ngay
@@ -225,6 +229,7 @@ model Game {
   reports        GameReport[]
   apiKeys        ApiKey[]
   saves          GameSave[]
+  referrals      Referral[]
   bans           ProjectBan[]
   usage          UsageDaily[]
   webhooks       WebhookDelivery[]
@@ -612,4 +617,21 @@ model Feedback {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
+}
+
+/// Người chơi mới tạo tài khoản qua link mời của người khác (mỗi người chỉ được ghi nhận 1 lần)
+model Referral {
+  id        String   @id @default(cuid())
+  inviterId String
+  inviteeId String   @unique
+  /// Game của link mời (null = link chung của hub)
+  gameId    String?
+  createdAt DateTime @default(now())
+
+  inviter User  @relation("inviter", fields: [inviterId], references: [id], onDelete: Cascade)
+  invitee User  @relation("invitee", fields: [inviteeId], references: [id], onDelete: Cascade)
+  game    Game? @relation(fields: [gameId], references: [id], onDelete: SetNull)
+
+  @@index([inviterId, createdAt])
+  @@index([gameId])
 }

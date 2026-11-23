@@ -4,7 +4,7 @@ import fs from "node:fs";
 import vm from "node:vm";
 
 /** Chạy public/sdk/gamehub-sdk.js trong "trình duyệt giả": embedded = nằm trong khung sandbox của hub */
-function loadSdk(embedded: boolean) {
+function loadSdk(embedded: boolean, nav: Record<string, unknown> = {}) {
   const src = fs.readFileSync(new URL("../../public/sdk/gamehub-sdk.js", import.meta.url), "utf8");
   const handlers: ((e: unknown) => void)[] = [];
   const sent: { type: string; payload: Record<string, unknown> }[] = [];
@@ -13,7 +13,8 @@ function loadSdk(embedded: boolean) {
   const parent = { postMessage: (m: { type: string; payload: Record<string, unknown> }) => sent.push(m) };
   const win: Record<string, unknown> = {
     addEventListener: (t: string, h: (e: unknown) => void) => t === "message" && handlers.push(h),
-    navigator: { language: "vi" },
+    navigator: { language: "vi", ...nav },
+    location: { href: "https://mygame.example/play#x" },
     localStorage: {
       getItem: (k: string) => {
         if (embedded) throw new Error("SecurityError"); // origin "null" trong sandbox
@@ -113,4 +114,52 @@ test("INIT không có ads (hub cũ) → SDK điền { rewarded: false, interstit
   const p = G.init();
   hub("INIT", { protocolVersion: 1, standalone: false, locale: "vi", player: null, canSubmitScore: false });
   assert.deepEqual(JSON.parse(JSON.stringify((await p).ads)), { rewarded: false, interstitial: false });
+});
+
+test("share(): trong hub gửi SHARE (kèm điểm) và chờ SHARE_RESULT; invite() gửi INVITE", async () => {
+  const { G, sent, hub } = loadSdk(true);
+  const p = G.init();
+  hub("INIT", { protocolVersion: 1, standalone: false, locale: "vi", player: null, canSubmitScore: true, social: { share: true, invite: true }, invites: { count: 2, viaGame: 1, invitedBy: null } });
+  const data = await p;
+  assert.equal(data.invites.count, 2);
+
+  const shared = G.share({ score: 1234.7, text: "  Khoe nè  " });
+  const msg = sent.find((m) => m.type === "SHARE")!;
+  assert.equal(msg.payload.score, 1234);
+  assert.equal(msg.payload.text, "Khoe nè");
+  hub("SHARE_RESULT", { requestId: msg.payload.requestId, shared: true, method: "copy" });
+  assert.deepEqual(JSON.parse(JSON.stringify(await shared)), { shared: true, method: "copy" });
+
+  const invited = G.invite();
+  const inv = sent.find((m) => m.type === "INVITE")!;
+  assert.equal(inv.payload.score, undefined);
+  hub("SHARE_RESULT", { requestId: inv.payload.requestId, shared: false, method: null });
+  assert.equal((await invited).shared, false);
+});
+
+test("share(): hub cũ (INIT không có social) → UNSUPPORTED, không gửi gì", async () => {
+  const { G, sent, hub } = loadSdk(true);
+  const p = G.init();
+  hub("INIT", { protocolVersion: 1, standalone: false, locale: "vi", player: null, canSubmitScore: false });
+  const data = await p;
+  assert.deepEqual(JSON.parse(JSON.stringify(data.social)), { share: false, invite: false });
+  assert.equal(data.invites, null);
+  assert.equal((await G.share()).reason, "UNSUPPORTED");
+  assert.equal(sent.filter((m) => m.type === "SHARE").length, 0);
+});
+
+test("share(): ngoài hub dùng bảng chia sẻ của máy, không có thì copy link trang", async () => {
+  const calls: unknown[] = [];
+  const native = loadSdk(false, { share: async (d: unknown) => void calls.push(d) });
+  assert.deepEqual(JSON.parse(JSON.stringify(await native.G.share({ text: "Chơi đi" }))), { shared: true, method: "native" });
+  assert.equal((calls[0] as { url: string }).url, "https://mygame.example/play");
+
+  let copied = "";
+  const clip = loadSdk(false, { clipboard: { writeText: async (t: string) => void (copied = t) } });
+  assert.equal((await clip.G.invite({ text: "Vào chơi" })).method, "copy");
+  assert.equal(copied, "Vào chơi https://mygame.example/play");
+
+  const none = loadSdk(false);
+  assert.equal((await none.G.share()).reason, "UNSUPPORTED");
+  assert.deepEqual(JSON.parse(JSON.stringify((await none.G.init()).social)), { share: false, invite: false });
 });

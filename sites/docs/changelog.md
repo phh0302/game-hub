@@ -12,6 +12,7 @@ Mỗi **bản chính** có đường dẫn riêng (`/sdk/v1/`, `/sdk/v2/`, `/sdk
 - Hub: lỗi mạng khi nộp điểm trả `code: "NETWORK"` (trước đây `UNKNOWN`).
 - 20/11/2026: **`GameHub.track(name, props)`** + `GameHub.flush()` – đếm sự kiện game, xem ở trang Developer ([Sự kiện game](/sdk#su-kien-game)); dữ liệu `init` có `ads` cho biết loại quảng cáo đang có.
 - 20/11/2026: chế độ độc lập – `saveState()` / `loadState()` lưu theo tài khoản khi người chơi đã `login()` (API `/api/p1/state`), chung dữ liệu với bản trên hub.
+- 23/11/2026: **`GameHub.share()` / `GameHub.invite()`** – bảng chia sẻ của hub, link mời tính bạn bè cho người chơi; `init` có `social` và `invites` ([Chia sẻ & mời bạn](/sdk#chia-se)). Giao thức thêm `SHARE`, `INVITE`, `SHARE_RESULT`.
 
 Chuyển từ v2: không bắt buộc sửa gì – code không dùng giá trị trả về của `gameOver()` chạy y như cũ. Game đang lưu bằng `localStorage` nên chuyển sang `saveState()`.
 

@@ -12,6 +12,7 @@ Each **major version** has its own URL (`/sdk/v1/`, `/sdk/v2/`, `/sdk/v3/`) – 
 - Hub: network errors while submitting return `code: "NETWORK"` (previously `UNKNOWN`).
 - 2026-11-20: **`GameHub.track(name, props)`** + `GameHub.flush()` – count game events, shown on the Developer page ([Game events](/en/sdk#su-kien-game)); `init` data includes `ads` telling which ad types are available.
 - 2026-11-20: standalone mode – `saveState()` / `loadState()` are stored per account once the player has called `login()` (`/api/p1/state`), sharing data with the hub version.
+- 2026-11-23: **`GameHub.share()` / `GameHub.invite()`** – the hub's share sheet, invite links credit friends to the player; `init` has `social` and `invites` ([Share & invite](/en/sdk#share)). Protocol adds `SHARE`, `INVITE`, `SHARE_RESULT`.
 
 Migrating from v2: nothing is required – code that ignores `gameOver()`'s return value behaves exactly as before. Games saving with `localStorage` should switch to `saveState()`.
 

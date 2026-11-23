@@ -167,6 +167,14 @@
         "STUDIO_OWNER": "You own a studio – transfer ownership to another member or ask an admin to delete the studio first.",
         "generic": "Could not delete ({code})."
       }
+    },
+    "invite": {
+      "title": "Invite friends",
+      "hint": "Send this link to friends. Anyone who connects a wallet for the first time through it counts as your invite.",
+      "copy": "Copy",
+      "copied": "Copied",
+      "count": "{count} friends invited",
+      "invitedBy": "invited by {name}"
     }
   },
   "admin": {
@@ -681,7 +689,16 @@
     "scoreText": "I scored {score} in {game} on Game Hub – can you beat it?",
     "scoreTextTime": "I finished {game} in {score} on Game Hub – can you go faster?",
     "ogScore": "Challenge: {score} points in {game}",
-    "ogScoreTime": "Challenge: finish {game} in {score}"
+    "ogScoreTime": "Challenge: finish {game} in {score}",
+    "sheetTitle": "Share",
+    "inviteTitle": "Invite friends",
+    "close": "Close",
+    "copy": "Copy",
+    "more": "Share via…",
+    "invite": "Invite",
+    "invitedCount": "{count} invited",
+    "inviteText": "Come play {game} with me on Game Hub!",
+    "inviteHint": "Friends who connect a wallet for the first time through this link count as your invites."
   },
   "adminStats": {
     "title": "Analytics",

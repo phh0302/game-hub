@@ -5,7 +5,9 @@ import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { LeaderboardPanel } from "@/components/leaderboard/LeaderboardPanel";
 import { ReportGameButton } from "@/components/reports/ReportGameButton";
-import { ShareButton } from "./ShareButton";
+import { InviteButton, ShareButton } from "./ShareButton";
+import { ShareSheet, type ShareOutcome, type ShareRequest } from "./ShareSheet";
+import { inviteUrl } from "@/modules/referrals/codes";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { displayName } from "@/lib/format";
 import { formatScore, type ScoreFormat } from "@/lib/score-format";
@@ -25,6 +27,13 @@ type SubmitResult = {
   tournaments?: { key: string; rank: number | null }[];
 };
 type Toast = { kind: "success" | "info" | "error"; text: string };
+type InviteInfo = { code: string; invited: number; invitedViaGame: number; invitedBy: string | null };
+/** Chữ do game gửi (share/invite) – cắt ngắn, bỏ ký tự điều khiển */
+function cleanText(value: unknown, max = 200): string | null {
+  if (typeof value !== "string") return null;
+  const text = value.replace(/[\u0000-\u001f\u007f]/g, " ").trim().slice(0, max);
+  return text || null;
+}
 
 export function GameRoom({
   slug,
@@ -84,6 +93,8 @@ function GamePlayer({
   const [toast, setToast] = useState<Toast | null>(null);
   /** Điểm ván vừa xong – dùng cho nút "Khoe điểm" */
   const [lastScore, setLastScore] = useState<{ value: number; format: ScoreFormat } | null>(null);
+  const [invite, setInvite] = useState<InviteInfo | null>(null);
+  const [shareReq, setShareReq] = useState<ShareRequest | null>(null);
   /** Bảng tính theo thời gian dùng câu "hoàn thành trong 0:42,7" thay vì "đạt X điểm" */
   const msg = useCallback((key: string, format: ScoreFormat = scoreFormat) => (format === "duration_ms" ? `${key}Time` : key), [scoreFormat]);
 
@@ -112,8 +123,53 @@ function GamePlayer({
       canSubmitScore,
       // Chưa có nhà cung cấp quảng cáo → game ẩn nút "xem quảng cáo nhận thưởng"
       ads: { rewarded: false, interstitial: false },
+      // GameHub.share() / GameHub.invite() mở bảng chia sẻ của hub
+      social: { share: true, invite: true },
+      // Bạn bè đã mời (game có thể tặng thưởng); invitedBy = ai đã mời người chơi này
+      invites: invite ? { count: invite.invited, viaGame: invite.invitedViaGame, invitedBy: invite.invitedBy } : null,
     });
-  }, [post, locale, user, canSubmitScore]);
+  }, [post, locale, user, canSubmitScore, invite]);
+
+  // Mã mời + số bạn đã mời (chỉ tài khoản có ví)
+  useEffect(() => {
+    if (!canSubmitScore) {
+      setInvite(null);
+      return;
+    }
+    let alive = true;
+    apiFetch<InviteInfo>(`/me/invite?game=${encodeURIComponent(slug)}`)
+      .then((r) => alive && setInvite(r))
+      .catch(() => undefined);
+    return () => {
+      alive = false;
+    };
+  }, [canSubmitScore, slug]);
+
+  const tShare = useTranslations("share");
+  const openShare = useCallback(
+    (kind: "share" | "invite", options: { text?: string | null; score?: number | null; requestId?: string } = {}) => {
+      const score = kind === "share" && options.score !== undefined && options.score !== null ? options.score : null;
+      const url = inviteUrl(window.location.origin, { slug, code: invite?.code, score });
+      const text =
+        options.text ??
+        (kind === "invite"
+          ? tShare("inviteText", { game: gameName })
+          : score !== null
+            ? tShare(scoreFormat === "duration_ms" ? "scoreTextTime" : "scoreText", { score: fmt(score), game: gameName })
+            : tShare("gameText", { game: gameName }));
+      setShareReq({ kind, title: gameName, text, url, requestId: options.requestId });
+    },
+    [slug, invite?.code, tShare, gameName, scoreFormat, fmt],
+  );
+
+  const closeShare = useCallback(
+    (outcome: ShareOutcome) => {
+      if (shareReq?.requestId) post("SHARE_RESULT", { requestId: shareReq.requestId, ...outcome });
+      setShareReq(null);
+      iframeRef.current?.focus();
+    },
+    [post, shareReq],
+  );
 
   // Người chơi đăng nhập / đổi ngôn ngữ sau khi game đã tải → gửi lại INIT
   useEffect(() => {
@@ -256,8 +312,8 @@ function GamePlayer({
     [user?.id, slug, post],
   );
 
-  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState, slug });
-  handlers.current = { sendInit, startSession, finishSession, post, handleState, slug };
+  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState, slug, openShare });
+  handlers.current = { sendInit, startSession, finishSession, post, handleState, slug, openShare };
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -292,6 +348,18 @@ function GamePlayer({
             }).catch(() => undefined);
           }
           break;
+        case "SHARE":
+        case "INVITE": {
+          // GameHub.share({ text?, score? }) / GameHub.invite({ text? }) → bảng chia sẻ của hub, trả SHARE_RESULT khi đóng
+          const requestId = typeof payload.requestId === "string" ? payload.requestId.slice(0, 40) : undefined;
+          const score = Number(payload.score);
+          h.openShare(msg.type === "INVITE" ? "invite" : "share", {
+            text: cleanText(payload.text),
+            score: msg.type === "SHARE" && Number.isFinite(score) && score >= 0 ? Math.floor(score) : null,
+            requestId,
+          });
+          break;
+        }
         case "AD_REQUEST":
           // Chưa bật quảng cáo (Phase 11)
           h.post("AD_RESULT", { requestId: payload.requestId, shown: false, rewarded: false, reason: "NO_ADS" });
@@ -346,6 +414,7 @@ function GamePlayer({
           onLoad={() => iframeRef.current?.focus()}
           className="block h-[min(78vh,720px)] min-h-[480px] w-full"
         />
+        {shareReq && <ShareSheet request={shareReq} onClose={closeShare} />}
         {toast && (
           <div
             role={toast.kind === "error" ? "alert" : "status"}
@@ -372,7 +441,8 @@ function GamePlayer({
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-start gap-2">
-          <ShareButton slug={slug} gameName={gameName} score={lastScore} />
+          <ShareButton hasScore={Boolean(lastScore)} onClick={() => openShare("share", { score: lastScore?.value ?? null })} />
+          {canSubmitScore && <InviteButton onClick={() => openShare("invite")} invited={invite?.invited ?? null} />}
           <ReportGameButton slug={slug} />
         </div>
         <button

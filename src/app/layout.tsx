@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages, getTranslations } from "next-intl/server";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { RefCapture } from "@/components/referrals/RefCapture";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { getCurrentUser } from "@/modules/auth/session";
 import { toPublicUser } from "@/modules/users/dto";
@@ -63,6 +64,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-dvh flex flex-col font-sans antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AuthProvider initialUser={user ? toPublicUser(user) : null}>
+            <RefCapture />
             <Header />
             <main className="flex-1">{children}</main>
             <Footer />

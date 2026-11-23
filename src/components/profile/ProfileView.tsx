@@ -8,6 +8,7 @@ import { apiFetch, errorCode } from "@/lib/client-api";
 import { uploadFile } from "@/lib/upload-client";
 import { displayName, shortAddress } from "@/lib/format";
 import { formatScore, type ScoreFormat } from "@/lib/score-format";
+import { InviteFriends } from "./InviteFriends";
 
 type GameRef = { slug: string; name: string; thumbnailUrl: string | null };
 type MyScores = {
@@ -28,6 +29,7 @@ export function ProfileView() {
       <h1 className="font-display text-3xl font-bold">{t("title")}</h1>
       <ProfileForm user={user} />
       <Achievements />
+      {!user.isGuest && <InviteFriends />}
       <Security />
       <DeleteAccount />
     </div>

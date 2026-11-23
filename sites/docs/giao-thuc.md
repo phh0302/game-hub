@@ -18,7 +18,7 @@ Game và hub nói chuyện qua `window.postMessage`. Mọi tin nhắn có dạng
 | Chiều | `type` | `payload` |
 | --- | --- | --- |
 | game → hub | `READY` | `{ sdkVersion }` |
-| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore, ads: { rewarded, interstitial } }` |
+| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore, ads: { rewarded, interstitial }, social: { share, invite }, invites }` |
 | game → hub | `GAME_START` | `{}` |
 | game → hub | `GAME_OVER` | `{ score, leaderboard }` |
 | game → hub | `AD_REQUEST` | `{ requestId, kind: "rewarded" \| "interstitial" }` |
@@ -28,6 +28,9 @@ Game và hub nói chuyện qua `window.postMessage`. Mọi tin nhắn có dạng
 | game → hub | `STATE_LOAD` | `{ requestId }` |
 | hub → game | `STATE_RESULT` | Trả lời `STATE_SAVE`: `{ requestId, saved, code }` · trả lời `STATE_LOAD`: `{ requestId, data: string \| null }` |
 | game → hub | `TRACK` | `{ events: [{ name, props? }] }` – tối đa 50 sự kiện / tin, không cần trả lời |
+| game → hub | `SHARE` | `{ requestId, text?, score? }` – mở bảng chia sẻ của hub (23/11/2026) |
+| game → hub | `INVITE` | `{ requestId, text? }` – mở bảng mời bạn (link có mã mời) |
+| hub → game | `SHARE_RESULT` | `{ requestId, shared, method }` – khi người chơi đóng bảng |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Trình tự
