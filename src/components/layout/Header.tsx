@@ -10,9 +10,8 @@ export async function Header() {
     <header className="sticky top-0 z-40 border-b border-line/70 bg-bg/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4">
         <Link href="/" className="flex shrink-0 items-center gap-2 font-display text-lg font-bold tracking-wide">
-          <span className="grid size-8 place-items-center rounded-lg bg-linear-to-br from-neon to-neon-pink text-bg">
-            G
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/monlabs-logo-rounded.svg" alt="" width={32} height={32} className="size-8 shrink-0" />
           <span className="hidden min-[400px]:inline">
             GAME<span className="neon-text">HUB</span>
           </span>
