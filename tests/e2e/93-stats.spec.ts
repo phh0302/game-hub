@@ -41,7 +41,12 @@ test("Trang stats: chỉ admin, có số liệu request, ghi bất thường khi
   const res = await page.request.get("/api/v1/admin/traffic/stats?range=1h");
   expect(res.status()).toBe(200);
   const body = (await res.json()) as {
-    stats: { totals: { requests: number; blocked: number }; routes: { name: string }[]; sampleRate: number };
+    stats: {
+      totals: { requests: number; blocked: number };
+      routes: { name: string }[];
+      slowRoutes: { name: string; avgMs: number; samples: number; errors: number }[];
+      sampleRate: number;
+    };
     anomalies: { type: string; message: string }[];
     telegram: { tokenSet: boolean };
   };
@@ -49,6 +54,13 @@ test("Trang stats: chỉ admin, có số liệu request, ghi bất thường khi
   expect(body.stats.totals.requests).toBeGreaterThanOrEqual(20);
   expect(body.stats.totals.blocked).toBeGreaterThan(0);
   expect(body.stats.routes.map((r) => r.name)).toContain("/api/v1/games");
+  // Độ trễ theo route (các test trước đã gọi nhiều API, tỷ lệ lấy mẫu = 1)
+  expect(body.stats.slowRoutes.length).toBeGreaterThan(0);
+  for (const r of body.stats.slowRoutes) {
+    expect(r.name.startsWith("/api/")).toBe(true);
+    expect(r.samples).toBeGreaterThanOrEqual(3);
+    expect(r.avgMs).toBeGreaterThanOrEqual(0);
+  }
   expect(body.anomalies.some((a) => a.type === "ip_blocked" && a.message.includes(ip))).toBe(true);
   expect(body.telegram.tokenSet).toBe(false);
 

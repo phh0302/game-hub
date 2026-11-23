@@ -34,3 +34,15 @@ test("statusClass + parseSampleRate", () => {
   assert.equal(parseSampleRate(undefined), 0.2);
   assert.equal(parseSampleRate("0.05"), 0.05);
 });
+
+test("slowRoutes: độ trễ trung bình theo route, bỏ route ít mẫu, kèm lỗi 5xx", async () => {
+  const { slowRoutes } = await import("../../src/lib/traffic/stats-keys.ts");
+  const rows = slowRoutes([
+    { "rt:/api/v1/a": 300, "rc:/api/v1/a": 3, "rt:/api/v1/b": 5000, "rc:/api/v1/b": 2, "rt:/api/v1/c": 100, "rc:/api/v1/c": 4 },
+    { "rt:/api/v1/a": 900, "rc:/api/v1/a": 1, "re:/api/v1/a": 1, req: 10 },
+  ]);
+  assert.deepEqual(rows, [
+    { name: "/api/v1/a", avgMs: 300, samples: 4, errors: 1 },
+    { name: "/api/v1/c", avgMs: 25, samples: 4, errors: 0 },
+  ]);
+});

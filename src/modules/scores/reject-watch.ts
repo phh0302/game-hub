@@ -2,6 +2,7 @@ import "server-only";
 import { redisPipeline, redisRest } from "@/lib/traffic/redis";
 import { logEvent } from "@/modules/events/service";
 import { raiseAnomaly } from "@/lib/traffic/alerts";
+import { log } from "@/lib/log";
 
 /**
  * Theo dõi điểm bị từ chối theo giờ của từng game. Vượt ngưỡng → báo 1 lần / 6 giờ:
@@ -47,6 +48,6 @@ export async function watchRejected(game: { id: string; slug?: string }, reason:
       dedupeSec: ALERT_EVERY_SEC,
     });
   } catch (err) {
-    console.error("[scores] Theo dõi điểm bị từ chối lỗi", err);
+    log.warn("scores.reject_watch_failed", { area: "scores", error: err });
   }
 }

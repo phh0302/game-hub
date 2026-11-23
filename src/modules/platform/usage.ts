@@ -1,6 +1,7 @@
 import "server-only";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { log } from "@/lib/log";
 
 export type UsageField = "apiCalls" | "sessions" | "scores" | "rejected";
 const COLUMNS: Record<UsageField, Prisma.Sql> = {
@@ -22,6 +23,6 @@ export async function trackUsage(gameId: string, field: UsageField): Promise<voi
       VALUES (${gameId}, (now() AT TIME ZONE 'UTC')::date, 1)
       ON CONFLICT ("gameId", "day") DO UPDATE SET ${col} = "UsageDaily".${col} + 1`;
   } catch (err) {
-    console.error("[usage] Không ghi được số liệu", field, err);
+    log.warn("usage.write_failed", { area: "usage", field, error: err });
   }
 }

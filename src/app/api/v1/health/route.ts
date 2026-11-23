@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { rateLimitBackend } from "@/lib/rate-limit";
+import { log } from "@/lib/log";
 
 // Kiểm tra web + database còn sống (uptime monitor, trang trạng thái monlabs.fun/status)
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export async function GET() {
       errorTracking: process.env.SENTRY_DSN ? "sentry" : "console",
     }, { headers: HEADERS });
   } catch (err) {
-    console.error("[health] Database không phản hồi:", err);
+    log.error("health.db_unreachable", { area: "health", error: err });
     return Response.json({ status: "error", db: "down" }, { status: 503, headers: HEADERS });
   }
 }

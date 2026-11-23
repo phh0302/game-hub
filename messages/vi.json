@@ -887,6 +887,14 @@
       "login": "Trang này chỉ dành cho quản trị viên. Kết nối ví admin để xem.",
       "forbidden": "Tài khoản này không có quyền quản trị.",
       "connect": "Kết nối ví"
+    },
+    "slow": {
+      "title": "API chậm nhất",
+      "hint": "Độ trễ trung bình theo route (request được lấy mẫu, cần ≥ 3 mẫu). Lỗi 5xx kèm mã request trong log.",
+      "route": "Route",
+      "avg": "Trung bình",
+      "samples": "Số mẫu",
+      "errors": "Lỗi 5xx"
     }
   }
 }

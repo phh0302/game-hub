@@ -21,6 +21,7 @@ type Overview = {
     latency: { p50: number | null; p95: number | null; p99: number | null };
     groups: { name: string; requests: number }[];
     routes: { name: string; requests: number }[];
+    slowRoutes?: { name: string; avgMs: number; samples: number; errors: number }[];
     topIps: { ipHash: string; requests: number }[];
     blockedCodes: { code: string; count: number }[];
   };
@@ -168,6 +169,37 @@ export function TrafficDashboard() {
               <TopList title={t("top.ips")} rows={s.topIps.map((r) => [r.ipHash, r.requests])} num={num} empty={t("emptyIps")} mono />
               <p className="mt-2 text-xs text-muted">{t("ipsHint")}</p>
             </div>
+          </section>
+
+          <section className="rounded-2xl border border-line bg-surface p-5">
+            <h3 className="mb-1 text-sm font-semibold">{t("slow.title")}</h3>
+            <p className="mb-3 text-xs text-muted">{t("slow.hint")}</p>
+            {(s.slowRoutes ?? []).length === 0 ? (
+              <p className="text-sm text-muted">{t("empty")}</p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-xs text-muted">
+                    <tr>
+                      <th className="py-1 pr-3 font-medium">{t("slow.route")}</th>
+                      <th className="py-1 pr-3 text-right font-medium">{t("slow.avg")}</th>
+                      <th className="py-1 pr-3 text-right font-medium">{t("slow.samples")}</th>
+                      <th className="py-1 text-right font-medium">{t("slow.errors")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(s.slowRoutes ?? []).map((r) => (
+                      <tr key={r.name} className="border-t border-line/60">
+                        <td className="max-w-[22rem] truncate py-1.5 pr-3 font-mono text-xs">{r.name}</td>
+                        <td className="py-1.5 pr-3 text-right tabular-nums">{num.format(r.avgMs)} ms</td>
+                        <td className="py-1.5 pr-3 text-right tabular-nums text-muted">{num.format(r.samples)}</td>
+                        <td className={`py-1.5 text-right tabular-nums ${r.errors > 0 ? "text-red-400" : "text-muted"}`}>{num.format(r.errors)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
         </>
       )}

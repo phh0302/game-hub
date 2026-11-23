@@ -67,3 +67,18 @@ Làm trong dashboard Cloudflare của tên miền `monlabs.fun`:
 | `TELEGRAM_BOT_TOKEN` | – | Token bot gửi cảnh báo |
 | `TELEGRAM_CHAT_ID` | – | Chat nhận cảnh báo (nếu không dùng nút "Tìm chat") |
 | `STATS_URL` | `https://stats.monlabs.fun` | Link trong tin cảnh báo + domain đăng nhập hợp lệ |
+
+## Log & mã request
+
+- Mọi request `/api/*` có mã riêng, trả về ở header `x-request-id` (trên Vercel dùng luôn `x-vercel-id` để khớp Vercel Logs).
+  Lỗi 500 còn trả mã trong body: `{ "error": { "code": "INTERNAL_ERROR", "details": { "requestId": "…" } } }` – người dùng gửi mã này khi báo lỗi.
+- Log máy chủ là JSON 1 dòng: `{"ts","level","msg",…}`. Trường có tên chứa cookie / token / secret / password / signature / apiKey bị ẩn thành `[redacted]`, chuỗi dài bị cắt 500 ký tự.
+  - `request.failed` (5xx) và `request.slow` (≥ `SLOW_REQUEST_MS`, mặc định 2000) kèm `requestId`, `route`, `status`, `ms`
+  - `exception` – lỗi chưa xử lý (cũng gửi lên Sentry nếu có `SENTRY_DSN`, tag `request_id` + `route`)
+- Tìm 1 lỗi người dùng báo: Vercel → Logs → tìm theo mã request; Docker: `docker compose logs hub | grep <mã>`.
+- Đổi mức log: `LOG_LEVEL=debug|info|warn|error`.
+
+## Độ trễ theo route
+
+Request được lấy mẫu ghi thêm tổng thời gian, số mẫu và số lỗi 5xx theo route (`rt:` / `rc:` / `re:` trong bucket Redis, gộp vào `TrafficDaily` mỗi ngày).
+Trang stats có bảng **API chậm nhất** (độ trễ trung bình, cần ≥ 3 mẫu) cho 1 giờ / 24 giờ / 7 ngày / 30 ngày.

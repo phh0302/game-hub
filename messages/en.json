@@ -887,6 +887,14 @@
       "login": "This page is for administrators only. Connect the admin wallet to view it.",
       "forbidden": "This account is not an administrator.",
       "connect": "Connect wallet"
+    },
+    "slow": {
+      "title": "Slowest APIs",
+      "hint": "Average latency per route (sampled requests, at least 3 samples). 5xx errors are logged with their request ID.",
+      "route": "Route",
+      "avg": "Average",
+      "samples": "Samples",
+      "errors": "5xx errors"
     }
   }
 }

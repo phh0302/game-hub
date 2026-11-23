@@ -1,17 +1,17 @@
 import "server-only";
-import { lookup } from "node:dns/promises";
 import { after } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { logEvent } from "@/modules/events/service";
 import { planOf } from "./quota";
+import { postWebhook } from "./webhook-http";
 import {
-  isPrivateAddress,
   nextRetryAt,
   signWebhook,
   WEBHOOK_MAX_ATTEMPTS,
   WEBHOOK_SIGNATURE_HEADER,
 } from "./webhook-utils";
+import { log } from "@/lib/log";
 
 /** Chỉ test tự động mới được gửi tới địa chỉ nội bộ (máy nhận webhook chạy cùng máy) */
 export const WEBHOOK_ALLOW_PRIVATE = process.env.WEBHOOK_ALLOW_PRIVATE === "1";
@@ -42,17 +42,8 @@ export async function enqueueWebhook(gameId: string, event: WebhookEvent, payloa
     });
     return delivery.id;
   } catch (err) {
-    console.error("[webhook] Không tạo được sự kiện", event, err);
+    log.error("webhook.enqueue_failed", { area: "webhook", event, gameId, error: err });
     return null;
-  }
-}
-
-async function assertPublicHost(url: URL) {
-  if (WEBHOOK_ALLOW_PRIVATE) return;
-  const host = url.hostname.replace(/^\[|\]$/g, "");
-  const addresses = await lookup(host, { all: true });
-  if (addresses.length === 0 || addresses.some((a) => isPrivateAddress(a.address))) {
-    throw new Error("Địa chỉ webhook trỏ vào mạng nội bộ");
   }
 }
 
@@ -80,7 +71,6 @@ export async function deliverWebhook(id: string, options: { force?: boolean } = 
     const { webhookUrl, webhookSecret } = delivery.game;
     if (!webhookUrl || !webhookSecret) throw new Error("Project chưa cấu hình webhook");
     const url = new URL(webhookUrl);
-    await assertPublicHost(url);
     const body = JSON.stringify({
       id: delivery.id,
       type: delivery.event,
@@ -89,9 +79,10 @@ export async function deliverWebhook(id: string, options: { force?: boolean } = 
       data: delivery.payload,
     });
     const timestamp = Math.floor(Date.now() / 1000);
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
+    // Kiểm tra địa chỉ nội bộ ngay lúc kết nối (chống DNS rebinding), không theo redirect
+    const res = await postWebhook(
+      url,
+      {
         "content-type": "application/json",
         "user-agent": "Monlabs-Webhooks/1",
         [WEBHOOK_SIGNATURE_HEADER]: signWebhook(webhookSecret, timestamp, body),
@@ -99,11 +90,9 @@ export async function deliverWebhook(id: string, options: { force?: boolean } = 
         "x-monlabs-delivery": delivery.id,
       },
       body,
-      redirect: "manual",
-      signal: AbortSignal.timeout(TIMEOUT_MS),
-    });
+      { timeoutMs: TIMEOUT_MS, allowPrivate: WEBHOOK_ALLOW_PRIVATE },
+    );
     statusCode = res.status;
-    await res.body?.cancel().catch(() => undefined);
     if (res.status < 200 || res.status >= 300) error = `HTTP ${res.status}`;
   } catch (err) {
     error = err instanceof Error ? err.message.slice(0, 300) : "Lỗi không xác định";

@@ -2,6 +2,7 @@ import "server-only";
 import { prisma } from "@/lib/prisma";
 import { redisPipeline, redisRest, type RedisCommand } from "@/lib/traffic/redis";
 import { raiseAnomaly, sendTelegram } from "@/lib/traffic/alerts";
+import { log } from "@/lib/log";
 
 /**
  * Kiểm tra định kỳ từ máy chủ (GitHub Actions gọi mỗi 10 phút + trang status gọi khi cần, tối đa 1 lần / 4 phút):
@@ -139,7 +140,7 @@ export async function checkIfStale(now = Date.now()) {
     if (last && now - last.at < STALE_MS) return null;
     return await checkAndRecord(now);
   } catch (err) {
-    console.error("[status] Kiểm tra dự phòng lỗi", err);
+    log.warn("status.fallback_check_failed", { area: "status", error: err });
     return null;
   }
 }

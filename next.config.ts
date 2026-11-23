@@ -28,12 +28,19 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+          // Chỉ có tác dụng khi trang được phục vụ qua HTTPS (trình duyệt bỏ qua trên http://localhost)
+          { key: "Strict-Transport-Security", value: "max-age=31536000" },
         ],
       },
       {
         // Trang của hub không được nhúng vào web khác (chống clickjacking khi ký ví)
         source: "/((?!uploads/).*)",
-        headers: [{ key: "X-Frame-Options", value: "DENY" }],
+        headers: [
+          { key: "X-Frame-Options", value: "DENY" },
+          // CSP nền (không đụng script/style → không làm hỏng Next/ví): cấm nhúng trang, cấm <base> lạ,
+          // cấm plugin, form chỉ gửi về chính hub
+          { key: "Content-Security-Policy", value: "frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'" },
+        ],
       },
       {
         // Service worker phải luôn lấy bản mới nhất (trình duyệt tự kiểm tra cập nhật)

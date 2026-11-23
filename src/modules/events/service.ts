@@ -1,6 +1,7 @@
 import "server-only";
 import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { log } from "@/lib/log";
 
 /** Các loại sự kiện đang dùng – thêm loại mới không cần đổi database */
 export type EventType = "auth.login" | "session.start" | "score.submit" | (string & {});
@@ -19,6 +20,6 @@ export async function logEvent(event: {
       data: { type: event.type, userId: event.userId ?? null, gameId: event.gameId ?? null, data: event.data },
     });
   } catch (err) {
-    console.error("[events] Không ghi được sự kiện", event.type, err);
+    log.error("events.write_failed", { area: "events", type: event.type, error: err });
   }
 }

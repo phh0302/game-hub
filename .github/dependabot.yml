@@ -1,0 +1,22 @@
+# Tự mở pull request cập nhật thư viện có bản vá bảo mật / bản mới (mỗi tuần, gom theo nhóm cho đỡ nhiều PR).
+# CI chạy đủ test cho từng PR trước khi merge.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:00"
+      timezone: Asia/Ho_Chi_Minh
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
