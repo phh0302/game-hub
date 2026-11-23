@@ -288,6 +288,13 @@ Từ review tài liệu: game chạy trong sandbox (origin `null`) nên localSto
 - [x] Trang Góp ý & liên hệ `/contact` (khách gửi được), email admin@monlabs.fun ở cuối mọi trang; admin xem/đánh dấu trong Quản trị; báo Telegram
 - [ ] Nhận mail tại admin@monlabs.fun (Cloudflare Email Routing) + gửi mail góp ý tự động (`RESEND_API_KEY`) – người dùng cấu hình
 
+## Phase 17 – Chia sẻ, mời bạn, chơi nhiều người (23/11)
+Chọn: chơi theo lượt + phòng chờ chạy trên hạ tầng hiện có (Vercel không giữ WebSocket); realtime để sau (VPS / dịch vụ ngoài).
+- [x] 17a. SDK `GameHub.share()` / `GameHub.invite()` (thêm vào v3), bảng chia sẻ của hub, link mời `?ref=`, ghi nhận bạn mới, `init.invites`, thẻ Mời bạn bè trong hồ sơ
+- [ ] 17b. Phòng chờ (lobby): tạo phòng, mã phòng / link mời vào phòng, danh sách người trong phòng, chủ phòng bắt đầu
+- [ ] 17c. Chơi theo lượt / thách đấu: trạng thái ván lưu trên máy chủ, `GameHub.multiplayer` gửi nước đi + nhận lượt (polling), hết giờ lượt
+- [ ] 17d. Thách đấu điểm bất đồng bộ: gửi thử thách cho bạn, cùng seed, so điểm
+
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking

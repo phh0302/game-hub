@@ -33,6 +33,8 @@ Breaking changes only ship in a **new major** (`/sdk/v4/`), with a migration gui
 | `GameHub.flush()` | Send pending events now | `Promise<{ sent }>` |
 | `GameHub.showRewardedAd()` | The player chooses to watch an ad for a reward | `Promise<{ shown, rewarded, reason? }>` – **only reward when `rewarded === true`** |
 | `GameHub.showInterstitialAd()` | Between levels | `Promise<{ shown }>` |
+| `GameHub.share({ text?, score? })` | The player taps "Share score" / "Share" | `Promise<{ shared, method, reason? }>` – see [Share & invite](#share) |
+| `GameHub.invite({ text? })` | The player taps "Invite" | `Promise<{ shared, method, reason? }>` |
 | `GameHub.on(event, callback)` | Listen to the hub | See [Events](#su-kien) |
 
 ### The score sent by `gameOver(score)` {#diem-gui-len}
@@ -60,7 +62,9 @@ No reply from the hub within 20 seconds → `{ saved: false, code: "TIMEOUT" }`.
   locale: "en",           // "vi" | "en"
   player: { displayName: "ha_pham" } | null,
   canSubmitScore: true,   // false = the player hasn't connected a wallet, scores won't be saved
-  ads: { rewarded: false, interstitial: false } // which ads are available – false: hide "watch an ad" buttons
+  ads: { rewarded: false, interstitial: false }, // which ads are available – false: hide "watch an ad" buttons
+  social: { share: true, invite: true },        // share sheet / invites available – false: hide the buttons
+  invites: { count: 3, viaGame: 1, invitedBy: "minh" } | null // friends invited (total / via this game), who invited this player; null = no wallet
 }
 ```
 
@@ -137,6 +141,24 @@ GameHub.track("ad_rewarded");
 - Works on the hub and [outside the hub](/en/ngoai-hub). **Playtest** only shows them in the SDK log (not counted). Opened directly: printed to the console only.
 - Don't put personal data (email, phone, wallet address) in props.
 - Abuse limits: 200 distinct event names and 200,000 events per game per day.
+
+## Share & invite {#share}
+
+Added 2026-11-23, available in `/sdk/v3/`.
+
+```js
+shareBtn.onclick = () => GameHub.share({ score: lastScore, text: `I scored ${lastScore} – can you beat it?` });
+inviteBtn.onclick = () => GameHub.invite();
+GameHub.on("init", (hub) => { shareBtn.hidden = !hub.social.share; inviteBtn.hidden = !hub.social.invite; });
+```
+
+- **On the hub:** opens the hub's share sheet over the game (visible in fullscreen too): copy link, Facebook, X, Telegram and "Share via…" (native share on phones). The link is the game page with the player's **invite code** (`?ref=…`); with `score` it adds `?score=` so the preview image shows *"I scored X"*.
+- **Invites:** friends who **connect a wallet for the first time** through the link (within 30 days) count for the inviter. The count is in `init.invites` – games can reward it (e.g. unlock a skin at 3 invites).
+- **Result:** `{ shared: true, method: "copy" | "native" | "facebook" | "x" | "telegram" }` once shared/copied; closing the sheet → `shared: false`. `reason: "UNSUPPORTED"` = older hub or the browser can't share.
+- **Outside the hub** (file opened directly, [own domain](/en/ngoai-hub)): uses the device's share sheet, else copies the current page link; invites are not counted yet.
+- Call it from a **player action** (button tap) – browsers block automatic sharing/copying. `text` is limited to 200 characters.
+
+Protocol: the game sends `SHARE { requestId, text?, score? }` / `INVITE { requestId, text? }`, the hub replies `SHARE_RESULT { requestId, shared, method }` when the sheet closes.
 
 ## Ads
 

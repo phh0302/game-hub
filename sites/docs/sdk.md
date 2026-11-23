@@ -33,6 +33,8 @@ Thay đổi phá vỡ tương thích chỉ ra ở **bản chính mới** (`/sdk/
 | `GameHub.flush()` | Muốn gửi ngay các sự kiện đang chờ | `Promise<{ sent }>` |
 | `GameHub.showRewardedAd()` | Người chơi chọn xem quảng cáo để nhận thưởng | `Promise<{ shown, rewarded, reason? }>` – **chỉ thưởng khi `rewarded === true`** |
 | `GameHub.showInterstitialAd()` | Giữa các màn | `Promise<{ shown }>` |
+| `GameHub.share({ text?, score? })` | Người chơi bấm "Khoe điểm" / "Chia sẻ" | `Promise<{ shared, method, reason? }>` – xem [Chia sẻ & mời bạn](#chia-se) |
+| `GameHub.invite({ text? })` | Người chơi bấm "Mời bạn" | `Promise<{ shared, method, reason? }>` |
 | `GameHub.on(event, callback)` | Lắng nghe hub | Xem [Sự kiện](#su-kien) |
 
 ### Điểm gửi lên `gameOver(score)` {#diem-gui-len}
@@ -60,7 +62,9 @@ Không nhận được trả lời của hub sau 20 giây → `{ saved: false, c
   locale: "vi",           // "vi" | "en"
   player: { displayName: "ha_pham" } | null,
   canSubmitScore: true,   // false = người chơi chưa kết nối ví, điểm sẽ không được lưu
-  ads: { rewarded: false, interstitial: false } // loại quảng cáo đang có – false thì ẩn nút "xem quảng cáo"
+  ads: { rewarded: false, interstitial: false }, // loại quảng cáo đang có – false thì ẩn nút "xem quảng cáo"
+  social: { share: true, invite: true },        // có bảng chia sẻ / mời bạn không – false thì ẩn nút
+  invites: { count: 3, viaGame: 1, invitedBy: "minh" } | null // bạn đã mời (tổng / qua game này), ai mời mình; null = chưa kết nối ví
 }
 ```
 
@@ -137,6 +141,27 @@ GameHub.track("ad_rewarded");
 - Chạy cả trên hub và [ngoài hub](/ngoai-hub). Trang **Chơi thử** chỉ hiện trong nhật ký SDK, không tính vào thống kê. Mở file trực tiếp: chỉ in ra console.
 - Không gửi thông tin cá nhân (email, số điện thoại, địa chỉ ví) trong props.
 - Giới hạn chống lạm dụng: 200 tên sự kiện khác nhau và 200.000 sự kiện mỗi game mỗi ngày.
+
+## Chia sẻ & mời bạn {#chia-se}
+
+Thêm 23/11/2026, có sẵn trong `/sdk/v3/`.
+
+```js
+// Màn hết ván: nút "Khoe điểm"
+shareBtn.onclick = () => GameHub.share({ score: lastScore, text: `Mình được ${lastScore} điểm, vào thách đấu nào!` });
+// Nút "Mời bạn"
+inviteBtn.onclick = () => GameHub.invite();
+// Ẩn nút khi không hỗ trợ (hub cũ / trình duyệt không chia sẻ được)
+GameHub.on("init", (hub) => { shareBtn.hidden = !hub.social.share; inviteBtn.hidden = !hub.social.invite; });
+```
+
+- **Trên hub:** mở bảng chia sẻ của hub đè lên game (vẫn thấy khi toàn màn hình): copy link, Facebook, X, Telegram, và "Chia sẻ qua…" (Zalo, Messenger… trên điện thoại). Link là trang game kèm **mã mời** của người chơi (`?ref=…`); có `score` thì thêm `?score=` để ảnh xem trước hiện *"Mình đạt X điểm"*.
+- **Mời bạn:** bạn bè **kết nối ví lần đầu** qua link (trong 30 ngày) được tính cho người mời. Số bạn đã mời có trong `init.invites` – game có thể tặng thưởng (ví dụ mời 3 bạn mở skin) và hiện *"Được {invitedBy} mời"* cho người mới.
+- **Kết quả:** `{ shared: true, method: "copy" | "native" | "facebook" | "x" | "telegram" }` khi người chơi đã chia sẻ / copy; đóng bảng → `shared: false`. `reason: "UNSUPPORTED"` = hub cũ hoặc trình duyệt không hỗ trợ.
+- **Ngoài hub** (mở file trực tiếp, [game trên domain riêng](/ngoai-hub)): dùng bảng chia sẻ của máy, không có thì copy link trang hiện tại; chưa tính lượt mời.
+- Gọi từ **thao tác của người chơi** (bấm nút) – trình duyệt chặn chia sẻ / copy tự động. Chữ `text` tối đa 200 ký tự.
+
+Giao thức: game gửi `SHARE { requestId, text?, score? }` / `INVITE { requestId, text? }`, hub trả `SHARE_RESULT { requestId, shared, method }` khi đóng bảng.
 
 ## Quảng cáo
 

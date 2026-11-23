@@ -4,6 +4,7 @@
  *      const hub = await GameHub.init();  GameHub.gameStart();
  *      const result = await GameHub.gameOver(1234);   // v3: Promise kết quả ở mọi chế độ
  *      await GameHub.saveState({ level: 3 });  const save = await GameHub.loadState();
+ *      await GameHub.share({ score: 1234 });  await GameHub.invite();   // chia sẻ / mời bạn (23/11)
  * 2. Chế độ độc lập (game chạy trên domain riêng – Platform API): truyền projectKey.
  *      await GameHub.init({ projectKey: "pk_live_…" });
  *      await GameHub.login();                 // ví MetaMask; GameHub.login({ guest: true }) = chơi khách
@@ -39,6 +40,7 @@
   var pendingScore = null; // resolve của gameOver() đang chờ SCORE_RESULT (chế độ hub)
   var SCORE_TIMEOUT_MS = 20000;
   var STATE_TIMEOUT_MS = 5000;
+  var SHARE_TIMEOUT_MS = 5 * 60 * 1000; // bảng chia sẻ mở đến khi người chơi đóng
   var STATE_MAX_BYTES = 64 * 1024; // đo theo UTF-8 (tiếng Việt 1 ký tự có thể 2–3 byte)
 
   function send(type, payload) {
@@ -67,6 +69,9 @@
     switch (msg.type) {
       case "INIT":
         if (!payload.ads) payload.ads = NO_ADS;
+        // Hub cũ không gửi → không có bảng chia sẻ / mời bạn
+        if (!payload.social) payload.social = NO_SOCIAL;
+        if (payload.invites === undefined) payload.invites = null;
         initData = payload;
         emit("init", payload);
         break;
@@ -86,6 +91,7 @@
         emit("scoreResult", payload);
         break;
       case "STATE_RESULT":
+      case "SHARE_RESULT":
         if (pending[payload.requestId]) {
           pending[payload.requestId](payload);
           delete pending[payload.requestId];
@@ -102,6 +108,63 @@
 
   /** Quảng cáo nào đang có: game nên ẩn nút "xem quảng cáo" khi false (hub cũ không gửi → coi như không có) */
   var NO_ADS = { rewarded: false, interstitial: false };
+  var NO_SOCIAL = { share: false, invite: false };
+
+  /** Ngoài hub: chia sẻ bằng bảng chia sẻ của máy, không có thì copy link trang hiện tại */
+  function canShareHere() {
+    var nav = global.navigator || {};
+    return typeof nav.share === "function" || Boolean(nav.clipboard && nav.clipboard.writeText);
+  }
+  function localSocial() {
+    var ok = canShareHere();
+    return { share: ok, invite: ok };
+  }
+  function shareHere(text) {
+    var nav = global.navigator || {};
+    var url = String(global.location && global.location.href ? global.location.href : "").split("#")[0];
+    var title = (global.document && global.document.title) || "";
+    function copy() {
+      if (!nav.clipboard || !nav.clipboard.writeText) return Promise.resolve({ shared: false, method: null, reason: "UNSUPPORTED" });
+      return nav.clipboard.writeText((text ? text + " " : "") + url).then(
+        function () {
+          return { shared: true, method: "copy" };
+        },
+        function () {
+          return { shared: false, method: null, reason: "UNSUPPORTED" };
+        },
+      );
+    }
+    if (typeof nav.share === "function") {
+      return nav.share({ title: title, text: text || title, url: url }).then(
+        function () {
+          return { shared: true, method: "native" };
+        },
+        function (err) {
+          return err && err.name === "AbortError" ? { shared: false, method: null, reason: "CANCELLED" } : copy();
+        },
+      );
+    }
+    return copy();
+  }
+
+  /** share / invite: trong hub → bảng chia sẻ của hub (link có mã mời); ngoài hub → chia sẻ link trang */
+  function social(kind, options) {
+    var o = options || {};
+    var text = typeof o.text === "string" && o.text.trim() ? o.text.trim().slice(0, 200) : undefined;
+    var score = typeof o.score === "number" && isFinite(o.score) && o.score >= 0 ? Math.floor(o.score) : undefined;
+    if (embedded && !project) {
+      var caps = (initData && initData.social) || NO_SOCIAL;
+      if (!caps[kind]) return Promise.resolve({ shared: false, method: null, reason: "UNSUPPORTED" });
+      var payload = { text: text };
+      if (kind === "share" && score !== undefined) payload.score = score;
+      return requestHub(kind === "share" ? "SHARE" : "INVITE", payload, SHARE_TIMEOUT_MS, { shared: false, method: null, reason: "TIMEOUT" }).then(
+        function (r) {
+          return { shared: Boolean(r.shared), method: r.method || null, reason: r.reason };
+        },
+      );
+    }
+    return shareHere(text);
+  }
 
   function standaloneData() {
     var lang = (global.navigator && global.navigator.language) || "vi";
@@ -112,6 +175,8 @@
       player: null,
       canSubmitScore: false,
       ads: NO_ADS,
+      social: localSocial(),
+      invites: null,
     };
   }
 
@@ -135,15 +200,18 @@
   function requestHub(type, payload, timeoutMs, fallback) {
     return new Promise(function (resolve) {
       var requestId = "rq_" + ++seq;
-      pending[requestId] = resolve;
-      payload.requestId = requestId;
-      send(type, payload);
-      setTimeout(function () {
+      var timer = setTimeout(function () {
         if (pending[requestId]) {
           delete pending[requestId];
           resolve(fallback);
         }
       }, timeoutMs);
+      pending[requestId] = function (r) {
+        clearTimeout(timer); // trả lời rồi → bỏ hẹn giờ (bảng chia sẻ chờ tới 5 phút)
+        resolve(r);
+      };
+      payload.requestId = requestId;
+      send(type, payload);
     });
   }
 
@@ -348,6 +416,8 @@
       player: project.player,
       canSubmitScore: !!project.player,
       ads: NO_ADS, // chế độ độc lập: Monlabs không cung cấp quảng cáo
+      social: localSocial(), // chia sẻ link trang của game (chưa tính lượt mời)
+      invites: null,
     };
   }
 
@@ -707,6 +777,20 @@
     /** Quảng cáo xen giữa màn → Promise<{ shown }> */
     showInterstitialAd: function () {
       return requestAd("interstitial");
+    },
+
+    /**
+     * Chia sẻ game / khoe điểm. options: { text?, score? } → Promise<{ shared, method, reason? }>.
+     * Trong hub: mở bảng chia sẻ của hub (link kèm mã mời của người chơi, có score → ảnh "Mình đạt X điểm").
+     * Ngoài hub: bảng chia sẻ của máy hoặc copy link trang. Gọi từ thao tác của người chơi (bấm nút).
+     */
+    share: function (options) {
+      return social("share", options);
+    },
+
+    /** Mời bạn bè: link riêng của người chơi; bạn bè tạo tài khoản qua link được tính vào init.invites.count */
+    invite: function (options) {
+      return social("invite", options);
     },
 
     /** Lắng nghe sự kiện từ hub: "init", "scoreResult", "pause", "resume" */

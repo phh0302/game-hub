@@ -18,7 +18,7 @@ The game and the hub talk through `window.postMessage`. Every message looks like
 | Direction | `type` | `payload` |
 | --- | --- | --- |
 | game → hub | `READY` | `{ sdkVersion }` |
-| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore, ads: { rewarded, interstitial } }` |
+| hub → game | `INIT` | `{ protocolVersion, standalone, locale, player, canSubmitScore, ads: { rewarded, interstitial }, social: { share, invite }, invites }` |
 | game → hub | `GAME_START` | `{}` |
 | game → hub | `GAME_OVER` | `{ score, leaderboard }` |
 | game → hub | `AD_REQUEST` | `{ requestId, kind: "rewarded" \| "interstitial" }` |
@@ -28,6 +28,9 @@ The game and the hub talk through `window.postMessage`. Every message looks like
 | game → hub | `STATE_LOAD` | `{ requestId }` |
 | hub → game | `STATE_RESULT` | Reply to `STATE_SAVE`: `{ requestId, saved, code }` · reply to `STATE_LOAD`: `{ requestId, data: string \| null }` |
 | game → hub | `TRACK` | `{ events: [{ name, props? }] }` – up to 50 events per message, no reply |
+| game → hub | `SHARE` | `{ requestId, text?, score? }` – opens the hub share sheet (2026-11-23) |
+| game → hub | `INVITE` | `{ requestId, text? }` – opens the invite sheet (link with invite code) |
+| hub → game | `SHARE_RESULT` | `{ requestId, shared, method }` – when the player closes the sheet |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Sequence

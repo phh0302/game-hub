@@ -9,6 +9,8 @@ import { mergeGuestInto } from "@/modules/users/account";
 import { logEvent } from "@/modules/events/service";
 import { userWithIdentities, type UserWithIdentities } from "@/modules/users/dto";
 import { expectedSiwe, NONCE_TTL_MS, SIWE_STATEMENT } from "./siwe";
+import { recordReferral } from "@/modules/referrals/service";
+import { log } from "@/lib/log";
 
 export const challengeSchema = z.object({
   address: z.string().refine((v) => isAddress(v, { strict: false }), "Địa chỉ ví không hợp lệ"),
@@ -62,7 +64,7 @@ export async function verifyWalletLogin(
   input: z.infer<typeof verifySchema>,
   target?: SiweTarget,
   /** Đang chơi khách (Client API) → gắn ví vào tài khoản khách / gộp vào tài khoản ví đã có */
-  options: { guestUserId?: string } = {},
+  options: { guestUserId?: string; referral?: { code: string; slug: string | null } | null } = {},
 ): Promise<UserWithIdentities> {
   const parsed = parseSiweMessage(input.message);
   if (!parsed.address || !parsed.nonce) {
@@ -150,5 +152,9 @@ export async function verifyWalletLogin(
     userId: user.id,
     data: { provider: "WALLET", isNew: !identity, fromGuest: Boolean(options.guestUserId) },
   });
+  // Ví lần đầu vào hub qua link mời → ghi nhận người mời (lỗi không chặn đăng nhập)
+  if (!identity && options.referral) {
+    await recordReferral(user.id, options.referral).catch((err) => log.warn("referral.record_failed", { area: "referral", error: err }));
+  }
   return user;
 }
