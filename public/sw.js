@@ -5,7 +5,7 @@
  * - API, game (/uploads), file upload → KHÔNG đụng tới (luôn đi thẳng ra mạng)
  * Đổi VERSION khi sửa file này để xóa cache cũ.
  */
-const VERSION = "v1";
+const VERSION = "v2"; // v2: logo Monlabs mới
 const STATIC_CACHE = `gh-static-${VERSION}`;
 const OFFLINE_URL = "/offline.html";
 const PRECACHE = [OFFLINE_URL, "/icons/icon-192.png"];

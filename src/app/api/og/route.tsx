@@ -14,6 +14,9 @@ import { readLeaderboardSettings } from "@/modules/games/settings";
  */
 export const runtime = "nodejs";
 
+/** Logo Monlabs (public/brand/monlabs-logo-rounded.svg) nhúng sẵn – hàm OG không đọc được thư mục public trên Vercel */
+const LOGO = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDI0IiBoZWlnaHQ9IjEwMjQiIHZpZXdCb3g9IjAgMCAxMjAgMTIwIj4KICA8ZGVmcz4KICAgIDxjbGlwUGF0aCBpZD0iaW5zaWRlIiBjbGlwUGF0aFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxwYXRoIHRyYW5zZm9ybT0icm90YXRlKC0xOCA2MCA2NCkiIGQ9Ik01MyAyOHYxNGMtMTQgNi0yMiAxNi0yMiAzMCAwIDE2IDEzIDI2IDI5IDI2czI5LTEwIDI5LTI2YzAtMTQtOC0yNC0yMi0zMFYyOHoiLz4KICAgIDwvY2xpcFBhdGg+CiAgPC9kZWZzPgogIDxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIiByeD0iMjgiIGZpbGw9IiMzQzM0ODkiLz4KICA8Y2lyY2xlIGN4PSIyNiIgY3k9IjIwIiByPSI1IiBmaWxsPSIjQ0VDQkY2Ii8+CiAgPGNpcmNsZSBjeD0iMTYiIGN5PSIzOCIgcj0iMy41IiBmaWxsPSIjQUZBOUVDIi8+CiAgPGNpcmNsZSBjeD0iMTAwIiBjeT0iMzAiIHI9IjMiIGZpbGw9IiNDRUNCRjYiLz4KICA8ZyBjbGlwLXBhdGg9InVybCgjaW5zaWRlKSI+CiAgICA8cGF0aCBkPSJNMjAgNzRjMTAtNSAyMCA1IDMwIDBzMjAtNSAzMCAwIDIwIDUgMzAgMFYxMjBIMjB6IiBmaWxsPSIjN0Y3N0REIi8+CiAgICA8Y2lyY2xlIGN4PSI3MCIgY3k9Ijg2IiByPSIzIiBmaWxsPSIjQ0VDQkY2Ii8+CiAgICA8Y2lyY2xlIGN4PSI2MCIgY3k9IjkyIiByPSIyIiBmaWxsPSIjQ0VDQkY2Ii8+CiAgPC9nPgogIDxnIHRyYW5zZm9ybT0icm90YXRlKC0xOCA2MCA2NCkiPgogICAgPHJlY3QgeD0iNTEiIHk9IjE2IiB3aWR0aD0iMTgiIGhlaWdodD0iMTIiIHJ4PSIzIiBmaWxsPSIjQkE3NTE3Ii8+CiAgICA8cGF0aCBkPSJNNTMgMjh2MTRjLTE0IDYtMjIgMTYtMjIgMzAgMCAxNiAxMyAyNiAyOSAyNnMyOS0xMCAyOS0yNmMwLTE0LTgtMjQtMjItMzBWMjgiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLXdpZHRoPSI1IiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CiAgICA8cmVjdCB4PSI0NyIgeT0iMzMiIHdpZHRoPSIyNiIgaGVpZ2h0PSI3IiByeD0iMy41IiBmaWxsPSIjRjA5OTdCIi8+CiAgICA8cGF0aCBkPSJNNzYgNjJhMjAgMjAgMCAwIDEgNiAxMiIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjQ0VDQkY2IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPgogIDwvZz4KICA8ZyB0cmFuc2Zvcm09InRyYW5zbGF0ZSg1NSA0OSkiPgogICAgPGNpcmNsZSByPSI3IiBmaWxsPSIjRkFDNzc1Ii8+CiAgICA8cGF0aCBkPSJNLTcgMGgxNCIgc3Ryb2tlPSIjODU0RjBCIiBzdHJva2Utd2lkdGg9IjEuNSIvPgogICAgPGNpcmNsZSBjeT0iMyIgcj0iMS42IiBmaWxsPSIjODU0RjBCIi8+CiAgPC9nPgo8L3N2Zz4K";
+
 const SIZE = { width: 1200, height: 630 };
 const TEXT = {
   vi: { tagline: "Cổng mini game · Đăng nhập bằng ví MetaMask", challenge: "Mình đạt", points: "điểm", time: "thời gian", cta: "Vào thách đấu!", play: "Chơi ngay" },
@@ -91,7 +94,8 @@ export async function GET(req: Request) {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div style={{ width: 22, height: 22, borderRadius: 6, background: "linear-gradient(135deg, #22e3ff, #ff3ec8)" }} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={LOGO} alt="" width={44} height={44} />
           <div style={{ fontSize: 30, letterSpacing: 6, color: "#9a98c3" }}>GAME HUB</div>
         </div>
 
