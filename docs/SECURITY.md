@@ -20,17 +20,18 @@
 | Upload file thay người khác | Link upload ký sẵn hết hạn 15 phút, key gắn userId; server kiểm tra key thuộc đúng user trước khi xử lý | `src/modules/storage/keys.ts` |
 | Leo quyền admin | Middleware chặn `/admin` + mọi API admin tự kiểm tra role từ database | `requireAdmin()` |
 
-## Lỗ hổng thư viện đã đánh giá (chấp nhận tạm thời)
+## Lỗ hổng thư viện
 
-Kết quả `npm audit --omit=dev` ngày 09/11/2026 sau khi nâng Next.js 15.5.29 và zod 4:
+23/11/2026: `npm audit --omit=dev` → **0 lỗ hổng**.
 
-| Thư viện | Mức | Vì sao chưa ảnh hưởng | Khi nào hết |
-|---|---|---|---|
-| `postcss` (nằm trong `next`) | high | Chỉ chạy lúc build, xử lý CSS của chính dự án – không nhận dữ liệu người dùng | Nâng lên Next.js 16 |
-| `deepmerge-ts` (qua `prisma` CLI) | high | Chỉ dùng khi chạy lệnh Prisma trên máy dev / lúc build – không chạy trên web | Nâng lên Prisma 7 |
-| `sharp` (tùy chọn của `next`) | high | Hub tắt bộ tối ưu ảnh (`images.unoptimized`) nên không gọi tới sharp | Chạy `npm audit fix` để lấy bản vá |
+| Thư viện | Cách xử lý |
+|---|---|
+| `sharp` (tùy chọn của `next`) | `npm audit fix` → 0.35.5 |
+| `postcss` (bản 8.4.31 nằm trong `next`) | `overrides.next.postcss` → 8.5.32 (không cần lên Next.js 16) |
+| `effect`, `deepmerge-ts` (qua Prisma CLI) | `overrides` → `effect` 3.22.x, `deepmerge-ts` 8 (không cần lên Prisma 7) |
 
-CI chặn lỗ hổng mức **critical**; mức **high** được in báo cáo ở mỗi lần chạy để xem lại.
+Khi nâng `next` / `prisma`: thử bỏ khối `overrides` trong `package.json`, chạy `npm audit --omit=dev`; còn lỗ hổng thì giữ lại.
+CI chặn lỗ hổng mức **critical**; mức **high** được in báo cáo ở mỗi lần chạy. Dependabot mở PR cập nhật mỗi tuần.
 
 ## Rà soát bảo mật 23/11/2026
 
@@ -42,7 +43,7 @@ webhook, header bảo mật, rate limit, bí mật trong lịch sử git, thư v
 | 1 | Webhook: kiểm tra DNS rồi mới `fetch` → tên miền có thể đổi sang IP nội bộ giữa 2 bước (DNS rebinding, SSRF) | Trung bình | **Đã sửa**: kiểm tra địa chỉ ngay trong hàm `lookup` của socket, IP viết thẳng cũng bị chặn, không theo redirect, không giữ kết nối (`webhook-http.ts` + unit test) |
 | 2 | Trang hub chưa có Content-Security-Policy | Thấp | **Đã sửa**: CSP nền `frame-ancestors 'none'; base-uri 'self'; object-src 'none'; form-action 'self'` (không đụng script để không hỏng Next/ví) |
 | 3 | Thiếu HSTS khi tự host (Vercel tự thêm) | Thấp | **Đã sửa**: `Strict-Transport-Security` trong `next.config.ts` + nginx (landing, docs) |
-| 4 | Chưa có cập nhật thư viện tự động | Thấp | **Đã sửa**: `.github/dependabot.yml` (npm hằng tuần, GitHub Actions hằng tháng). Cảnh báo Dependabot của repo đang **tắt** → bật ở Settings → Advanced Security |
+| 4 | Chưa có cập nhật thư viện tự động; còn 7 lỗ hổng thư viện (6 high) | Thấp (chủ yếu chạy lúc build) | **Đã sửa**: Dependabot + alerts đã bật; vá hết bằng `npm audit fix` + `overrides` → 0 lỗ hổng |
 | 5 | Lỗi 500 không có mã để đối chiếu log | Thấp | **Đã sửa**: mã request (`x-request-id`) ở mọi API + trong body lỗi 500 |
 
 Đã kiểm tra, không có lỗi:

@@ -281,7 +281,7 @@ Từ review tài liệu: game chạy trong sandbox (origin `null`) nên localSto
 - [x] Mã request `x-request-id` cho mọi API (header + body lỗi 500 + tag Sentry)
 - [x] Log JSON 1 dòng (`src/lib/log.ts`), ẩn trường nhạy cảm; log request lỗi 5xx / chậm
 - [x] Độ trễ + lỗi theo route → bảng "API chậm nhất" trên stats.monlabs.fun
-- [ ] Bật Dependabot alerts trong Settings của repo (người dùng)
+- [x] Bật Dependabot alerts; vá thư viện (sharp, postcss trong next, effect, deepmerge-ts) → `npm audit` 0 lỗ hổng; GitHub Actions lên v7 (PR #55)
 
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
