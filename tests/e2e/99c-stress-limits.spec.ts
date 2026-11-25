@@ -69,11 +69,12 @@ test("nộp điểm đồng thời cùng 1 lượt chơi → chỉ 1 lần đư�
   const { sessionId } = await session.json();
   await page.waitForTimeout(4_000); // qua thời gian chơi tối thiểu
   const res = await Promise.all(
-    Array.from({ length: 10 }, (_, i) => api.post(`/api/v1/games/${GAME}/scores`, { data: { sessionId, score: 3000 + i } })),
+    Array.from({ length: 10 }, () => api.post(`/api/v1/games/${GAME}/scores`, { data: { sessionId, score: 5_000 } })),
   );
   const statuses = res.map((r) => r.status());
+  const codes = await Promise.all(res.map(async (r) => (r.status() === 201 ? "OK" : ((await r.json()) as { error: { code: string } }).error.code)));
   no5xx(statuses);
-  expect(statuses.filter((s) => s === 201)).toHaveLength(1);
+  expect(codes.filter((c) => c === "OK"), codes.join(",")).toHaveLength(1);
   for (const r of res.filter((x) => x.status() === 409)) expect((await r.json()).error.code).toBe("SESSION_ENDED");
 
   // Lượt không tồn tại / id quá dài / điểm âm / điểm không phải số nguyên
