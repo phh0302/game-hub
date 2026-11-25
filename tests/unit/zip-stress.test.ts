@@ -75,3 +75,14 @@ test("rác: không phải zip / zip cụt / zip rỗng", () => {
   assert.notEqual(run(zip.slice(0, Math.floor(zip.length / 2))).code, "OK");
   assert.equal(run(zipSync({})).code, "ZIP_EMPTY");
 });
+
+test("nội dung bị sửa sau khi nén (CRC lệch, cùng kích thước) → ZIP_INVALID", () => {
+  const body = strToU8("console.log('hello from a perfectly normal game file');");
+  const zip = zipSync({ "index.html": html, "game.js": body }, { level: 0 }); // không nén: nội dung nằm nguyên trong zip
+  const at = zip.findIndex((_, i) => body.every((b, k) => zip[i + k] === b));
+  assert.ok(at > 0);
+  const tampered = zip.slice();
+  tampered[at + 5] ^= 0x20;
+  assert.equal(run(tampered).code, "ZIP_INVALID");
+  assert.equal(run(zip).code, "OK");
+});
