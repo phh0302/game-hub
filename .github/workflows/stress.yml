@@ -1,0 +1,56 @@
+# Chạy stress: unit giới hạn (zip bomb, CRC…) + bắn tải GET vào hub. Chạy tay (Actions → stress → Run workflow)
+# hoặc push lên nhánh stress-run. Tải nhẹ mặc định để không ảnh hưởng người chơi.
+name: stress
+on:
+  workflow_dispatch:
+    inputs:
+      url: { description: "Địa chỉ hub", default: "https://play.monlabs.fun" }
+      concurrency: { description: "Số luồng", default: "10" }
+      duration: { description: "Số giây", default: "30" }
+  push:
+    branches: [stress-run]
+    paths: [.github/workflows/stress.yml]
+jobs:
+  stress:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      URL: ${{ inputs.url || 'https://play.monlabs.fun' }}
+      CONCURRENCY: ${{ inputs.concurrency || '10' }}
+      DURATION: ${{ inputs.duration || '30' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - name: Unit – giới hạn upload / tiến trình / sự kiện
+        run: node --experimental-strip-types --disable-warning=ExperimentalWarning --test tests/unit/zip-stress.test.ts tests/unit/zip.test.ts tests/unit/game-state.test.ts tests/unit/game-events.test.ts tests/unit/traffic-limits.test.ts 2>&1 | tee unit.txt | tail -n 30
+      - name: Trước khi bắn tải – health
+        run: curl -s -o /dev/null -w "health %{http_code} %{time_total}s\n" "$URL/api/v1/health"
+      - name: Bắn tải (GET)
+        run: |
+          node scripts/stress.mjs --url "$URL" --concurrency "$CONCURRENCY" --duration "$DURATION" --i-know-this-is-prod | tee load.txt || true
+      - name: Body quá lớn bị chặn (không ghi dữ liệu)
+        run: |
+          head -c 300000 /dev/zero | tr '\0' 'a' > big.txt
+          code=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "content-type: application/json" --data-binary @big.txt "$URL/api/v1/games/snake/events")
+          echo "events 300KB → $code" | tee body.txt
+      - name: Sau khi bắn tải – health
+        run: |
+          sleep 5
+          curl -s -o /dev/null -w "health %{http_code} %{time_total}s\n" "$URL/api/v1/health" | tee after.txt
+      - name: Tóm tắt
+        if: always()
+        run: |
+          {
+            echo '### Stress'
+            echo '```'
+            grep -E "^# (tests|pass|fail)" unit.txt || true
+            sed -n '/^{/,/^}/p' load.txt || true
+            tail -n 1 load.txt || true
+            cat body.txt after.txt 2>/dev/null || true
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          cat "$GITHUB_STEP_SUMMARY"
