@@ -1,4 +1,4 @@
-import { brotliDecompressSync, gunzipSync } from "node:zlib";
+import { brotliDecompressSync, crc32, gunzipSync } from "node:zlib";
 import { unzipSync, type UnzipFileInfo } from "fflate";
 import { buildContentType, extensionOf } from "./content-types.ts";
 import { MAX_BUILD_FILES, MAX_UNZIPPED_BYTES } from "./limits.ts";
@@ -81,6 +81,33 @@ function isUnsafe(path: string): boolean {
   return path.split("/").some((seg) => seg === ".." || seg === "." || seg === "");
 }
 
+/**
+ * CRC32 khai báo của từng file theo thứ tự danh mục trung tâm (cùng thứ tự fflate duyệt).
+ * fflate không kiểm CRC → zip khai man kích thước sẽ bị cắt cụt âm thầm; so CRC để bắt.
+ * Không đọc được danh mục (zip64…) → null (bỏ qua bước này, các kiểm tra khác vẫn chạy).
+ */
+function centralCrcs(zip: Uint8Array): number[] | null {
+  const view = new DataView(zip.buffer, zip.byteOffset, zip.byteLength);
+  let eocd = -1;
+  for (let i = zip.length - 22; i >= Math.max(0, zip.length - 22 - 65535); i--) {
+    if (view.getUint32(i, true) === 0x06054b50) {
+      eocd = i;
+      break;
+    }
+  }
+  if (eocd < 0) return null;
+  const count = view.getUint16(eocd + 10, true);
+  let at = view.getUint32(eocd + 16, true);
+  if (count === 0xffff || at === 0xffffffff) return null;
+  const out: number[] = [];
+  for (let n = 0; n < count; n++) {
+    if (at + 46 > zip.length || view.getUint32(at, true) !== 0x02014b50) return null;
+    out.push(view.getUint32(at + 16, true));
+    at += 46 + view.getUint16(at + 28, true) + view.getUint16(at + 30, true) + view.getUint16(at + 32, true);
+  }
+  return out;
+}
+
 export function extractBuild(zip: Uint8Array): { files: BuildFile[]; totalBytes: number; strippedFolder: string | null } {
   // Lượt 1: chỉ đọc danh mục file (không giải nén) để kiểm tra trước
   const infos: UnzipFileInfo[] = [];
@@ -132,12 +159,19 @@ export function extractBuild(zip: Uint8Array): { files: BuildFile[]; totalBytes:
     throw new ZipValidationError("ZIP_INVALID", err instanceof Error ? err.message : undefined);
   }
 
+  const crcs = centralCrcs(zip);
+  const crcOf = new Map<UnzipFileInfo, number>();
+  if (crcs && crcs.length === infos.length) infos.forEach((info, i) => crcOf.set(info, crcs[i]));
+
   let totalBytes = 0;
   const files: BuildFile[] = [];
   for (const info of entries) {
     const raw = unzipped[info.name];
     // Kích thước thật phải khớp khai báo (zip bomb hay khai man kích thước)
     if (!raw || raw.byteLength !== info.originalSize) throw new ZipValidationError("ZIP_INVALID", info.name);
+    // Nội dung phải khớp CRC khai báo – header nói 10 byte nhưng dữ liệu thật dài hơn thì fflate cắt cụt, CRC sẽ lệch
+    const expected = crcOf.get(info);
+    if (expected !== undefined && crc32(raw) >>> 0 !== expected >>> 0) throw new ZipValidationError("ZIP_INVALID", `${info.name} (CRC)`);
     const path = normalize(info.name).slice(prefix.length);
     const { encoding } = innerPath(path);
     const data = encoding ? decompress(path, raw, encoding, MAX_UNZIPPED_BYTES - totalBytes) : raw;
