@@ -146,7 +146,7 @@ type UploadState =
   | { step: "idle" }
   | { step: "uploading"; percent: number }
   | { step: "processing" }
-  | { step: "done"; files: number }
+  | { step: "done"; files: number; cover?: string | null }
   | { step: "error"; message: string };
 
 function UploadVersion({ game, onDone }: { game: Game; onDone: () => void }) {
@@ -170,11 +170,11 @@ function UploadVersion({ game, onDone }: { game: Game; onDone: () => void }) {
       setState({ step: "uploading", percent: 0 });
       const uploadKey = await uploadFile(file, "build", (percent) => setState({ step: "uploading", percent }));
       setState({ step: "processing" });
-      const { version: created } = await apiFetch<{ version: { files: number } }>(`/developer/games/${game.id}/versions`, {
+      const { version: created } = await apiFetch<{ version: { files: number; autoCover?: { path: string } | null } }>(`/developer/games/${game.id}/versions`, {
         method: "POST",
         json: { version: version.trim(), uploadKey, releaseNotes: notes.trim() || undefined },
       });
-      setState({ step: "done", files: created.files });
+      setState({ step: "done", files: created.files, cover: created.autoCover?.path ?? null });
       setFile(null);
       setNotes("");
       if (fileRef.current) fileRef.current.value = "";
@@ -229,7 +229,12 @@ function UploadVersion({ game, onDone }: { game: Game; onDone: () => void }) {
             </div>
           )}
           {state.step === "processing" && <span className="text-sm text-neon">{t("processing")}</span>}
-          {state.step === "done" && <span className="text-sm text-neon-lime">{t("uploadDone", { files: state.files })}</span>}
+          {state.step === "done" && (
+            <span className="text-sm text-neon-lime">
+              {t("uploadDone", { files: state.files })}
+              {state.cover ? ` · ${t("autoCoverDone", { path: state.cover })}` : ""}
+            </span>
+          )}
           {state.step === "error" && <span role="alert" className="text-sm text-neon-pink">{state.message}</span>}
         </div>
       </form>
@@ -330,6 +335,30 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
   const [thumb, setThumb] = useState<{ key: string | null; url: string | null }>({ key: game.thumbnailKey, url: game.thumbnailUrl });
   const [thumbBusy, setThumbBusy] = useState(false);
   const [state, setState] = useState<{ busy: boolean; ok?: boolean; error?: string }>({ busy: false });
+  const [autoMsg, setAutoMsg] = useState<string | null>(null);
+
+  // Upload bản build xong, hub tự lấy ảnh bìa → hiện luôn (khi developer chưa tự chọn ảnh)
+  useEffect(() => {
+    if (game.thumbnailKey) setThumb((t) => (t.key ? t : { key: game.thumbnailKey, url: game.thumbnailUrl }));
+  }, [game.thumbnailKey, game.thumbnailUrl]);
+
+  async function autoCover() {
+    setThumbBusy(true);
+    setAutoMsg(null);
+    try {
+      const { cover } = await apiFetch<{ cover: { thumbnailKey: string; thumbnailUrl: string; from: string } }>(
+        `/developer/games/${game.id}/cover/auto`,
+        { method: "POST" },
+      );
+      setThumb({ key: cover.thumbnailKey, url: cover.thumbnailUrl });
+      setAutoMsg(t("autoCoverDone", { path: cover.from }));
+      onSaved({ ...game, thumbnailKey: cover.thumbnailKey, thumbnailUrl: cover.thumbnailUrl });
+    } catch (err) {
+      setAutoMsg(errorCode(err) === "NO_COVER_IN_BUILD" ? t("autoCoverNone") : errorText(errorCode(err)));
+    } finally {
+      setThumbBusy(false);
+    }
+  }
 
   useEffect(() => {
     apiFetch<{ categories: { slug: string; name: string }[] }>(`/categories?locale=${locale}`)
@@ -400,6 +429,22 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
               className="text-sm file:mr-3 file:rounded-md file:border-0 file:bg-surface-2 file:px-3 file:py-1.5 file:text-ink"
             />
           </Field>
+          <div className="flex flex-col gap-1">
+            {!thumb.key && game.versions.length > 0 && (
+              <div className="mt-2 flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => void autoCover()}
+                  disabled={thumbBusy}
+                  className="self-start rounded-md border border-neon/50 px-2.5 py-1 text-xs font-semibold text-neon hover:bg-neon/10 disabled:opacity-60"
+                >
+                  {t("autoCover")}
+                </button>
+                <span className="text-xs text-muted">{t("autoCoverHint")}</span>
+              </div>
+            )}
+            {autoMsg && <p className="mt-1 text-xs text-muted">{autoMsg}</p>}
+          </div>
         </div>
         <Field label={`${tAdmin("name")} (VI)`}>
           <input value={form.nameVi} onChange={set("nameVi")} required maxLength={100} className={inputCls} />

@@ -438,7 +438,8 @@
         "leaderboard_create": "Admin tạo bảng",
         "leaderboard_update": "Admin đổi luật bảng",
         "leaderboard_delete": "Admin xóa bảng",
-        "score_rejected_spike": "⚠ Điểm bị từ chối tăng"
+        "score_rejected_spike": "⚠ Điểm bị từ chối tăng",
+        "game_cover_auto": "Tự lấy ảnh bìa từ bản build"
       },
       "approved": "đã duyệt",
       "rejected": "bị từ chối",
@@ -562,7 +563,11 @@
       "recent": "{n} sự kiện gần nhất (kèm dữ liệu)",
       "sourceHub": "trên hub",
       "sourceApi": "ngoài hub"
-    }
+    },
+    "autoCover": "Lấy ảnh bìa từ bản build",
+    "autoCoverHint": "Game chưa có ảnh bìa: hub tự lấy cover.png / og-image.png (PNG, JPG, WebP ≤ 1MB) trong bản build khi upload.",
+    "autoCoverDone": "Đã lấy ảnh bìa từ {path}",
+    "autoCoverNone": "Bản build không có cover.png / og-image.png – hãy chọn ảnh ở trên."
   },
   "preview": {
     "title": "Chơi thử",
