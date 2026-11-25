@@ -428,6 +428,8 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
               onChange={(e) => void onThumb(e.target.files?.[0])}
               className="text-sm file:mr-3 file:rounded-md file:border-0 file:bg-surface-2 file:px-3 file:py-1.5 file:text-ink"
             />
+          </Field>
+          <div className="flex flex-col gap-1">
             {!thumb.key && game.versions.length > 0 && (
               <div className="mt-2 flex flex-col gap-1">
                 <button
@@ -442,7 +444,7 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
               </div>
             )}
             {autoMsg && <p className="mt-1 text-xs text-muted">{autoMsg}</p>}
-          </Field>
+          </div>
         </div>
         <Field label={`${tAdmin("name")} (VI)`}>
           <input value={form.nameVi} onChange={set("nameVi")} required maxLength={100} className={inputCls} />
