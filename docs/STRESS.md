@@ -5,7 +5,7 @@
 | File | Kiểm tra |
 |---|---|
 | `tests/unit/zip-stress.test.ts` | Zip bomb (1 file / chia nhỏ) bị chặn trước khi giải nén; khai man kích thước trong header → `ZIP_INVALID`; đúng 2.000 file nhận, 2.001 chặn; đường dẫn độc (`../`, `..\`, tuyệt đối, ổ đĩa, ký tự điều khiển); file rác / cụt / rỗng |
-| `tests/e2e/99c-stress-limits.spec.ts` | `saveState` đúng 64KB nhận, hơn 1 byte chặn, tính theo byte UTF-8, > 256KB chặn ở middleware, dữ liệu cũ không hỏng; 20 lần lưu đồng thời không trộn dữ liệu; 10 lần nộp điểm đồng thời cùng lượt → chỉ 1 lần tính; `track` lô quá lớn bị cắt; góp ý > 5 lần/giờ → 429; 150 request song song → chỉ 200/429; events > 60 lô/phút → 429 có `Retry-After` |
+| `tests/e2e/99c-stress-limits.spec.ts` | `saveState` đúng 64KB nhận, hơn 1 byte chặn, tính theo byte UTF-8, > 256KB chặn ở middleware, dữ liệu cũ không hỏng; 20 lần lưu đồng thời không trộn dữ liệu; 10 lần nộp điểm đồng thời cùng lượt → chỉ 1 lần tính; `track` lô quá lớn bị cắt, body > 64KB → 413; góp ý > 5 lần/giờ → 429; 150 request song song → chỉ 200/429; events > 60 lô/phút → 429 có `Retry-After` |
 
 Nguyên tắc chung: chạm biên thì trả **mã lỗi rõ ràng (4xx)**, không bao giờ 5xx, không rớt kết nối.
 

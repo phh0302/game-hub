@@ -5,7 +5,8 @@ import { installWallet, login } from "./wallet";
  * Stress / giới hạn (chạy cuối vì có bước đốt hết hạn mức của IP).
  * Mục tiêu: chạm đúng biên → mã lỗi rõ ràng, không bao giờ 5xx, dữ liệu không hỏng khi gửi đồng thời.
  */
-test.describe.configure({ mode: "serial" });
+// Không chạy lại khi lỗi: lần chạy lại sẽ vướng hạn mức đã đốt ở lần trước (429) và che mất lỗi thật
+test.describe.configure({ mode: "serial", retries: 0 });
 
 const GAME = "memory";
 const KB64 = 64 * 1024;
@@ -84,16 +85,20 @@ test("nộp điểm đồng thời cùng 1 lượt chơi → chỉ 1 lần đư�
   expect((await api.post(`/api/v1/games/${GAME}/scores`, { data: { sessionId, score: 1.5 } })).status()).toBe(400);
 });
 
-test("track: lô quá lớn bị cắt về 50 sự kiện / 10 thuộc tính, tên sai bị bỏ", async ({ request }) => {
+test("track: lô quá lớn bị cắt về 50 sự kiện / 10 thuộc tính, tên sai bị bỏ; body > 64KB → 413", async ({ request }) => {
   const events = Array.from({ length: 120 }, (_, i) => ({
     name: i % 10 === 0 ? "bad name!" : `stress_${i % 5}`,
-    props: Object.fromEntries(Array.from({ length: 15 }, (_, k) => [`p${k}`, "y".repeat(500)])),
+    props: Object.fromEntries(Array.from({ length: 15 }, (_, k) => [`p${k}`, k === 0 ? "y".repeat(150) : "v"])),
   }));
   const r = await request.post(`/api/v1/games/${GAME}/events`, { data: { events } });
   expect(r.status()).toBe(200);
   const body = await r.json();
   expect(body.accepted + body.dropped).toBeLessThanOrEqual(50);
   expect(body.accepted).toBeGreaterThan(0);
+
+  // ~900KB: chặn ở lớp ngoài, không đọc vào bộ nhớ
+  const huge = Array.from({ length: 120 }, () => ({ name: "x", props: { p: "y".repeat(7_500) } }));
+  expect((await request.post(`/api/v1/games/${GAME}/events`, { data: { events: huge } })).status()).toBe(413);
 });
 
 test("feedback: vượt 5 lần/giờ/IP → 429, không 5xx", async ({ request }) => {
