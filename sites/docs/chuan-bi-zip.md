@@ -42,6 +42,15 @@ Bản build được phục vụ từ kho lưu trữ, **không** nằm ở gốc
 
 Riêng file SDK dùng **đường dẫn đầy đủ** tới hub: `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`.
 
+## Ảnh bìa tự động
+
+Game **chưa có ảnh bìa** → khi upload, hub tự lấy ảnh đầu tiên tìm thấy trong bản build làm bìa, theo thứ tự tên:
+`cover`, `thumbnail`, `banner`, `og-image`, `og`, `social`, `share`, `preview` (đuôi `.png`, `.jpg`, `.jpeg`, `.webp`),
+ở gốc bản build rồi đến thư mục `assets/`, `images/`, `img/`. Ảnh phải đúng định dạng PNG / JPG / WebP và ≤ 1MB; nên dùng tỉ lệ 16:9 (ví dụ 1280×720).
+
+- Đã có ảnh bìa thì không bị đè – đổi bìa ở mục **Thông tin game** trong Studio.
+- Game upload trước 25/11/2026: bấm **Lấy ảnh bìa từ bản build** dưới ô Ảnh bìa.
+
 ## Unity WebGL
 
 Compression Format **Brotli**, **Gzip** hay **Disabled** đều được. File nén sẵn (vd `Build/game.wasm.br`) được hub **giải nén lúc upload** và phục vụ đúng tên cũ, nên không cần bật *Decompression Fallback*.

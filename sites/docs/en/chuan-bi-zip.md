@@ -42,6 +42,15 @@ Your build is served from storage, **not** from the root of a domain. Every asse
 
 The SDK file is the exception: use the **full URL** to the hub, `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`.
 
+## Automatic cover image
+
+If the game **has no cover yet**, the hub takes the first image it finds in the build on upload, in this name order:
+`cover`, `thumbnail`, `banner`, `og-image`, `og`, `social`, `share`, `preview` (`.png`, `.jpg`, `.jpeg`, `.webp`),
+at the build root first, then in `assets/`, `images/`, `img/`. It must be a real PNG / JPG / WebP ≤ 1MB; 16:9 works best (e.g. 1280×720).
+
+- An existing cover is never replaced – change it under **Game info** in the Studio.
+- Games uploaded before 2026-11-25: click **Use cover from build** under the Cover field.
+
 ## Unity WebGL
 
 Compression Format **Brotli**, **Gzip** or **Disabled** all work. Pre-compressed files (e.g. `Build/game.wasm.br`) are **decompressed by the hub at upload** and served under their original names, so there's no need for *Decompression Fallback*.

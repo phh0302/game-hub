@@ -19,6 +19,7 @@ const KNOWN = [
   "version.activate",
   "game.status",
   "game.rules",
+  "game.cover_auto",
   "leaderboard.create",
   "leaderboard.update",
   "leaderboard.delete",
@@ -101,6 +102,8 @@ export function PlatformLog({ gameId }: { gameId: string }) {
         return t("spikeDetail", { count: Number(d.count ?? 0), reason: String(d.topReason ?? "") });
       case "game.status":
         return `${String(d.from ?? "")} → ${String(d.to ?? "")}`;
+      case "game.cover_auto":
+        return String(d.from ?? "");
       case "game.rules":
         return Object.entries(d)
           .map(([k, v]) => `${k}=${String(v)}`)

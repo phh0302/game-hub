@@ -438,7 +438,8 @@
         "leaderboard_create": "Admin created a board",
         "leaderboard_update": "Admin changed board rules",
         "leaderboard_delete": "Admin deleted a board",
-        "score_rejected_spike": "⚠ Rejected scores spiking"
+        "score_rejected_spike": "⚠ Rejected scores spiking",
+        "game_cover_auto": "Cover taken from the build"
       },
       "approved": "approved",
       "rejected": "rejected",
@@ -562,7 +563,11 @@
       "recent": "{n} most recent events (with data)",
       "sourceHub": "on the hub",
       "sourceApi": "outside the hub"
-    }
+    },
+    "autoCover": "Use cover from build",
+    "autoCoverHint": "No cover yet: the hub takes cover.png / og-image.png (PNG, JPG, WebP ≤ 1MB) from the build on upload.",
+    "autoCoverDone": "Cover taken from {path}",
+    "autoCoverNone": "The build has no cover.png / og-image.png – pick an image above."
   },
   "preview": {
     "title": "Playtest",

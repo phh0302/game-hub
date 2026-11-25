@@ -11,6 +11,7 @@ import { storage } from "@/modules/storage";
 import { buildDir, imageKey, incomingZipKey, isImageKeyOf, isIncomingKeyOf } from "@/modules/storage/keys";
 import { IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_UPLOAD_BYTES } from "@/modules/uploads/limits";
 import { extractBuild, ZipValidationError, type BuildFile } from "@/modules/uploads/zip";
+import { asCover, coverCandidatePaths, pickCover, type CoverPick } from "@/modules/uploads/cover";
 import { displayName } from "@/lib/format";
 import { primaryWallet } from "@/modules/users/dto";
 import { generateApiKey } from "@/modules/platform/keys";
@@ -436,14 +437,66 @@ export async function submitVersion(studio: Studio, userId: string, gameId: stri
     await prisma.game.update({ where: { id: game.id }, data: { status: GameStatus.PENDING_REVIEW } });
   }
 
+  // Game chưa có ảnh bìa → lấy cover.png / og-image.png… trong bản build (lỗi không chặn upload)
+  const autoCover = game.thumbnailKey
+    ? null
+    : await applyAutoCover(game.id, userId, pickCover(files)).catch(() => null);
+
   await store.delete(input.uploadKey).catch(() => undefined);
   await logEvent({
     type: "version.upload",
     userId,
     gameId: game.id,
-    data: { versionId: version.id, version: version.version, files: files.length, bytes: totalBytes },
+    data: { versionId: version.id, version: version.version, files: files.length, bytes: totalBytes, autoCover: autoCover?.path ?? null },
   });
-  return { id: version.id, version: version.version, status: version.status, files: files.length, sizeBytes: totalBytes };
+  return {
+    id: version.id,
+    version: version.version,
+    status: version.status,
+    files: files.length,
+    sizeBytes: totalBytes,
+    autoCover: autoCover ? { path: autoCover.path, thumbnailUrl: autoCover.url } : null,
+  };
+}
+
+/** Lưu ảnh lấy từ bản build làm ảnh bìa – chỉ khi game vẫn chưa có bìa (không đè ảnh developer tự chọn) */
+async function applyAutoCover(gameId: string, userId: string, pick: CoverPick | null) {
+  if (!pick) return null;
+  const key = imageKey(userId, `auto-${randomUUID()}`, pick.kind);
+  await storage().put(key, pick.data, pick.contentType);
+  const updated = await prisma.game.updateMany({ where: { id: gameId, thumbnailKey: null }, data: { thumbnailKey: key } });
+  if (updated.count === 0) {
+    await storage().delete(key).catch(() => undefined);
+    return null;
+  }
+  await logEvent({ type: "game.cover_auto", userId, gameId, data: { from: pick.path } });
+  return { path: pick.path, key, url: assetUrl(key) };
+}
+
+/**
+ * Developer bấm "Lấy ảnh bìa từ bản build": tìm cover.png / og-image.png… trong bản đang chạy (chưa có thì bản mới nhất).
+ * Dùng cho game đã upload trước khi có tính năng tự lấy bìa.
+ */
+export async function autoCoverFromBuild(studio: Studio, userId: string, gameId: string) {
+  const game = await findStudioGame(studio.id, gameId);
+  if (game.thumbnailKey) throw new ApiError(409, "COVER_EXISTS", "Game đã có ảnh bìa");
+  const version = game.versions.find((v) => v.id === game.currentVersionId) ?? game.versions[0];
+  if (!version) throw new ApiError(404, "NO_BUILD", "Game chưa có bản build");
+  const store = storage();
+  const paths = coverCandidatePaths();
+  for (let i = 0; i < paths.length; i += 16) {
+    const batch = paths.slice(i, i + 16);
+    const found = await Promise.all(batch.map(async (p) => ({ p, data: await store.get(`${version.storageKey}/${p}`).catch(() => null) })));
+    for (const { p, data } of found) {
+      const pick = data && asCover(p, data);
+      if (pick) {
+        const cover = await applyAutoCover(game.id, userId, pick);
+        if (!cover) throw new ApiError(409, "COVER_EXISTS", "Game đã có ảnh bìa");
+        return { thumbnailKey: cover.key, thumbnailUrl: cover.url, from: cover.path, version: version.version };
+      }
+    }
+  }
+  throw new ApiError(404, "NO_COVER_IN_BUILD", "Bản build không có cover.png / og-image.png (PNG, JPG, WebP ≤ 1MB)");
 }
 
 /**
@@ -536,6 +589,7 @@ const AUDIT_EVENT_TYPES = [
   "version.activate",
   "game.status",
   "game.rules",
+  "game.cover_auto",
   "leaderboard.create",
   "leaderboard.update",
   "leaderboard.delete",
