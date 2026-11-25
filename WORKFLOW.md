@@ -295,6 +295,9 @@ Chọn: chơi theo lượt + phòng chờ chạy trên hạ tầng hiện có (V
 - [ ] 17c. Chơi theo lượt / thách đấu: trạng thái ván lưu trên máy chủ, `GameHub.multiplayer` gửi nước đi + nhận lượt (polling), hết giờ lượt
 - [ ] 17d. Thách đấu điểm bất đồng bộ: gửi thử thách cho bạn, cùng seed, so điểm
 
+## Phase 18 – Stress test (25/11)
+- [x] Unit `zip-stress` (zip bomb, khai man kích thước, 2.000 file, đường dẫn độc), e2e `99c-stress-limits` (biên 64KB, ghi đồng thời, nộp điểm đồng thời, 429 + Retry-After), `npm run stress` (chặn production mặc định) – `docs/STRESS.md`
+
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking
