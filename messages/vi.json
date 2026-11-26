@@ -439,7 +439,8 @@
         "leaderboard_update": "Admin đổi luật bảng",
         "leaderboard_delete": "Admin xóa bảng",
         "score_rejected_spike": "⚠ Điểm bị từ chối tăng",
-        "game_cover_auto": "Tự lấy ảnh bìa từ bản build"
+        "game_cover_auto": "Tự lấy ảnh bìa từ bản build",
+        "game_age_rating": "Đổi độ tuổi"
       },
       "approved": "đã duyệt",
       "rejected": "bị từ chối",
@@ -567,7 +568,16 @@
     "autoCover": "Lấy ảnh bìa từ bản build",
     "autoCoverHint": "Game chưa có ảnh bìa: hub tự lấy cover.png / og-image.png (PNG, JPG, WebP ≤ 1MB) trong bản build khi upload.",
     "autoCoverDone": "Đã lấy ảnh bìa từ {path}",
-    "autoCoverNone": "Bản build không có cover.png / og-image.png – hãy chọn ảnh ở trên."
+    "autoCoverNone": "Bản build không có cover.png / og-image.png – hãy chọn ảnh ở trên.",
+    "ageOptions": {
+      "ALL": "Mọi lứa tuổi",
+      "AGE_7": "7+",
+      "AGE_12": "12+",
+      "AGE_16": "16+",
+      "AGE_18": "18+ (phải xác nhận tuổi)"
+    },
+    "ageField": "Độ tuổi phù hợp",
+    "ageHint": "Nội dung bạo lực, kinh dị, cá cược, hở hang… chọn mức cao hơn. Admin có thể chỉnh lại."
   },
   "preview": {
     "title": "Chơi thử",
@@ -964,5 +974,11 @@
     "markDone": "Đã xử lý",
     "reopen": "Mở lại",
     "loadError": "Không tải được góp ý ({code})"
+  },
+  "age": {
+    "title": "Game dành cho người từ 18 tuổi",
+    "body": "Game có nội dung chỉ phù hợp người lớn. Xác nhận bạn đủ 18 tuổi để tiếp tục.",
+    "confirm": "Tôi đủ 18 tuổi",
+    "leave": "Quay lại"
   }
 }

@@ -42,6 +42,7 @@ type Game = {
   status: GameStatus;
   translations: { locale: string; name: string; description: string | null }[];
   categorySlugs: string[];
+  ageRating: string;
   thumbnailKey: string | null;
   thumbnailUrl: string | null;
   versions: Version[];
@@ -331,6 +332,7 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
     descEn: tr("en")?.description ?? "",
   });
   const [picked, setPicked] = useState<string[]>(game.categorySlugs);
+  const [age, setAge] = useState(game.ageRating ?? "ALL");
   const [categories, setCategories] = useState<{ slug: string; name: string }[]>([]);
   const [thumb, setThumb] = useState<{ key: string | null; url: string | null }>({ key: game.thumbnailKey, url: game.thumbnailUrl });
   const [thumbBusy, setThumbBusy] = useState(false);
@@ -400,6 +402,7 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
               json: {
                 thumbnailKey: thumb.key,
                 categorySlugs: picked,
+                ageRating: age,
                 translations: [
                   { locale: "vi", name: form.nameVi.trim(), description: form.descVi.trim() || null },
                   { locale: "en", name: (form.nameEn || form.nameVi).trim(), description: form.descEn.trim() || null },
@@ -477,6 +480,16 @@ function GameInfoForm({ game, onSaved }: { game: Game; onSaved: (g: Game) => voi
             })}
           </div>
         </fieldset>
+        <Field label={t("ageField")}>
+          <select data-testid="age-rating" value={age} onChange={(e) => setAge(e.target.value)} className={inputCls}>
+            {["ALL", "AGE_7", "AGE_12", "AGE_16", "AGE_18"].map((r) => (
+              <option key={r} value={r}>
+                {t(`ageOptions.${r}`)}
+              </option>
+            ))}
+          </select>
+          <span className="text-xs text-muted">{t("ageHint")}</span>
+        </Field>
         <div className="flex items-center gap-3 sm:col-span-2">
           <button type="submit" disabled={state.busy || thumbBusy} className={primaryBtn}>
             {state.busy ? t("saving") : t("save")}

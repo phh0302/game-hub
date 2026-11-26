@@ -29,6 +29,7 @@ type AdminGame = {
   studio: { name: string; isOfficial: boolean };
   slug: string;
   status: GameStatus;
+  ageRating: string;
   currentVersionId: string | null;
   translations: { locale: string; name: string }[];
   categories: { category: { slug: string } }[];
@@ -122,6 +123,7 @@ type Run = (action: () => Promise<unknown>, okText: string | ((result: unknown) 
 
 function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
   const t = useTranslations("admin");
+  const tDev = useTranslations("developer");
   const locale = useLocale();
   const name =
     game.translations.find((tr) => tr.locale === locale)?.name ?? game.translations[0]?.name ?? game.slug;
@@ -159,6 +161,26 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
             {GAME_STATUSES.filter((s) => s !== "ARCHIVED").map((s) => (
               <option key={s} value={s}>
                 {t(`gameStatus.${s}`)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="flex items-center gap-2 text-sm">
+          <span className="text-muted">{tDev("ageField")}</span>
+          <select
+            data-testid="admin-age-rating"
+            value={game.ageRating}
+            onChange={(e) =>
+              void run(
+                () => apiFetch(`/admin/games/${game.id}`, { method: "PATCH", json: { ageRating: e.target.value } }),
+                t("ok.statusChanged"),
+              )
+            }
+            className="rounded-lg border border-line bg-bg px-2 py-1.5"
+          >
+            {["ALL", "AGE_7", "AGE_12", "AGE_16", "AGE_18"].map((r) => (
+              <option key={r} value={r}>
+                {tDev(`ageOptions.${r}`)}
               </option>
             ))}
           </select>

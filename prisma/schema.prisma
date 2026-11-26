@@ -202,6 +202,8 @@ model Game {
   studioId         String
   status           GameStatus @default(DRAFT)
   thumbnailKey     String?
+  /// Độ tuổi phù hợp (gắn cờ trên thẻ game; 18+ phải xác nhận tuổi trước khi chơi)
+  ageRating        AgeRating  @default(ALL)
   sortOrder        Int        @default(0)
   /// Cấu hình riêng (vd: { "minPlaySeconds": 5, "maxSessionHours": 6 })
   settings         Json       @default("{}")
@@ -634,4 +636,12 @@ model Referral {
 
   @@index([inviterId, createdAt])
   @@index([gameId])
+}
+
+enum AgeRating {
+  ALL
+  AGE_7
+  AGE_12
+  AGE_16
+  AGE_18
 }

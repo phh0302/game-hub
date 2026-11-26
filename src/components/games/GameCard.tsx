@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { GameDto } from "@/modules/games/dto";
+import { AgeBadge } from "./AgeBadge";
 
 export function GameCard({
   game,
@@ -24,6 +25,7 @@ export function GameCard({
             className="size-full object-cover transition duration-300 group-hover:scale-105"
           />
         )}
+        <AgeBadge rating={game.ageRating} className="absolute right-3 top-3 shadow" />
         {!playable && (
           <span className="absolute left-3 top-3 rounded-md bg-bg/80 px-2 py-1 text-xs font-semibold text-neon-pink">
             {labels.maintenance}

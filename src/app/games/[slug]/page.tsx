@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { getLocale, getTranslations } from "next-intl/server";
 import { GameRoom } from "@/components/games/GameRoom";
+import { AgeBadge } from "@/components/games/AgeBadge";
+import { AgeGate } from "@/components/games/AgeGate";
 import { getBoardFormat } from "@/modules/scores/leaderboard";
 import { formatScore } from "@/lib/score-format";
 import { loadGame } from "./data";
@@ -73,12 +75,15 @@ export default async function GamePage({ params }: Props) {
               {c.name}
             </Link>
           ))}
+          <AgeBadge rating={game.ageRating} className="py-1" />
           {game.version && <span className="rounded-md border border-line px-2 py-1">v{game.version}</span>}
           <span className="rounded-md border border-line px-2 py-1">{game.studio.name}</span>
         </div>
       </header>
 
-      <GameRoom slug={game.slug} playUrl={playable} gameName={game.name} scoreFormat={scoreFormat} />
+      <AgeGate rating={game.ageRating}>
+        <GameRoom slug={game.slug} playUrl={playable} gameName={game.name} scoreFormat={scoreFormat} />
+      </AgeGate>
     </div>
   );
 }
