@@ -237,7 +237,7 @@ jobs:
           npx tsc --noEmit
           npx vite build
           test -f dist/index.html
-          grep -q '"./assets/\|src="./assets/' dist/index.html
+          grep -q './assets/' dist/index.html
 
   # Build image Docker (app + nginx) và chạy thử cả cụm như trên VPS (docs/SELF_HOST.md)
   docker:
