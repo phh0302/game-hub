@@ -142,6 +142,17 @@ GameHub.track("ad_rewarded");
 - Không gửi thông tin cá nhân (email, số điện thoại, địa chỉ ví) trong props.
 - Giới hạn chống lạm dụng: 200 tên sự kiện khác nhau và 200.000 sự kiện mỗi game mỗi ngày.
 
+## Thử nhanh bằng Sandbox {#sandbox}
+
+Không cần upload mỗi lần sửa: chạy game trên máy (`npm run dev`), mở
+[play.monlabs.fun/developer/sandbox](https://play.monlabs.fun/developer/sandbox), dán địa chỉ (vd `http://localhost:5173`) rồi bấm **Mở**.
+
+- Game chạy trong khung **giống hệt hub** (iframe sandbox, origin `null` – lỗi `localStorage` / CORS lộ ra ngay).
+- Hub giả lập đủ SDK: điểm (`SCORE_RESULT`), lưu tiến trình, `track`, chia sẻ / mời bạn, quảng cáo thưởng / chuyển màn (đếm ngược 3 giây, có nút bỏ qua), `PAUSE` / `RESUME`.
+- Bật / tắt: đã đăng nhập, được lưu điểm, có quảng cáo, chia sẻ, ngôn ngữ, số bạn đã mời – đổi là gửi lại `init` như hub thật.
+- Nhật ký từng tin nhắn + cảnh báo lỗi tích hợp thường gặp (`gameOver()` thiếu `gameStart()`, điểm không phải số nguyên, sự kiện bị bỏ…).
+- Không cần đăng nhập, không ghi gì lên máy chủ. Chrome / Firefox cho nhúng `http://localhost` vào trang https; Safari thì không.
+
 ## Chia sẻ & mời bạn {#chia-se}
 
 Thêm 23/11/2026, có sẵn trong `/sdk/v3/`.

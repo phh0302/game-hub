@@ -63,9 +63,14 @@ export function DeveloperHome() {
           <h1 className="font-display text-3xl font-bold">{studio.name}</h1>
           {studio.description && <p className="mt-1 text-sm text-muted">{studio.description}</p>}
         </div>
-        <a href={SDK_DOCS_URL} target="_blank" rel="noreferrer" className={ghostBtn}>
-          {t("sdkDocs")} ↗
-        </a>
+        <div className="flex flex-wrap gap-2">
+          <Link href="/developer/sandbox" className={ghostBtn}>
+            {t("sandbox")}
+          </Link>
+          <a href={SDK_DOCS_URL} target="_blank" rel="noreferrer" className={ghostBtn}>
+            {t("sdkDocs")} ↗
+          </a>
+        </div>
       </header>
 
       {!studio.termsUpToDate && <TermsBanner isOwner={studio.myRole === "OWNER"} onAccepted={load} />}

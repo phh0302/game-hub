@@ -577,7 +577,8 @@
       "AGE_18": "18+ (phải xác nhận tuổi)"
     },
     "ageField": "Độ tuổi phù hợp",
-    "ageHint": "Nội dung bạo lực, kinh dị, cá cược, hở hang… chọn mức cao hơn. Admin có thể chỉnh lại."
+    "ageHint": "Nội dung bạo lực, kinh dị, cá cược, hở hang… chọn mức cao hơn. Admin có thể chỉnh lại.",
+    "sandbox": "🧪 Sandbox (thử game trên máy)"
   },
   "preview": {
     "title": "Chơi thử",
@@ -1005,6 +1006,46 @@
       "gambling_spam": "Chữ cờ bạc / spam",
       "short_link": "Link rút gọn",
       "external_script": "Script / iframe từ domain ngoài"
+    }
+  },
+  "sandbox": {
+    "title": "Sandbox",
+    "banner": "Chạy game từ máy của bạn (vd http://localhost:5173) trong khung giống hệt hub, với hub giả lập đủ SDK – không cần upload, không lưu gì lên máy chủ. Bật/tắt thiết lập bên phải để thử các trường hợp.",
+    "open": "Mở",
+    "reload": "Tải lại",
+    "pause": "Gửi PAUSE",
+    "resume": "Gửi RESUME",
+    "empty": "Nhập địa chỉ game đang chạy trên máy (npm run dev) rồi bấm Mở.",
+    "settingsTitle": "Hub giả lập",
+    "settings": {
+      "loggedIn": "Đã đăng nhập",
+      "canSubmitScore": "Được lưu điểm",
+      "rewarded": "Có QC thưởng",
+      "interstitial": "Có QC chuyển màn",
+      "share": "Chia sẻ / mời bạn",
+      "locale": "Ngôn ngữ",
+      "invites": "Số bạn đã mời"
+    },
+    "checklist": "Game đã gọi",
+    "log": "Nhật ký SDK",
+    "clear": "Xóa",
+    "logEmpty": "Chưa có tin nhắn – game chưa tải SDK hoặc chưa gọi GameHub.init().",
+    "scoreSaved": "Sandbox: lưu {score} điểm (ván {seconds} giây).",
+    "scoreGuest": "Sandbox: {score} điểm – chưa đăng nhập nên không lưu.",
+    "shareText": "Chơi game của mình trên Game Hub!",
+    "shareScoreText": "Mình được {score} điểm, vào thách đấu nào!",
+    "inviteText": "Vào chơi cùng mình trên Game Hub nhé!",
+    "adTitle": "Quảng cáo giả lập ({kind})",
+    "adLeft": "Còn {left} giây…",
+    "adSkip": "Bỏ qua (không nhận thưởng)",
+    "warn": {
+      "protocol": "Tin nhắn sai giao thức",
+      "doubleStart": "gameStart() gọi 2 lần liên tiếp – ván trước chưa gameOver()",
+      "overWithoutStart": "gameOver() mà chưa gọi gameStart() – trên hub điểm sẽ không được lưu",
+      "badScore": "Điểm phải là số nguyên ≥ 0",
+      "state": "Lưu tiến trình thất bại",
+      "trackDropped": "{dropped} sự kiện bị bỏ (tên sai, quá 50 sự kiện/lần…)",
+      "url": "Địa chỉ không hợp lệ – cần http:// hoặc https://"
     }
   }
 }

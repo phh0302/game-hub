@@ -142,6 +142,17 @@ GameHub.track("ad_rewarded");
 - Don't put personal data (email, phone, wallet address) in props.
 - Abuse limits: 200 distinct event names and 200,000 events per game per day.
 
+## Quick testing with the Sandbox {#sandbox}
+
+No need to upload after every change: run the game locally (`npm run dev`), open
+[play.monlabs.fun/developer/sandbox](https://play.monlabs.fun/developer/sandbox), paste its address (e.g. `http://localhost:5173`) and click **Open**.
+
+- The game runs in a frame **identical to the hub** (sandboxed iframe, origin `null` – `localStorage` / CORS issues show up immediately).
+- A mock hub implements the whole SDK: scores (`SCORE_RESULT`), saved progress, `track`, share / invite, rewarded / interstitial ads (3-second countdown with a skip button), `PAUSE` / `RESUME`.
+- Toggle logged in, can save scores, ads, sharing, language, friends invited – changes resend `init` like the real hub.
+- Every message is logged, with warnings for common integration mistakes (`gameOver()` without `gameStart()`, non-integer scores, dropped events…).
+- No login needed, nothing is written to the server. Chrome / Firefox allow embedding `http://localhost` in an https page; Safari doesn't.
+
 ## Share & invite {#share}
 
 Added 2026-11-23, available in `/sdk/v3/`.

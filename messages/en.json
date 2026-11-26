@@ -577,7 +577,8 @@
       "AGE_18": "18+ (age confirmation)"
     },
     "ageField": "Age rating",
-    "ageHint": "Violence, horror, gambling, nudity… pick a higher rating. Admins may adjust it."
+    "ageHint": "Violence, horror, gambling, nudity… pick a higher rating. Admins may adjust it.",
+    "sandbox": "🧪 Sandbox (test a local game)"
   },
   "preview": {
     "title": "Playtest",
@@ -1005,6 +1006,46 @@
       "gambling_spam": "Gambling / spam text",
       "short_link": "Short links",
       "external_script": "Script / iframe from another domain"
+    }
+  },
+  "sandbox": {
+    "title": "Sandbox",
+    "banner": "Run the game from your machine (e.g. http://localhost:5173) in a frame identical to the hub, with a mock hub implementing the whole SDK – no upload, nothing saved on the server. Toggle the settings on the right to try each case.",
+    "open": "Open",
+    "reload": "Reload",
+    "pause": "Send PAUSE",
+    "resume": "Send RESUME",
+    "empty": "Enter the address of the game running locally (npm run dev) and click Open.",
+    "settingsTitle": "Mock hub",
+    "settings": {
+      "loggedIn": "Logged in",
+      "canSubmitScore": "Can save scores",
+      "rewarded": "Rewarded ads",
+      "interstitial": "Interstitial ads",
+      "share": "Share / invite",
+      "locale": "Language",
+      "invites": "Friends invited"
+    },
+    "checklist": "Game has called",
+    "log": "SDK log",
+    "clear": "Clear",
+    "logEmpty": "No messages yet – the game hasn't loaded the SDK or called GameHub.init().",
+    "scoreSaved": "Sandbox: saved {score} points ({seconds}s run).",
+    "scoreGuest": "Sandbox: {score} points – not logged in, not saved.",
+    "shareText": "Play my game on Game Hub!",
+    "shareScoreText": "I scored {score} – can you beat it?",
+    "inviteText": "Come play with me on Game Hub!",
+    "adTitle": "Mock ad ({kind})",
+    "adLeft": "{left}s left…",
+    "adSkip": "Skip (no reward)",
+    "warn": {
+      "protocol": "Message with a wrong protocol",
+      "doubleStart": "gameStart() called twice – the previous run never called gameOver()",
+      "overWithoutStart": "gameOver() without gameStart() – on the hub the score would not be saved",
+      "badScore": "Score must be an integer ≥ 0",
+      "state": "Saving progress failed",
+      "trackDropped": "{dropped} events dropped (bad name, more than 50 per call…)",
+      "url": "Invalid address – use http:// or https://"
     }
   }
 }
