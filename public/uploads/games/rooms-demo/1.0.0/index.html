@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Caro 3×3 – mẫu phòng chơi theo lượt</title>
+    <style>
+      body { margin: 0; font-family: system-ui, sans-serif; background: #0b0b16; color: #fff; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+      button, input { font: inherit; border-radius: 8px; border: 1px solid #333; background: #1b1b2e; color: #fff; padding: 8px 12px; }
+      input { width: 7em; text-transform: uppercase; }
+      #board { display: grid; grid-template-columns: repeat(3, 72px); gap: 6px; }
+      #board button { width: 72px; height: 72px; font-size: 32px; font-weight: 800; padding: 0; }
+      #code { font-family: monospace; font-size: 22px; letter-spacing: 3px; color: #22e3ff; }
+      #log { width: 100%; max-width: 420px; height: 120px; overflow: auto; font: 12px monospace; white-space: pre-wrap; opacity: 0.8; }
+      [hidden] { display: none !important; }
+    </style>
+    <script src="/sdk/v3/gamehub-sdk.js"></script>
+  </head>
+  <body>
+    <h2>Caro 3×3</h2>
+    <div class="row" id="lobby">
+      <button id="create" type="button">Tạo phòng</button>
+      <input id="join-code" maxlength="6" placeholder="MÃ" />
+      <button id="join" type="button">Vào phòng</button>
+    </div>
+    <div class="row">
+      <span>Phòng: <b id="code">—</b></span>
+      <button id="start" type="button" hidden>Bắt đầu</button>
+      <button id="invite" type="button" hidden>Mời bạn</button>
+      <button id="leave" type="button" hidden>Rời phòng</button>
+    </div>
+    <p id="players"></p>
+    <div id="board"></div>
+    <p id="status" data-testid="status"></p>
+    <div id="log" data-testid="log"></div>
+    <script>
+      // Mẫu GameHub.rooms: tạo / vào phòng, chủ phòng bắt đầu, lần lượt gửi nước đi (state = bàn cờ chung), kết thúc có người thắng
+      var $ = function (id) { return document.getElementById(id); };
+      var LINES = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      var room = null;
+      function log(s) { $("log").textContent = s + "\n" + $("log").textContent; }
+      function fail(e) { log("error: " + (e.code || e.message)); }
+      function winner(b) { for (var i = 0; i < LINES.length; i++) { var l = LINES[i]; if (b[l[0]] !== null && b[l[0]] === b[l[1]] && b[l[1]] === b[l[2]]) return b[l[0]]; } return null; }
+
+      function render(r) {
+        room = r;
+        var board = (r && r.state && r.state.board) || [null,null,null,null,null,null,null,null,null];
+        $("code").textContent = r ? r.code : "—";
+        $("lobby").hidden = !!(r && r.status !== "FINISHED");
+        $("start").hidden = !(r && r.isHost && r.status === "WAITING");
+        $("invite").hidden = !(r && r.status === "WAITING");
+        $("leave").hidden = !(r && r.status !== "FINISHED");
+        $("players").textContent = r ? r.players.filter(function (p) { return !p.left; }).map(function (p) { return (p.seat === 0 ? "X" : "O") + ": " + p.name; }).join(" · ") : "";
+        $("board").innerHTML = "";
+        board.forEach(function (v, i) {
+          var b = document.createElement("button");
+          b.type = "button";
+          b.textContent = v === null ? "" : v === 0 ? "X" : "O";
+          b.setAttribute("data-cell", String(i));
+          b.disabled = !(r && r.myTurn && v === null);
+          b.onclick = function () { play(i); };
+          $("board").appendChild(b);
+        });
+        if (!r) $("status").textContent = "Tạo phòng hoặc nhập mã để vào";
+        else if (r.status === "WAITING") $("status").textContent = "Đang chờ (" + r.players.filter(function (p) { return !p.left; }).length + "/" + r.maxPlayers + ")";
+        else if (r.status === "PLAYING") $("status").textContent = r.myTurn ? "Tới lượt bạn" : "Chờ đối thủ…";
+        else {
+          var res = r.result || {};
+          $("status").textContent = res.reason === "finished"
+            ? (res.winnerSeat === null ? "Hòa!" : res.winnerSeat === r.mySeat ? "Bạn thắng!" : "Bạn thua!")
+            : "Phòng đã đóng (" + res.reason + ")";
+        }
+      }
+
+      function play(i) {
+        var board = room.state.board.slice();
+        board[i] = room.mySeat;
+        var w = winner(board);
+        var full = board.every(function (v) { return v !== null; });
+        GameHub.rooms.move({ cell: i }, { state: { board: board }, finish: w !== null ? { winnerSeat: w } : full ? { winnerSeat: null } : undefined })
+          .then(render, fail);
+      }
+
+      $("create").onclick = function () {
+        GameHub.rooms.create({ maxPlayers: 2, state: { board: [null,null,null,null,null,null,null,null,null] } }).then(function (r) { log("created " + r.code); render(r); }, fail);
+      };
+      $("join").onclick = function () { GameHub.rooms.join($("join-code").value).then(render, fail); };
+      $("start").onclick = function () { GameHub.rooms.start().then(render, fail); };
+      $("leave").onclick = function () { GameHub.rooms.leave().then(function () { render(null); }, fail); };
+      $("invite").onclick = function () { GameHub.rooms.invite().then(function (r) { log("invite: " + JSON.stringify(r)); }); };
+
+      GameHub.on("room", function (r) { log("update seq=" + r.seq + " " + r.status); render(r); });
+      GameHub.init().then(function (hub) {
+        log("init rooms=" + hub.rooms + " roomCode=" + hub.roomCode);
+        render(null);
+        if (hub.roomCode) GameHub.rooms.join(hub.roomCode).then(function (r) { log("joined " + r.code); render(r); }, fail);
+      });
+    </script>
+  </body>
+</html>

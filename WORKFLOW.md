@@ -304,8 +304,8 @@ Chọn: chơi theo lượt + phòng chờ chạy trên hạ tầng hiện có (V
 - [x] Sandbox thử game local (PR #65)
 - [x] Token CLI + `@monlabs/cli deploy` + `@monlabs/sdk` (TypeScript) + workflow publish npm
 - [ ] Publish npm (cần NPM_TOKEN – người dùng)
-- [ ] Project mẫu (HTML thuần, Phaser + Vite + TS, Unity WebGL)
-- [ ] Phòng chờ + chơi theo lượt
+- [x] Project mẫu (HTML thuần, Phaser + Vite + TS, Unity WebGL) (PR #67)
+- [x] Phòng chờ + chơi theo lượt: `GameHub.rooms`, API /games/:slug/rooms, game mẫu Caro 3×3
 
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest

@@ -714,7 +714,8 @@
     "invite": "Invite",
     "invitedCount": "{count} invited",
     "inviteText": "Come play {game} with me on Game Hub!",
-    "inviteHint": "Friends who connect a wallet for the first time through this link count as your invites."
+    "inviteHint": "Friends who connect a wallet for the first time through this link count as your invites.",
+    "roomInviteText": "Join room {code} and play {game} with me on Game Hub!"
   },
   "adminStats": {
     "title": "Analytics",

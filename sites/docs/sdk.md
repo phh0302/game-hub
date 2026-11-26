@@ -174,6 +174,39 @@ GameHub.on("init", (hub) => { shareBtn.hidden = !hub.social.share; inviteBtn.hid
 
 Giao thức: game gửi `SHARE { requestId, text?, score? }` / `INVITE { requestId, text? }`, hub trả `SHARE_RESULT { requestId, shared, method }` khi đóng bảng.
 
+## Phòng chơi theo lượt {#phong}
+
+Thêm 26/11/2026, có sẵn trong `/sdk/v3/`. Dành cho game theo lượt (cờ, bài, đố vui, thách đấu): máy chủ của hub giữ phòng,
+hub tự hỏi lại mỗi ~1,5 giây và báo cho game – **không cần máy chủ riêng, không cần WebSocket**. Chỉ chạy trong hub, người chơi phải kết nối ví.
+
+```js
+// Chủ phòng
+const room = await GameHub.rooms.create({ maxPlayers: 2, turnSeconds: 30, state: { board: Array(9).fill(null) } });
+GameHub.rooms.invite();                        // link mời có ?room=MÃ
+// Bạn bè mở link mời → init.roomCode có mã phòng
+GameHub.on("init", (hub) => hub.roomCode && GameHub.rooms.join(hub.roomCode));
+// Mọi thay đổi (người vào / ra, bắt đầu, nước đi, hết giờ lượt, kết thúc)
+GameHub.on("room", (room) => render(room));
+await GameHub.rooms.start();                   // chủ phòng, ≥ 2 người
+// Tới lượt mình (room.myTurn): gửi nước đi + trạng thái chung mới
+await GameHub.rooms.move({ cell: 4 }, { state: { board }, finish: winner !== null ? { winnerSeat: winner } : undefined });
+```
+
+| Trường của `room` | |
+|---|---|
+| `code`, `status` | Mã 6 ký tự; `WAITING` → `PLAYING` → `FINISHED` |
+| `players[]` | `{ seat, name, host, left }` – ghế 0 là chủ phòng |
+| `mySeat`, `myTurn`, `isHost`, `turnSeat`, `turnDeadline` | Lượt hiện tại (hết `turnSeconds` → tự chuyển lượt) |
+| `state` | Trạng thái chung do game định nghĩa (JSON ≤ 32KB), gửi kèm `move()` |
+| `moves[]` | Nước đi mới `{ seq, seat, data }` (JSON ≤ 8KB mỗi nước) |
+| `result` | Khi kết thúc: `{ reason: "finished" | "abandoned" | "host_left" | "expired", winnerSeat, scores }` |
+
+- `move(data, { next })`: `"next"` (mặc định) chuyển lượt vòng tròn, `"same"` đi tiếp, hoặc số ghế.
+- Lỗi có `err.code`: `LOGIN_REQUIRED`, `ROOM_FULL`, `ROOM_STARTED`, `NOT_YOUR_TURN`, `ROOM_CHANGED` (người khác vừa đi – chờ `room` mới rồi thử lại).
+- Hub **không kiểm tra luật chơi** – game tự kiểm nước đi hợp lệ và người thắng. Người rời phòng khi đang chơi còn 1 người → phòng kết thúc (`abandoned`).
+- Phòng không hoạt động 2 giờ thì hết hạn. Sandbox chưa giả lập phòng (`init.rooms = false`).
+- Mẫu: game Caro 3×3 trong repo (`public/uploads/games/rooms-demo`).
+
 ## Quảng cáo
 
 Hiện Game Hub **chưa bật quảng cáo** – dữ liệu `init` có `ads: { rewarded: false, interstitial: false }`, nên **ẩn nút "xem quảng cáo nhận thưởng" khi `hub.ads.rewarded` là `false`** (đừng hiện lời mời rồi để người chơi bấm mà không có gì). Gọi thử vẫn an toàn: `showRewardedAd()` trả về `{ shown: false, rewarded: false }`, `showInterstitialAd()` trả về `{ shown: false }`. Hãy thiết kế để game vẫn chơi bình thường khi không có quảng cáo – ví dụ ẩn nút "Xem quảng cáo nhận thưởng" khi `shown` là `false`.

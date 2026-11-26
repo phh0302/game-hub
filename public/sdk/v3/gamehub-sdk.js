@@ -5,6 +5,7 @@
  *      const result = await GameHub.gameOver(1234);   // v3: Promise kết quả ở mọi chế độ
  *      await GameHub.saveState({ level: 3 });  const save = await GameHub.loadState();
  *      await GameHub.share({ score: 1234 });  await GameHub.invite();   // chia sẻ / mời bạn (23/11)
+ *      const room = await GameHub.rooms.create({ maxPlayers: 2 });       // phòng chơi theo lượt (26/11)
  * 2. Chế độ độc lập (game chạy trên domain riêng – Platform API): truyền projectKey.
  *      await GameHub.init({ projectKey: "pk_live_…" });
  *      await GameHub.login();                 // ví MetaMask; GameHub.login({ guest: true }) = chơi khách
@@ -72,6 +73,8 @@
         // Hub cũ không gửi → không có bảng chia sẻ / mời bạn
         if (!payload.social) payload.social = NO_SOCIAL;
         if (payload.invites === undefined) payload.invites = null;
+        if (!payload.rooms) payload.rooms = false; // hub có phòng chơi theo lượt
+        if (payload.roomCode === undefined) payload.roomCode = null; // mở trang qua link mời vào phòng
         initData = payload;
         emit("init", payload);
         break;
@@ -90,8 +93,14 @@
         }
         emit("scoreResult", payload);
         break;
+      case "ROOM_UPDATE":
+        // Phòng thay đổi (có người vào / ra, bắt đầu, nước đi mới, hết giờ lượt, kết thúc)
+        currentRoom = payload.room || null;
+        emit("room", currentRoom);
+        break;
       case "STATE_RESULT":
       case "SHARE_RESULT":
+      case "ROOM_RESULT":
         if (pending[payload.requestId]) {
           pending[payload.requestId](payload);
           delete pending[payload.requestId];
@@ -109,6 +118,19 @@
   /** Quảng cáo nào đang có: game nên ẩn nút "xem quảng cáo" khi false (hub cũ không gửi → coi như không có) */
   var NO_ADS = { rewarded: false, interstitial: false };
   var NO_SOCIAL = { share: false, invite: false };
+  var currentRoom = null;
+  var ROOM_TIMEOUT_MS = 15000;
+
+  /** Phòng chơi theo lượt – chỉ trong hub (máy chủ của hub giữ trạng thái, hub hỏi lại mỗi ~1,5 giây) */
+  function roomRequest(op, body) {
+    if (!embedded || project) return Promise.reject(Object.assign(new Error("Phòng chơi chỉ có trong Game Hub"), { code: "UNSUPPORTED" }));
+    if (!initData || !initData.rooms) return Promise.reject(Object.assign(new Error("Hub chưa hỗ trợ phòng chơi"), { code: "UNSUPPORTED" }));
+    return requestHub("ROOM", { op: op, body: body || {} }, ROOM_TIMEOUT_MS, { ok: false, code: "TIMEOUT" }).then(function (r) {
+      if (!r.ok) throw Object.assign(new Error(r.message || r.code || "ROOM_ERROR"), { code: r.code || "ROOM_ERROR" });
+      currentRoom = r.room || null;
+      return currentRoom;
+    });
+  }
 
   /** Ngoài hub: chia sẻ bằng bảng chia sẻ của máy, không có thì copy link trang hiện tại */
   function canShareHere() {
@@ -793,7 +815,45 @@
       return social("invite", options);
     },
 
-    /** Lắng nghe sự kiện từ hub: "init", "scoreResult", "pause", "resume" */
+    /**
+     * Phòng chơi nhiều người theo lượt (26/11). Mọi hàm trả Promise<Room>; lỗi có err.code
+     * (ROOM_FULL, NOT_YOUR_TURN, ROOM_CHANGED, LOGIN_REQUIRED…). Theo dõi thay đổi: GameHub.on("room", cb).
+     */
+    rooms: {
+      /** Tạo phòng: { maxPlayers = 2 (2–8), turnSeconds?, state? } – người tạo là chủ phòng, ghế 0 */
+      create: function (options) {
+        return roomRequest("create", options || {});
+      },
+      /** Vào phòng bằng mã 6 ký tự (vd từ init.roomCode khi bạn bè mở link mời) */
+      join: function (code) {
+        return roomRequest("join", { code: String(code || "").toUpperCase() });
+      },
+      leave: function () {
+        return roomRequest("leave", {});
+      },
+      /** Chủ phòng bắt đầu (≥ 2 người) – lượt đầu là ghế nhỏ nhất */
+      start: function () {
+        return roomRequest("start", {});
+      },
+      /** Gửi nước đi khi tới lượt: data (JSON ≤ 8KB), options { state?, next?: "next" | "same" | ghế, finish?: { winnerSeat?, scores? } } */
+      move: function (data, options) {
+        var o = options || {};
+        return roomRequest("move", { data: data, state: o.state, next: o.next, finish: o.finish, seq: currentRoom ? currentRoom.seq : undefined });
+      },
+      /** Phòng hiện tại (dữ liệu gần nhất, không gọi máy chủ) */
+      current: function () {
+        return currentRoom;
+      },
+      /** Mời bạn vào phòng: bảng chia sẻ với link chứa mã phòng */
+      invite: function (options) {
+        if (!currentRoom) return Promise.resolve({ shared: false, method: null, reason: "NO_ROOM" });
+        if (!embedded || project) return Promise.resolve({ shared: false, method: null, reason: "UNSUPPORTED" });
+        var o = options || {};
+        return requestHub("INVITE", { text: o.text, room: currentRoom.code }, SHARE_TIMEOUT_MS, { shared: false, method: null, reason: "TIMEOUT" });
+      },
+    },
+
+    /** Lắng nghe sự kiện từ hub: "init", "scoreResult", "pause", "resume", "room" */
     on: function (event, cb) {
       (listeners[event] = listeners[event] || []).push(cb);
     },
