@@ -60,6 +60,8 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
   const [shareReq, setShareReq] = useState<ShareRequest | null>(null);
   const session = useRef<{ started: number | null; best: number | null }>({ started: null, best: null });
   const ready = useRef(false);
+  /** Chỉ tải game sau khi đã nghe tin nhắn – game nhỏ tải nhanh sẽ gửi READY trước khi trang kịp nghe */
+  const [listening, setListening] = useState(false);
 
   const add = useCallback((dir: LogLine["dir"], type: string, payload?: unknown) => {
     setLog((l) =>
@@ -187,6 +189,7 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
       }
     }
     window.addEventListener("message", onMessage);
+    setListening(true);
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
@@ -277,7 +280,7 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
         <div className="relative overflow-hidden rounded-2xl border border-line bg-bg">
-          {url ? (
+          {url && listening ? (
             <iframe
               key={reloadKey}
               ref={iframeRef}
