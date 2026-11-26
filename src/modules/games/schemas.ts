@@ -71,6 +71,8 @@ export const versionCreateSchema = z.object({
 export const versionReviewSchema = z.object({
   status: z.enum(["APPROVED", "REJECTED"]),
   reviewNote: z.string().trim().max(1000).optional(),
+  /** Bản build bị quét ra mức critical: admin phải đánh dấu đã xem mới duyệt được */
+  acknowledgeScan: z.boolean().optional(),
 });
 
 export type GameCreateInput = z.infer<typeof gameCreateSchema>;

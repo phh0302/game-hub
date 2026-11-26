@@ -219,6 +219,9 @@ export async function adminReviewVersion(
 ) {
   const version = await prisma.gameVersion.findUnique({ where: { id: versionId } });
   if (!version || version.gameId !== gameId) throw new ApiError(404, "VERSION_NOT_FOUND", "Không tìm thấy phiên bản");
+  if (input.status === "APPROVED" && version.scanLevel === "critical" && !input.acknowledgeScan) {
+    throw new ApiError(409, "SCAN_CRITICAL", "Bản build có dấu hiệu nguy hiểm (đào coin / lừa ví) – xem kết quả quét và xác nhận trước khi duyệt");
+  }
   if (input.status === "REJECTED" && version.id === (await currentVersionId(gameId))) {
     throw new ApiError(409, "VERSION_IN_USE", "Không thể từ chối phiên bản đang chạy");
   }

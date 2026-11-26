@@ -42,6 +42,18 @@ Your build is served from storage, **not** from the root of a domain. Every asse
 
 The SDK file is the exception: use the **full URL** to the hub, `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`.
 
+## Automatic scan on upload {#scan}
+
+The hub scans the build (.js, .html, .json…) plus the game name / description to help moderation:
+
+| Level | Detects | Effect |
+|---|---|---|
+| Dangerous | Crypto mining, asking for wallet recovery phrases / private keys, wallet signing / transfer calls | Cannot be approved until an admin reviews and confirms; admins get a Telegram alert |
+| Warning | Third-party ads (AdSense, Adsterra…), another portal's ad SDK, redirects away from the hub, password fields, heavy obfuscation, `eval(atob(…))`, gambling text | Reviewed carefully by admins |
+| Note | Scripts / iframes from other domains, short links, many popups | For reference |
+
+Results show on each version in the Studio. The hub manages ads itself – don't add your own ad network.
+
 ## Automatic cover image
 
 If the game **has no cover yet**, the hub takes the first image it finds in the build on upload, in this name order:

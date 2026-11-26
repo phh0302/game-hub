@@ -42,6 +42,18 @@ Bản build được phục vụ từ kho lưu trữ, **không** nằm ở gốc
 
 Riêng file SDK dùng **đường dẫn đầy đủ** tới hub: `https://play.monlabs.fun/sdk/v3/gamehub-sdk.js`.
 
+## Quét tự động khi upload {#quet}
+
+Hub quét bản build (file .js, .html, .json…) cùng tên / mô tả game để hỗ trợ kiểm duyệt:
+
+| Mức | Phát hiện | Hệ quả |
+|---|---|---|
+| Nguy hiểm | Đào tiền ảo, đòi cụm từ khôi phục / khóa riêng của ví, gọi lệnh ký / chuyển tiền của ví | Không duyệt được cho tới khi admin xem và xác nhận; admin nhận cảnh báo Telegram |
+| Cảnh báo | Quảng cáo ngoài (AdSense, Adsterra…), SDK quảng cáo của cổng game khác, chuyển hướng khỏi hub, ô mật khẩu, mã bị làm rối nặng, `eval(atob(…))`, chữ cờ bạc / đổi thưởng | Admin xem kỹ khi duyệt |
+| Lưu ý | Script / iframe từ domain ngoài, link rút gọn, mở nhiều cửa sổ | Để tham khảo |
+
+Kết quả hiện ở từng phiên bản trong Studio. Hub tự quản lý quảng cáo – đừng gắn mạng quảng cáo riêng vào game.
+
 ## Ảnh bìa tự động
 
 Game **chưa có ảnh bìa** → khi upload, hub tự lấy ảnh đầu tiên tìm thấy trong bản build làm bìa, theo thứ tự tên:
