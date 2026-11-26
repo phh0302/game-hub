@@ -439,7 +439,8 @@
         "leaderboard_update": "Admin changed board rules",
         "leaderboard_delete": "Admin deleted a board",
         "score_rejected_spike": "⚠ Rejected scores spiking",
-        "game_cover_auto": "Cover taken from the build"
+        "game_cover_auto": "Cover taken from the build",
+        "game_age_rating": "Age rating changed"
       },
       "approved": "approved",
       "rejected": "rejected",
@@ -567,7 +568,16 @@
     "autoCover": "Use cover from build",
     "autoCoverHint": "No cover yet: the hub takes cover.png / og-image.png (PNG, JPG, WebP ≤ 1MB) from the build on upload.",
     "autoCoverDone": "Cover taken from {path}",
-    "autoCoverNone": "The build has no cover.png / og-image.png – pick an image above."
+    "autoCoverNone": "The build has no cover.png / og-image.png – pick an image above.",
+    "ageOptions": {
+      "ALL": "All ages",
+      "AGE_7": "7+",
+      "AGE_12": "12+",
+      "AGE_16": "16+",
+      "AGE_18": "18+ (age confirmation)"
+    },
+    "ageField": "Age rating",
+    "ageHint": "Violence, horror, gambling, nudity… pick a higher rating. Admins may adjust it."
   },
   "preview": {
     "title": "Playtest",
@@ -964,5 +974,11 @@
     "markDone": "Mark done",
     "reopen": "Reopen",
     "loadError": "Could not load feedback ({code})"
+  },
+  "age": {
+    "title": "For players 18 and over",
+    "body": "This game has content suitable for adults only. Confirm you are 18 or older to continue.",
+    "confirm": "I am 18 or older",
+    "leave": "Go back"
   }
 }

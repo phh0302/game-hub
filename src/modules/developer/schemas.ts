@@ -23,6 +23,8 @@ export const devGameCreateSchema = z.object({
   categorySlugs: z.array(slugSchema).max(5).optional(),
   /** Key ảnh bìa đã upload (u/images/<userId>/…) */
   thumbnailKey: z.string().trim().max(300).nullable().optional(),
+  /** Độ tuổi phù hợp – developer tự khai, admin có thể sửa */
+  ageRating: z.enum(["ALL", "AGE_7", "AGE_12", "AGE_16", "AGE_18"]).optional(),
 });
 
 export const devGameUpdateSchema = devGameCreateSchema

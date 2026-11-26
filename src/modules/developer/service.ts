@@ -198,6 +198,7 @@ function toDevGameDto(game: DevGame, locale: string, stats?: { sessions: number;
     categorySlugs: game.categories.map((c) => c.category.slug),
     thumbnailKey: game.thumbnailKey,
     thumbnailUrl: assetUrl(game.thumbnailKey),
+    ageRating: game.ageRating,
     currentVersionId: game.currentVersionId,
     publishedAt: game.publishedAt,
     allowedOrigins: game.allowedOrigins,
@@ -320,6 +321,7 @@ export async function createStudioGame(studio: Studio, userId: string, input: De
     translations: input.translations,
     categorySlugs: input.categorySlugs,
     thumbnailKey: input.thumbnailKey ?? null,
+    ageRating: input.ageRating,
   });
   await logEvent({ type: "game.create", userId, gameId: created.id, data: { studioId: studio.id } });
   return getStudioGame(studio.id, created.id, locale);
@@ -339,7 +341,8 @@ export async function updateStudioGame(
     translations: input.translations,
     categorySlugs: input.categorySlugs,
     thumbnailKey: input.thumbnailKey,
-  });
+    ageRating: input.ageRating,
+  }, userId);
   if (input.allowedOrigins) {
     const origins = [...new Set(input.allowedOrigins.filter((o) => o.trim()).map((o) => normalizeOrigin(o)))];
     if (origins.some((o) => o === null)) {
@@ -590,6 +593,7 @@ const AUDIT_EVENT_TYPES = [
   "game.status",
   "game.rules",
   "game.cover_auto",
+  "game.age_rating",
   "leaderboard.create",
   "leaderboard.update",
   "leaderboard.delete",

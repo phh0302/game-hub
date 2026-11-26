@@ -77,3 +77,9 @@ Trạng thái game:
 | Lưu trữ | Ngừng hoạt động, dữ liệu vẫn giữ |
 
 Người chơi có thể bấm **Báo cáo** dưới mỗi game (game lỗi, nội dung không phù hợp, vi phạm bản quyền, gian lận điểm); admin xử lý và có thể chuyển game sang Bảo trì hoặc Tạm khóa.
+
+## Độ tuổi phù hợp {#do-tuoi}
+
+Trong **Thông tin game** chọn độ tuổi: Mọi lứa tuổi, 7+, 12+, 16+, 18+. Nhãn hiện trên thẻ game và trang game.
+Game **18+** phải xác nhận "Tôi đủ 18 tuổi" trước khi tải (nhớ trên máy người chơi). Nội dung bạo lực, kinh dị,
+cá cược, hở hang… chọn mức cao hơn – admin có thể chỉnh lại khi duyệt.

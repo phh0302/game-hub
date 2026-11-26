@@ -21,6 +21,7 @@ export function toGameDto(game: GameWithRelations, locale: string) {
     description: t?.description ?? null,
     status: game.status,
     thumbnailUrl: assetUrl(game.thumbnailKey),
+    ageRating: game.ageRating,
     /** URL nhúng iframe – null nếu chưa có phiên bản được duyệt */
     playUrl: game.currentVersion ? gameEntryUrl(game.currentVersion) : null,
     version: game.currentVersion?.version ?? null,

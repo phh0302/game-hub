@@ -20,6 +20,7 @@ const KNOWN = [
   "game.status",
   "game.rules",
   "game.cover_auto",
+  "game.age_rating",
   "leaderboard.create",
   "leaderboard.update",
   "leaderboard.delete",
@@ -101,6 +102,8 @@ export function PlatformLog({ gameId }: { gameId: string }) {
       case "score.rejected_spike":
         return t("spikeDetail", { count: Number(d.count ?? 0), reason: String(d.topReason ?? "") });
       case "game.status":
+        return `${String(d.from ?? "")} → ${String(d.to ?? "")}`;
+      case "game.age_rating":
         return `${String(d.from ?? "")} → ${String(d.to ?? "")}`;
       case "game.cover_auto":
         return String(d.from ?? "");

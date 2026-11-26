@@ -77,3 +77,9 @@ Game statuses:
 | Archived | Retired, data kept |
 
 Players can click **Report** under any game (broken game, inappropriate content, copyright, score cheating); the admin handles reports and may move the game to Maintenance or Suspended.
+
+## Age rating {#age-rating}
+
+Under **Game info** pick an age rating: All ages, 7+, 12+, 16+, 18+. The badge shows on game cards and the game page.
+**18+** games ask players to confirm "I am 18 or older" before loading (remembered on the device). Violence, horror,
+gambling, nudity… choose a higher rating – admins may adjust it during review.

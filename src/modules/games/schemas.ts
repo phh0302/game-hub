@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { GameStatus, ScoreOrder } from "@prisma/client";
+import { GameStatus, ScoreOrder, AgeRating } from "@prisma/client";
 import { locales } from "@/i18n/config";
 import { gameSettingsInputSchema, leaderboardSettingsSchema } from "./settings";
 
@@ -36,6 +36,7 @@ export const gameCreateSchema = z.object({
   studioId: z.string().min(1).optional(),
   status: z.nativeEnum(GameStatus).optional(),
   thumbnailKey: storageKeySchema.nullable().optional(),
+  ageRating: z.nativeEnum(AgeRating).optional(),
   sortOrder: z.number().int().min(0).max(100_000).optional(),
   settings: gameSettingsInputSchema.optional(),
   translations: translationsSchema,

@@ -108,6 +108,7 @@ export async function adminCreateGame(input: GameCreateInput) {
       studioId,
       status,
       thumbnailKey: input.thumbnailKey ?? null,
+      ageRating: input.ageRating,
       sortOrder: input.sortOrder ?? 0,
       settings: (input.settings ?? {}) as Prisma.InputJsonObject,
       translations: {
@@ -158,6 +159,7 @@ export async function adminUpdateGame(id: string, input: GameUpdateInput, actorI
         studioId: input.studioId,
         status: input.status,
         thumbnailKey: input.thumbnailKey,
+        ageRating: input.ageRating,
         sortOrder: input.sortOrder,
         // Gộp với settings cũ để không mất các key khác
         settings: input.settings
@@ -170,6 +172,9 @@ export async function adminUpdateGame(id: string, input: GameUpdateInput, actorI
   });
   if (input.status && input.status !== game.status) {
     await logEvent({ type: "game.status", userId: actorId ?? null, gameId: id, data: { from: game.status, to: input.status } });
+  }
+  if (input.ageRating && input.ageRating !== game.ageRating) {
+    await logEvent({ type: "game.age_rating", userId: actorId ?? null, gameId: id, data: { from: game.ageRating, to: input.ageRating } });
   }
   if (input.settings) {
     await logEvent({ type: "game.rules", userId: actorId ?? null, gameId: id, data: { ...input.settings } as Prisma.InputJsonObject });
