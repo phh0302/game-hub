@@ -205,7 +205,8 @@ export async function cmdDeploy(args) {
   }
 
   const { upload } = await api(args, "POST", "/developer/uploads", { kind: "build", contentType: "application/zip", size: zip.byteLength });
-  const put = await fetch(upload.url, { method: "PUT", headers: upload.headers, body: zip });
+  // Kho lưu trữ R2 trả URL đầy đủ; máy chủ tự host (lưu trên đĩa) trả đường dẫn tương đối của hub
+  const put = await fetch(new URL(upload.url, `${hubUrl(args)}/`), { method: "PUT", headers: upload.headers, body: zip });
   if (!put.ok) throw Object.assign(new Error(`Tải file lên thất bại (HTTP ${put.status})`), { code: "UPLOAD_FAILED" });
   console.log(`${c.dim("•")} đã tải lên, đang giải nén + quét…`);
 
