@@ -1,6 +1,6 @@
 import "server-only";
 import { cache } from "react";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { ApiError } from "@/lib/api";
 import { userWithIdentities, type UserWithIdentities } from "@/modules/users/dto";
@@ -18,7 +18,8 @@ const LAST_SEEN_INTERVAL_MS = 15 * 60_000;
 export const getCurrentUser = cache(async (): Promise<UserWithIdentities | null> => {
   const store = await cookies();
   const session = await verifySession(store.get(SESSION_COOKIE)?.value);
-  if (!session?.sid) return null; // JWT cũ (trước khi có bảng phiên) → đăng nhập lại
+  if (!session) return userFromBearer();
+  if (!session.sid) return null; // JWT cũ (trước khi có bảng phiên) → đăng nhập lại
   const row = await prisma.authSession.findUnique({
     where: { id: session.sid },
     include: { user: { include: userWithIdentities } },
@@ -51,4 +52,23 @@ export async function requireAdmin(): Promise<UserWithIdentities> {
   const user = await requireUser();
   if (user.role !== "ADMIN") throw new ApiError(403, "FORBIDDEN", "Bạn không có quyền admin");
   return user;
+}
+
+/**
+ * Token CLI (`Authorization: Bearer mlb_…`) – chỉ nhận ở /api/v1/developer/* (route do middleware ghi vào x-mon-r,
+ * client không tự đặt được). Không dùng được cho admin, hồ sơ, nộp điểm…
+ */
+async function userFromBearer(): Promise<UserWithIdentities | null> {
+  let h: Headers;
+  try {
+    h = await headers();
+  } catch {
+    return null;
+  }
+  const route = h.get("x-mon-r") ?? "";
+  if (!route.startsWith("/api/v1/developer/")) return null;
+  const auth = h.get("authorization") ?? "";
+  if (!auth.startsWith("Bearer mlb_")) return null;
+  const { userFromDevToken } = await import("@/modules/developer/tokens");
+  return userFromDevToken(auth.slice(7).trim());
 }

@@ -298,6 +298,15 @@ Chọn: chơi theo lượt + phòng chờ chạy trên hạ tầng hiện có (V
 ## Phase 18 – Stress test (25/11)
 - [x] Unit `zip-stress` (zip bomb, khai man kích thước, 2.000 file, đường dẫn độc), e2e `99c-stress-limits` (biên 64KB, ghi đồng thời, nộp điểm đồng thời, 429 + Retry-After), `npm run stress` (chặn production mặc định) – `docs/STRESS.md`
 
+## Phase 19 – Yêu cầu từ developer (26/11)
+- [x] Gắn cờ độ tuổi (PR #63)
+- [x] Quét bản build khi upload (PR #64)
+- [x] Sandbox thử game local (PR #65)
+- [x] Token CLI + `@monlabs/cli deploy` + `@monlabs/sdk` (TypeScript) + workflow publish npm
+- [ ] Publish npm (cần NPM_TOKEN – người dùng)
+- [ ] Project mẫu (HTML thuần, Phaser + Vite + TS, Unity WebGL)
+- [ ] Phòng chờ + chơi theo lượt
+
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest
 - Multiplayer realtime / matchmaking

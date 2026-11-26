@@ -8,6 +8,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { apiFetch, errorCode } from "@/lib/client-api";
 import { Field, inputCls, primaryBtn, ghostBtn, Section, slugify, StatusBadge, useErrorText, type GameStatus, type VersionStatus } from "./shared";
 import { StudioMembers } from "./StudioMembers";
+import { DevTokens } from "./DevTokens";
 
 type Studio = {
   id: string;
@@ -113,6 +114,7 @@ export function DeveloperHome() {
       </Section>
 
       <StudioMembers myRole={studio.myRole} onLeft={load} />
+      <DevTokens />
     </div>
   );
 }

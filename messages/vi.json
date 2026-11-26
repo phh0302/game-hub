@@ -1047,5 +1047,22 @@
       "trackDropped": "{dropped} sự kiện bị bỏ (tên sai, quá 50 sự kiện/lần…)",
       "url": "Địa chỉ không hợp lệ – cần http:// hoặc https://"
     }
+  },
+  "devTokens": {
+    "title": "Token cho CLI / CI",
+    "intro": "Đẩy bản build thẳng từ terminal hoặc GitHub Actions, không cần upload trên web. Token chỉ dùng được cho API Studio (không xem được tài khoản, không chơi game). Đừng commit token – để trong biến môi trường MONLABS_TOKEN / GitHub Secrets.",
+    "createdTitle": "Token mới – copy ngay",
+    "createdHint": "Token chỉ hiện 1 lần. Mất thì thu hồi và tạo token mới.",
+    "copy": "Copy",
+    "name": "Tên (để nhận ra)",
+    "expires": "Hết hạn sau",
+    "days": "ngày",
+    "never": "Không hết hạn",
+    "create": "Tạo token",
+    "empty": "Chưa có token nào.",
+    "lastUsed": "dùng lần cuối {date}",
+    "neverUsed": "chưa dùng",
+    "expiresOn": "hết hạn {date}",
+    "revoke": "Thu hồi"
   }
 }

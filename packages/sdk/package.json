@@ -1,0 +1,27 @@
+{
+  "name": "@monlabs/sdk",
+  "version": "3.3.0",
+  "description": "Monlabs Game Hub SDK – scores, leaderboards, saved progress, analytics, share & invite, ads – with TypeScript types",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": ["dist", "README.md"],
+  "sideEffects": false,
+  "scripts": {
+    "build": "node build.mjs",
+    "prepack": "node build.mjs"
+  },
+  "keywords": ["monlabs", "game-hub", "html5-games", "leaderboard", "sdk", "phaser", "unity-webgl"],
+  "homepage": "https://docs.monlabs.fun/sdk",
+  "repository": { "type": "git", "url": "git+https://github.com/phh0302/game-hub.git", "directory": "packages/sdk" },
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}

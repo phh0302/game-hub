@@ -1047,5 +1047,22 @@
       "trackDropped": "{dropped} events dropped (bad name, more than 50 per call…)",
       "url": "Invalid address – use http:// or https://"
     }
+  },
+  "devTokens": {
+    "title": "Tokens for CLI / CI",
+    "intro": "Deploy builds straight from the terminal or GitHub Actions, no web upload. Tokens only work with the Studio API (no account access, no gameplay). Never commit a token – keep it in MONLABS_TOKEN / GitHub Secrets.",
+    "createdTitle": "New token – copy it now",
+    "createdHint": "Shown only once. If lost, revoke it and create a new one.",
+    "copy": "Copy",
+    "name": "Name (to recognise it)",
+    "expires": "Expires after",
+    "days": "days",
+    "never": "Never",
+    "create": "Create token",
+    "empty": "No tokens yet.",
+    "lastUsed": "last used {date}",
+    "neverUsed": "never used",
+    "expiresOn": "expires {date}",
+    "revoke": "Revoke"
   }
 }

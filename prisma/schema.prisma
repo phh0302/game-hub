@@ -57,6 +57,7 @@ model User {
   events        Event[]
   reports       GameReport[]
   feedbacks     Feedback[]
+  devTokens     DeveloperToken[]
   authSessions  AuthSession[]
   projectBans   ProjectBan[]
   gameSaves     GameSave[]
@@ -648,4 +649,23 @@ enum AgeRating {
   AGE_12
   AGE_16
   AGE_18
+}
+
+/// Token cho CLI / CI của developer (`monlabs deploy`): chỉ dùng được với /api/v1/developer/*, lưu dạng băm
+model DeveloperToken {
+  id         String    @id @default(cuid())
+  userId     String
+  name       String
+  /// SHA-256 của token (token gốc chỉ hiện 1 lần lúc tạo)
+  tokenHash  String    @unique
+  /// 12 ký tự đầu (mlb_xxxxxxxx) để nhận ra token trong danh sách
+  prefix     String
+  lastUsedAt DateTime?
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }

@@ -1,0 +1,41 @@
+# Publish @monlabs/sdk / @monlabs/cli lên npm. Cần secret NPM_TOKEN (npmjs.com → Access Tokens → Granular, quyền publish @monlabs).
+# Chạy: Actions → publish-packages → Run workflow → chọn gói. Nhớ tăng "version" trong packages/<gói>/package.json trước.
+name: publish-packages
+on:
+  workflow_dispatch:
+    inputs:
+      package:
+        description: "Gói"
+        type: choice
+        options: [sdk, cli]
+      dry_run:
+        description: "Chỉ thử (không publish)"
+        type: boolean
+        default: true
+permissions:
+  contents: read
+  id-token: write # npm provenance
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Kiểm tra SDK npm khớp bản /sdk/v3
+        if: inputs.package == 'sdk'
+        run: node packages/sdk/build.mjs
+      - name: Cài phụ thuộc
+        working-directory: packages/${{ inputs.package }}
+        run: npm install --omit=dev --no-audit --no-fund --no-package-lock
+      - name: Đóng gói (xem trước nội dung)
+        working-directory: packages/${{ inputs.package }}
+        run: npm pack --dry-run
+      - name: Publish
+        if: ${{ !inputs.dry_run }}
+        working-directory: packages/${{ inputs.package }}
+        run: npm publish --access public --provenance
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
