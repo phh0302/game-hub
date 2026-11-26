@@ -94,6 +94,13 @@ function GamePlayer({
   /** Điểm ván vừa xong – dùng cho nút "Khoe điểm" */
   const [lastScore, setLastScore] = useState<{ value: number; format: ScoreFormat } | null>(null);
   const [invite, setInvite] = useState<InviteInfo | null>(null);
+  /** Phòng chơi theo lượt đang tham gia (hub hỏi lại máy chủ định kỳ và gửi ROOM_UPDATE vào game) */
+  const [room, setRoom] = useState<{ code: string; seq: number; finished: boolean } | null>(null);
+  const [roomCodeFromUrl] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    const c = new URLSearchParams(window.location.search).get("room")?.toUpperCase() ?? null;
+    return c && /^[A-Z2-9]{6}$/.test(c) ? c : null;
+  });
   const [shareReq, setShareReq] = useState<ShareRequest | null>(null);
   /** Bảng tính theo thời gian dùng câu "hoàn thành trong 0:42,7" thay vì "đạt X điểm" */
   const msg = useCallback((key: string, format: ScoreFormat = scoreFormat) => (format === "duration_ms" ? `${key}Time` : key), [scoreFormat]);
@@ -125,10 +132,13 @@ function GamePlayer({
       ads: { rewarded: false, interstitial: false },
       // GameHub.share() / GameHub.invite() mở bảng chia sẻ của hub
       social: { share: true, invite: true },
+      // Phòng chơi theo lượt: GameHub.rooms.*; roomCode = mã phòng trong link mời (?room=)
+      rooms: true,
+      roomCode: roomCodeFromUrl,
       // Bạn bè đã mời (game có thể tặng thưởng); invitedBy = ai đã mời người chơi này
       invites: invite ? { count: invite.invited, viaGame: invite.invitedViaGame, invitedBy: invite.invitedBy } : null,
     });
-  }, [post, locale, user, canSubmitScore, invite]);
+  }, [post, locale, user, canSubmitScore, invite, roomCodeFromUrl]);
 
   // Mã mời + số bạn đã mời (chỉ tài khoản có ví)
   useEffect(() => {
@@ -147,13 +157,15 @@ function GamePlayer({
 
   const tShare = useTranslations("share");
   const openShare = useCallback(
-    (kind: "share" | "invite", options: { text?: string | null; score?: number | null; requestId?: string } = {}) => {
+    (kind: "share" | "invite", options: { text?: string | null; score?: number | null; requestId?: string; room?: string | null } = {}) => {
       const score = kind === "share" && options.score !== undefined && options.score !== null ? options.score : null;
-      const url = inviteUrl(window.location.origin, { slug, code: invite?.code, score });
+      const url = inviteUrl(window.location.origin, { slug, code: invite?.code, score, room: options.room });
       const text =
         options.text ??
         (kind === "invite"
-          ? tShare("inviteText", { game: gameName })
+          ? options.room
+            ? tShare("roomInviteText", { game: gameName, code: options.room })
+            : tShare("inviteText", { game: gameName })
           : score !== null
             ? tShare(scoreFormat === "duration_ms" ? "scoreTextTime" : "scoreText", { score: fmt(score), game: gameName })
             : tShare("gameText", { game: gameName }));
@@ -312,8 +324,61 @@ function GamePlayer({
     [user?.id, slug, post],
   );
 
-  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState, slug, openShare });
-  handlers.current = { sendInit, startSession, finishSession, post, handleState, slug, openShare };
+  /** GameHub.rooms.* → gọi API phòng, trả ROOM_RESULT; từ đó hub tự hỏi lại phòng và gửi ROOM_UPDATE */
+  const roomAction = useCallback(
+    async (payload: Record<string, unknown>) => {
+      const requestId = typeof payload.requestId === "string" ? payload.requestId.slice(0, 40) : undefined;
+      const op = String(payload.op ?? "");
+      const body = (payload.body && typeof payload.body === "object" ? payload.body : {}) as Record<string, unknown>;
+      const base = `/games/${slug}/rooms`;
+      try {
+        let res: { room: { code: string; seq: number; status: string } };
+        if (op === "create") res = await apiFetch(base, { method: "POST", json: body });
+        else {
+          const code = op === "join" ? String(body.code ?? "").toUpperCase() : room?.code;
+          if (!code) throw Object.assign(new Error("NO_ROOM"), { code: "NO_ROOM" });
+          if (!["join", "leave", "start", "move"].includes(op)) throw Object.assign(new Error("BAD_OP"), { code: "VALIDATION_ERROR" });
+          res = await apiFetch(`${base}/${code}/${op}`, { method: "POST", json: op === "move" ? body : {} });
+        }
+        const r = res.room;
+        setRoom(op === "leave" ? null : { code: r.code, seq: r.seq, finished: r.status === "FINISHED" });
+        post("ROOM_RESULT", { requestId, ok: true, room: r });
+      } catch (err) {
+        const code = errorCode(err);
+        post("ROOM_RESULT", { requestId, ok: false, code: code === "UNAUTHORIZED" || code === "GUEST_NOT_ALLOWED" ? "LOGIN_REQUIRED" : code });
+      }
+    },
+    [slug, room?.code, post],
+  );
+
+  // Đang ở trong phòng → hỏi lại mỗi 1,5 giây (dừng khi tab ẩn / phòng kết thúc), có gì mới thì gửi ROOM_UPDATE
+  useEffect(() => {
+    if (!room || room.finished) return;
+    let seq = room.seq;
+    let stopped = false;
+    const tick = async () => {
+      if (stopped || document.hidden) return;
+      try {
+        const { room: r } = await apiFetch<{ room: { code: string; seq: number; status: string } }>(
+          `/games/${slug}/rooms/${room.code}?since=${seq}`,
+        );
+        if (stopped || r.seq === seq) return;
+        seq = r.seq;
+        post("ROOM_UPDATE", { room: r });
+        if (r.status === "FINISHED") setRoom({ code: r.code, seq: r.seq, finished: true });
+      } catch {
+        // mạng chập chờn: lần sau hỏi lại
+      }
+    };
+    const id = window.setInterval(() => void tick(), 1500);
+    return () => {
+      stopped = true;
+      window.clearInterval(id);
+    };
+  }, [room?.code, room?.finished, slug, post]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState, slug, openShare, roomAction });
+  handlers.current = { sendInit, startSession, finishSession, post, handleState, slug, openShare, roomAction };
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -357,7 +422,12 @@ function GamePlayer({
             text: cleanText(payload.text),
             score: msg.type === "SHARE" && Number.isFinite(score) && score >= 0 ? Math.floor(score) : null,
             requestId,
+            room: msg.type === "INVITE" && typeof payload.room === "string" ? payload.room.toUpperCase().slice(0, 6) : null,
           });
+          break;
+        }
+        case "ROOM": {
+          void h.roomAction(payload);
           break;
         }
         case "AD_REQUEST":

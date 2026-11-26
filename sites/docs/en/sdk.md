@@ -171,6 +171,35 @@ GameHub.on("init", (hub) => { shareBtn.hidden = !hub.social.share; inviteBtn.hid
 
 Protocol: the game sends `SHARE { requestId, text?, score? }` / `INVITE { requestId, text? }`, the hub replies `SHARE_RESULT { requestId, shared, method }` when the sheet closes.
 
+## Turn-based rooms {#rooms}
+
+Added 2026-11-26, available in `/sdk/v3/`. For turn-based games (board, card, quiz, challenges): the hub's server keeps the room,
+the hub polls every ~1.5 s and notifies the game – **no server of your own, no WebSocket**. Hub only; players must connect a wallet.
+
+```js
+const room = await GameHub.rooms.create({ maxPlayers: 2, turnSeconds: 30, state: { board: Array(9).fill(null) } });
+GameHub.rooms.invite();                        // invite link with ?room=CODE
+GameHub.on("init", (hub) => hub.roomCode && GameHub.rooms.join(hub.roomCode));
+GameHub.on("room", (room) => render(room));    // joins / leaves, start, moves, turn timeouts, finish
+await GameHub.rooms.start();                   // host, ≥ 2 players
+await GameHub.rooms.move({ cell: 4 }, { state: { board }, finish: winner !== null ? { winnerSeat: winner } : undefined });
+```
+
+| `room` field | |
+|---|---|
+| `code`, `status` | 6-character code; `WAITING` → `PLAYING` → `FINISHED` |
+| `players[]` | `{ seat, name, host, left }` – seat 0 is the host |
+| `mySeat`, `myTurn`, `isHost`, `turnSeat`, `turnDeadline` | Current turn (after `turnSeconds` the turn passes automatically) |
+| `state` | Shared state defined by the game (JSON ≤ 32KB), sent with `move()` |
+| `moves[]` | New moves `{ seq, seat, data }` (JSON ≤ 8KB each) |
+| `result` | When finished: `{ reason: "finished" | "abandoned" | "host_left" | "expired", winnerSeat, scores }` |
+
+- `move(data, { next })`: `"next"` (default) passes the turn round-robin, `"same"` moves again, or a seat number.
+- Errors carry `err.code`: `LOGIN_REQUIRED`, `ROOM_FULL`, `ROOM_STARTED`, `NOT_YOUR_TURN`, `ROOM_CHANGED` (someone else just moved – wait for the new `room`, then retry).
+- The hub **does not enforce game rules** – validate moves and winners in the game. If a player leaves mid-game and one remains, the room ends (`abandoned`).
+- Rooms expire after 2 hours of inactivity. The Sandbox doesn't simulate rooms yet (`init.rooms = false`).
+- Sample: the 3×3 tic-tac-toe game in the repo (`public/uploads/games/rooms-demo`).
+
 ## Ads
 
 Game Hub **doesn't show ads yet** – the `init` data has `ads: { rewarded: false, interstitial: false }`, so **hide "watch an ad for a reward" buttons when `hub.ads.rewarded` is `false`** (don't offer something the player can't get). Calling them is still safe: `showRewardedAd()` returns `{ shown: false, rewarded: false }` and `showInterstitialAd()` returns `{ shown: false }`. Make sure the game plays normally without ads – for example, hide the "Watch an ad for a reward" button when `shown` is `false`.

@@ -714,7 +714,8 @@
     "invite": "Mời bạn",
     "invitedCount": "đã mời {count}",
     "inviteText": "Vào chơi {game} với mình trên Game Hub nhé!",
-    "inviteHint": "Bạn bè kết nối ví lần đầu qua link này sẽ được tính là bạn đã mời."
+    "inviteHint": "Bạn bè kết nối ví lần đầu qua link này sẽ được tính là bạn đã mời.",
+    "roomInviteText": "Vào phòng {code} chơi {game} với mình trên Game Hub!"
   },
   "adminStats": {
     "title": "Thống kê",

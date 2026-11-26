@@ -31,6 +31,9 @@ The game and the hub talk through `window.postMessage`. Every message looks like
 | game → hub | `SHARE` | `{ requestId, text?, score? }` – opens the hub share sheet (2026-11-23) |
 | game → hub | `INVITE` | `{ requestId, text? }` – opens the invite sheet (link with invite code) |
 | hub → game | `SHARE_RESULT` | `{ requestId, shared, method }` – when the player closes the sheet |
+| game → hub | `ROOM` | `{ requestId, op: "create" \| "join" \| "leave" \| "start" \| "move", body }` – turn-based rooms (2026-11-26) |
+| hub → game | `ROOM_RESULT` | `{ requestId, ok, room?, code? }` |
+| hub → game | `ROOM_UPDATE` | `{ room }` – the room changed (the hub polls the server every ~1.5 s) |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Sequence

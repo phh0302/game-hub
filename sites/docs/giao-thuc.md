@@ -31,6 +31,9 @@ Game và hub nói chuyện qua `window.postMessage`. Mọi tin nhắn có dạng
 | game → hub | `SHARE` | `{ requestId, text?, score? }` – mở bảng chia sẻ của hub (23/11/2026) |
 | game → hub | `INVITE` | `{ requestId, text? }` – mở bảng mời bạn (link có mã mời) |
 | hub → game | `SHARE_RESULT` | `{ requestId, shared, method }` – khi người chơi đóng bảng |
+| game → hub | `ROOM` | `{ requestId, op: "create" \| "join" \| "leave" \| "start" \| "move", body }` – phòng chơi theo lượt (26/11/2026) |
+| hub → game | `ROOM_RESULT` | `{ requestId, ok, room?, code? }` |
+| hub → game | `ROOM_UPDATE` | `{ room }` – phòng thay đổi (hub hỏi lại máy chủ mỗi ~1,5 giây) |
 | hub → game | `PAUSE` / `RESUME` | `{}` |
 
 ## Trình tự

@@ -20,6 +20,52 @@ export interface InitData {
   social: { share: boolean; invite: boolean };
   /** Bạn đã mời (tổng / qua game này), ai mời người chơi này; null = chưa kết nối ví */
   invites: { count: number; viaGame: number; invitedBy: string | null } | null;
+  /** Hub có phòng chơi theo lượt (GameHub.rooms) */
+  rooms: boolean;
+  /** Mã phòng trong link mời (?room=) – gọi GameHub.rooms.join(roomCode) */
+  roomCode: string | null;
+}
+
+export type RoomStatus = "WAITING" | "PLAYING" | "FINISHED";
+
+export interface Room<S = unknown, M = unknown> {
+  code: string;
+  status: RoomStatus;
+  /** Tăng mỗi lần phòng thay đổi */
+  seq: number;
+  maxPlayers: number;
+  turnSeconds: number | null;
+  turnSeat: number | null;
+  turnDeadline: string | null;
+  mySeat: number | null;
+  myTurn: boolean;
+  isHost: boolean;
+  /** Trạng thái chung do game định nghĩa */
+  state: S | null;
+  result: { reason: "finished" | "abandoned" | "host_left" | "expired" | "replaced"; winnerSeat?: number | null; scores?: Record<string, number> | null } | null;
+  players: { seat: number; name: string; host: boolean; left: boolean }[];
+  /** Nước đi mới (khi có) */
+  moves: { seq: number; seat: number; data: M; at: string }[];
+}
+
+export interface RoomMoveOptions<S = unknown> {
+  /** Trạng thái chung mới (JSON ≤ 32KB) */
+  state?: S;
+  /** Lượt tiếp theo: "next" (mặc định), "same" (đi tiếp), hoặc số ghế */
+  next?: "next" | "same" | number;
+  /** Kết thúc ván */
+  finish?: { winnerSeat?: number | null; scores?: Record<string, number> };
+}
+
+export interface RoomsAPI {
+  /** Lỗi có err.code: LOGIN_REQUIRED, UNSUPPORTED, ROOM_FULL, ROOM_STARTED, NOT_YOUR_TURN, ROOM_CHANGED… */
+  create<S = unknown>(options?: { maxPlayers?: number; turnSeconds?: number; state?: S }): Promise<Room<S>>;
+  join<S = unknown>(code: string): Promise<Room<S>>;
+  leave(): Promise<Room | null>;
+  start<S = unknown>(): Promise<Room<S>>;
+  move<S = unknown, M = unknown>(data: M, options?: RoomMoveOptions<S>): Promise<Room<S, M>>;
+  current<S = unknown>(): Room<S> | null;
+  invite(options?: { text?: string }): Promise<ShareResult>;
 }
 
 export interface InitOptions {
@@ -84,6 +130,7 @@ export interface LeaderboardEntry {
 export interface GameHubEvents {
   init: InitData;
   scoreResult: ScoreResult;
+  room: Room;
   pause: undefined;
   resume: undefined;
 }
@@ -110,6 +157,8 @@ export interface GameHubSDK {
   invite(options?: { text?: string }): Promise<ShareResult>;
   on<K extends keyof GameHubEvents>(event: K, cb: (data: GameHubEvents[K]) => void): void;
   getInitData(): InitData | null;
+  /** Phòng chơi nhiều người theo lượt (chỉ trong hub) */
+  readonly rooms: RoomsAPI;
   /** Chế độ độc lập: đăng nhập ví (hoặc { guest: true }) */
   login(options?: { guest?: boolean }): Promise<Player>;
   logout(): Promise<void>;

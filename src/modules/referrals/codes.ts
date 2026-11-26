@@ -30,11 +30,15 @@ export function parseRefCookie(value: string | null | undefined): { code: string
 }
 
 /** Link mời: trang game (hoặc trang chủ) + ?ref=mã. Có điểm → thêm ?score= để ảnh chia sẻ hiện "Mình đạt X điểm" */
-export function inviteUrl(origin: string, options: { slug?: string | null; code?: string | null; score?: number | null }): string {
+export function inviteUrl(
+  origin: string,
+  options: { slug?: string | null; code?: string | null; score?: number | null; room?: string | null },
+): string {
   const url = new URL(options.slug ? `/games/${options.slug}` : "/", origin);
   if (options.score !== undefined && options.score !== null && Number.isFinite(options.score)) {
     url.searchParams.set("score", String(Math.floor(options.score)));
   }
   if (options.code && isInviteCode(options.code)) url.searchParams.set("ref", options.code);
+  if (options.room && /^[A-Z2-9]{6}$/.test(options.room)) url.searchParams.set("room", options.room);
   return url.toString();
 }

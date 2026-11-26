@@ -13,6 +13,7 @@ Mỗi **bản chính** có đường dẫn riêng (`/sdk/v1/`, `/sdk/v2/`, `/sdk
 - 20/11/2026: **`GameHub.track(name, props)`** + `GameHub.flush()` – đếm sự kiện game, xem ở trang Developer ([Sự kiện game](/sdk#su-kien-game)); dữ liệu `init` có `ads` cho biết loại quảng cáo đang có.
 - 20/11/2026: chế độ độc lập – `saveState()` / `loadState()` lưu theo tài khoản khi người chơi đã `login()` (API `/api/p1/state`), chung dữ liệu với bản trên hub.
 - 23/11/2026: **`GameHub.share()` / `GameHub.invite()`** – bảng chia sẻ của hub, link mời tính bạn bè cho người chơi; `init` có `social` và `invites` ([Chia sẻ & mời bạn](/sdk#chia-se)). Giao thức thêm `SHARE`, `INVITE`, `SHARE_RESULT`.
+- 26/11/2026: **`GameHub.rooms`** – phòng chơi nhiều người theo lượt (tạo / vào bằng mã / mời bằng link, bắt đầu, gửi nước đi, hết giờ lượt), sự kiện `room`, `init.rooms` + `init.roomCode` ([Phòng chơi theo lượt](/sdk#phong)). Giao thức thêm `ROOM`, `ROOM_RESULT`, `ROOM_UPDATE`.
 
 Chuyển từ v2: không bắt buộc sửa gì – code không dùng giá trị trả về của `gameOver()` chạy y như cũ. Game đang lưu bằng `localStorage` nên chuyển sang `saveState()`.
 
