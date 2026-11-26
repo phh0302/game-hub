@@ -56,6 +56,7 @@ export default defineConfig({
               { text: "Runtime environment", link: "/en/moi-truong" },
               { text: "Studio & review", link: "/en/studio" },
               { text: "npm, TypeScript & CLI", link: "/en/cli" },
+              { text: "Sample projects", link: "/en/mau" },
             ],
           },
           {
@@ -121,6 +122,7 @@ export default defineConfig({
           { text: "Môi trường chạy game", link: "/moi-truong" },
           { text: "Studio & duyệt game", link: "/studio" },
           { text: "npm, TypeScript & CLI", link: "/cli" },
+          { text: "Project mẫu", link: "/mau" },
         ],
       },
       {

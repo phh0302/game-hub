@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>{{{ PRODUCT_NAME }}}</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0b0b16; overflow: hidden; }
+      #unity-canvas { width: 100%; height: 100%; display: block; background: #0b0b16; }
+      #loading { position: absolute; inset: 0; display: grid; place-items: center; color: #fff; font-family: system-ui; }
+    </style>
+    <!-- Monlabs Game Hub SDK – nạp trước Unity để .jslib gọi được window.GameHub -->
+    <script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
+  </head>
+  <body>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <div id="loading">Loading… <span id="pct">0%</span></div>
+    <script src="Build/{{{ LOADER_FILENAME }}}"></script>
+    <script>
+      createUnityInstance(document.querySelector("#unity-canvas"), {
+        dataUrl: "Build/{{{ DATA_FILENAME }}}",
+        frameworkUrl: "Build/{{{ FRAMEWORK_FILENAME }}}",
+        codeUrl: "Build/{{{ CODE_FILENAME }}}",
+#if MEMORY_FILENAME
+        memoryUrl: "Build/{{{ MEMORY_FILENAME }}}",
+#endif
+#if SYMBOLS_FILENAME
+        symbolsUrl: "Build/{{{ SYMBOLS_FILENAME }}}",
+#endif
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
+        productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
+        productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
+        // Data Caching dùng IndexedDB – không chạy trong khung cách ly của hub
+        cacheControl: function () { return "no-store"; },
+      }, function (p) { document.getElementById("pct").textContent = Math.round(p * 100) + "%"; })
+        .then(function () { document.getElementById("loading").remove(); })
+        .catch(function (e) { document.getElementById("loading").textContent = String(e); });
+    </script>
+  </body>
+</html>

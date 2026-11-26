@@ -202,6 +202,43 @@ jobs:
       - name: Build trang tài liệu
         run: npm run build
 
+  # Project mẫu (templates/) phải luôn build được với SDK hiện tại
+  templates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - name: HTML thuần – cú pháp
+        run: node --check templates/html-basic/game/game.js
+
+      - name: Unity – cú pháp .jslib
+        run: |
+          node -e '
+            const src = require("fs").readFileSync("templates/unity-webgl/Assets/Plugins/WebGL/MonlabsHub.jslib", "utf8");
+            let lib; new Function("mergeInto", "LibraryManager", src)((_, l) => (lib = l), { library: {} });
+            const need = ["MonlabsInit","MonlabsGameStart","MonlabsGameOver","MonlabsSaveState","MonlabsLoadState","MonlabsTrack","MonlabsShowRewardedAd","MonlabsShare","MonlabsInvite"];
+            const cs = require("fs").readFileSync("templates/unity-webgl/Assets/Monlabs/Scripts/MonlabsHub.cs", "utf8");
+            for (const n of need) { if (typeof lib[n] !== "function") throw new Error("jslib thiếu " + n); if (!cs.includes("static extern void " + n + "(")) throw new Error("C# thiếu " + n); }
+            console.log("ok", Object.keys(lib).length);
+          '
+
+      - name: Phaser + Vite + TS – typecheck & build (dùng @monlabs/sdk trong repo)
+        working-directory: templates/phaser-vite-ts
+        run: |
+          node ../../packages/sdk/build.mjs
+          npm pkg delete dependencies.@monlabs/sdk devDependencies.@monlabs/cli
+          npm install --no-audit --no-fund
+          npm install --no-audit --no-fund --no-save ../../packages/sdk
+          npx tsc --noEmit
+          npx vite build
+          test -f dist/index.html
+          grep -q '"./assets/\|src="./assets/' dist/index.html
+
   # Build image Docker (app + nginx) và chạy thử cả cụm như trên VPS (docs/SELF_HOST.md)
   docker:
     runs-on: ubuntu-latest
