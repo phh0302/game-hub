@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+    <title>Tap Rush – Monlabs template</title>
+    <style>
+      html, body { margin: 0; height: 100%; background: #0b0b16; color: #fff; font-family: system-ui, sans-serif; }
+      #app { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 12px; user-select: none; }
+      #target { width: 120px; height: 120px; border-radius: 50%; border: 0; background: radial-gradient(#ff3ec8, #7a1cff); color: #fff; font-size: 28px; font-weight: 800; cursor: pointer; touch-action: manipulation; }
+      #target:active { transform: scale(0.94); }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+      button.secondary { background: #1b1b2e; color: #ddd; border: 1px solid #333; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+      button[hidden] { display: none; }
+      #status { opacity: 0.8; min-height: 1.2em; text-align: center; padding: 0 12px; }
+    </style>
+    <!-- SDK của hub: không chứa bí mật nào, tải thẳng từ hub -->
+    <script src="https://play.monlabs.fun/sdk/v3/gamehub-sdk.js"></script>
+  </head>
+  <body>
+    <div id="app">
+      <h1 id="title">Tap Rush</h1>
+      <p id="hint"></p>
+      <button id="target" type="button">TAP</button>
+      <p><span id="label-score"></span>: <b id="score">0</b> · <span id="label-best"></span>: <b id="best">0</b> · ⏱ <b id="time">10</b>s</p>
+      <div class="row">
+        <button class="secondary" id="share" type="button" hidden></button>
+        <button class="secondary" id="invite" type="button" hidden></button>
+        <button class="secondary" id="revive" type="button" hidden></button>
+      </div>
+      <p id="status"></p>
+    </div>
+    <script src="game.js"></script>
+  </body>
+</html>

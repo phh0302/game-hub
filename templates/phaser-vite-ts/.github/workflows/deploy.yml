@@ -1,0 +1,17 @@
+# Tạo tag v1.2.3 → build và đẩy lên Monlabs (chờ duyệt). Cần secret MONLABS_TOKEN (Studio → Token cho CLI / CI).
+name: deploy
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 22, cache: npm }
+      - run: npm ci
+      - run: npm run build
+      - run: npx monlabs deploy --version "${GITHUB_REF_NAME#v}" --notes "Tag ${GITHUB_REF_NAME}"
+        env:
+          MONLABS_TOKEN: ${{ secrets.MONLABS_TOKEN }}
