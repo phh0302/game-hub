@@ -27,3 +27,5 @@ public/uploads/u/
 # Kết quả test trình duyệt (Playwright)
 test-results/
 playwright-report/
+
+packages/*/dist/

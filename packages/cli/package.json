@@ -1,0 +1,14 @@
+{
+  "name": "@monlabs/cli",
+  "version": "0.1.0",
+  "description": "Deploy HTML5 game builds to Monlabs Game Hub from the terminal or CI",
+  "type": "module",
+  "bin": { "monlabs": "bin/monlabs.mjs" },
+  "files": ["bin", "README.md"],
+  "dependencies": { "fflate": "^0.8.2" },
+  "engines": { "node": ">=18" },
+  "keywords": ["monlabs", "game-hub", "deploy", "cli", "html5-games"],
+  "homepage": "https://docs.monlabs.fun/cli",
+  "repository": { "type": "git", "url": "git+https://github.com/phh0302/game-hub.git", "directory": "packages/cli" },
+  "license": "MIT"
+}

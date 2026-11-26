@@ -55,6 +55,7 @@ export default defineConfig({
               { text: "Prepare the .zip", link: "/en/chuan-bi-zip" },
               { text: "Runtime environment", link: "/en/moi-truong" },
               { text: "Studio & review", link: "/en/studio" },
+              { text: "npm, TypeScript & CLI", link: "/en/cli" },
             ],
           },
           {
@@ -119,6 +120,7 @@ export default defineConfig({
           { text: "Chuẩn bị file .zip", link: "/chuan-bi-zip" },
           { text: "Môi trường chạy game", link: "/moi-truong" },
           { text: "Studio & duyệt game", link: "/studio" },
+          { text: "npm, TypeScript & CLI", link: "/cli" },
         ],
       },
       {
