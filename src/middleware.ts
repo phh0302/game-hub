@@ -109,6 +109,9 @@ async function route(req: NextRequest, event: NextFetchEvent, requestId: string 
     return pass();
   }
 
+  // Sandbox chạy hoàn toàn trên trình duyệt, không đọc/ghi dữ liệu → ai cũng mở được
+  if (pathname === "/developer/sandbox") return NextResponse.next();
+
   const session = await verifySession(req.cookies.get(SESSION_COOKIE)?.value);
   const needsAdmin = pathname.startsWith("/admin");
   const allowed = session && (!needsAdmin || session.role === "ADMIN");
