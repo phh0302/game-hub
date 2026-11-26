@@ -26,9 +26,9 @@ test("sandbox: hub giả lập đủ SDK cho game chạy từ địa chỉ ngoà
   await expect(log).toContainText("SHARE_RESULT");
   await expect(game.getByTestId("log")).toContainText('share: {"shared":false');
 
-  // Đăng xuất giả lập → INIT gửi lại, game thấy canSubmitScore=false
+  // Đăng xuất giả lập → INIT gửi lại với canSubmitScore=false
   await page.getByLabel("Đã đăng nhập").uncheck();
-  await expect(game.getByTestId("log")).toContainText("canSubmitScore=false");
+  await expect(log).toContainText('"player":null,"canSubmitScore":false');
 
   // Địa chỉ sai
   await page.getByTestId("sandbox-url").fill("javascript:alert(1)");
