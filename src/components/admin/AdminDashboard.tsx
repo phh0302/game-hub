@@ -10,6 +10,7 @@ import { AdminStats } from "./AdminStats";
 import { AdminUsers } from "./AdminUsers";
 import { AdminPlans } from "./AdminPlans";
 import { AdminTrafficBlocks } from "./AdminTrafficBlocks";
+import { ScanBadge, type ScanFinding } from "@/components/developer/ScanBadge";
 
 const GAME_STATUSES = ["DRAFT", "PENDING_REVIEW", "PUBLISHED", "MAINTENANCE", "SUSPENDED", "ARCHIVED"] as const;
 type GameStatus = (typeof GAME_STATUSES)[number];
@@ -22,6 +23,8 @@ type AdminVersion = {
   entryFile: string;
   reviewNote: string | null;
   createdAt: string;
+  scanLevel: string | null;
+  scanReport: { findings?: ScanFinding[] } | null;
 };
 
 type AdminGame = {
@@ -124,6 +127,7 @@ type Run = (action: () => Promise<unknown>, okText: string | ((result: unknown) 
 function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
   const t = useTranslations("admin");
   const tDev = useTranslations("developer");
+  const tScan = useTranslations("scan");
   const locale = useLocale();
   const name =
     game.translations.find((tr) => tr.locale === locale)?.name ?? game.translations[0]?.name ?? game.slug;
@@ -208,6 +212,9 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
                       </td>
                       <td className="py-2 pr-3">
                         <span className="text-xs">{t(`versionStatus.${v.status}`)}</span>
+                        <div className="mt-1">
+                          <ScanBadge level={v.scanLevel} findings={v.scanReport?.findings ?? []} />
+                        </div>
                       </td>
                       <td className="py-2 pr-3 font-mono text-xs text-muted">
                         {v.storageKey}/{v.entryFile}
@@ -230,7 +237,7 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
                                   () =>
                                     apiFetch<{ version: { activated?: boolean; published?: boolean } }>(
                                       `/admin/games/${game.id}/versions/${v.id}`,
-                                      { method: "PATCH", json: { status: "APPROVED" } },
+                                      { method: "PATCH", json: { status: "APPROVED", acknowledgeScan: v.scanLevel === "critical" } },
                                     ),
                                   (res: unknown) => {
                                     const r = (res as { version?: { activated?: boolean; published?: boolean } }).version;
@@ -243,7 +250,7 @@ function GameAdminCard({ game, run }: { game: AdminGame; run: Run }) {
                                 )
                               }
                             >
-                              {t("approve")}
+                              {v.scanLevel === "critical" ? tScan("approveAnyway") : t("approve")}
                             </ActionButton>
                           )}
                           {v.status !== "REJECTED" && !current && (

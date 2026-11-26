@@ -283,6 +283,10 @@ model GameVersion {
   sdkVersion   Int           @default(1)
   status       VersionStatus @default(DRAFT)
   releaseNotes String?
+  /// Kết quả quét tĩnh khi upload: clean | info | warning | critical (critical: admin phải xác nhận mới duyệt được)
+  scanLevel    String?
+  /// Chi tiết quét: { findings: [{ rule, severity, path, match, count }], scannedFiles, scannedBytes }
+  scanReport   Json?
   reviewNote   String?
   reviewedById String?
   reviewedAt   DateTime?

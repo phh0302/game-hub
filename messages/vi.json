@@ -980,5 +980,31 @@
     "body": "Game có nội dung chỉ phù hợp người lớn. Xác nhận bạn đủ 18 tuổi để tiếp tục.",
     "confirm": "Tôi đủ 18 tuổi",
     "leave": "Quay lại"
+  },
+  "scan": {
+    "level": {
+      "clean": "Quét: sạch",
+      "info": "Quét: lưu ý",
+      "warning": "Quét: cảnh báo",
+      "critical": "Quét: nguy hiểm"
+    },
+    "count": "{count} phát hiện",
+    "approveAnyway": "Duyệt dù có cảnh báo",
+    "rules": {
+      "crypto_miner": "Đào tiền ảo",
+      "wallet_phishing": "Đòi cụm từ khôi phục / khóa riêng",
+      "wallet_drain": "Gọi lệnh ký / chuyển tiền của ví",
+      "wallet_access": "Truy cập ví",
+      "ad_network": "Quảng cáo ngoài",
+      "other_portal_sdk": "SDK quảng cáo của cổng game khác",
+      "redirect": "Chuyển hướng khỏi hub",
+      "popup": "Mở nhiều cửa sổ",
+      "password_input": "Ô nhập mật khẩu",
+      "obfuscated": "Mã bị làm rối",
+      "eval_payload": "Chạy mã ẩn (eval)",
+      "gambling_spam": "Chữ cờ bạc / spam",
+      "short_link": "Link rút gọn",
+      "external_script": "Script / iframe từ domain ngoài"
+    }
   }
 }

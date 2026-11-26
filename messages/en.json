@@ -980,5 +980,31 @@
     "body": "This game has content suitable for adults only. Confirm you are 18 or older to continue.",
     "confirm": "I am 18 or older",
     "leave": "Go back"
+  },
+  "scan": {
+    "level": {
+      "clean": "Scan: clean",
+      "info": "Scan: notes",
+      "warning": "Scan: warnings",
+      "critical": "Scan: dangerous"
+    },
+    "count": "{count} findings",
+    "approveAnyway": "Approve despite warnings",
+    "rules": {
+      "crypto_miner": "Crypto mining",
+      "wallet_phishing": "Asks for recovery phrase / private key",
+      "wallet_drain": "Wallet signing / transfer calls",
+      "wallet_access": "Wallet access",
+      "ad_network": "Third-party ads",
+      "other_portal_sdk": "Another portal's ad SDK",
+      "redirect": "Redirects away from the hub",
+      "popup": "Opens many windows",
+      "password_input": "Password field",
+      "obfuscated": "Obfuscated code",
+      "eval_payload": "Hidden code execution (eval)",
+      "gambling_spam": "Gambling / spam text",
+      "short_link": "Short links",
+      "external_script": "Script / iframe from another domain"
+    }
   }
 }

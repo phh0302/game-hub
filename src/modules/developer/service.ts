@@ -12,6 +12,8 @@ import { buildDir, imageKey, incomingZipKey, isImageKeyOf, isIncomingKeyOf } fro
 import { IMAGE_TYPES, MAX_IMAGE_BYTES, MAX_UPLOAD_BYTES } from "@/modules/uploads/limits";
 import { extractBuild, ZipValidationError, type BuildFile } from "@/modules/uploads/zip";
 import { asCover, coverCandidatePaths, pickCover, type CoverPick } from "@/modules/uploads/cover";
+import { scanBuild } from "@/modules/uploads/scan";
+import { sendTelegram } from "@/lib/traffic/alerts";
 import { displayName } from "@/lib/format";
 import { primaryWallet } from "@/modules/users/dto";
 import { generateApiKey } from "@/modules/platform/keys";
@@ -212,6 +214,8 @@ function toDevGameDto(game: DevGame, locale: string, stats?: { sessions: number;
       sizeBytes: v.sizeBytes,
       createdAt: v.createdAt,
       isCurrent: v.id === game.currentVersionId,
+      scanLevel: v.scanLevel,
+      scanFindings: ((v.scanReport as { findings?: unknown[] } | null)?.findings ?? []) as unknown[],
     })),
     stats: stats ?? { sessions: 0, players: 0, scores: 0 },
     rules: devRules(game, locale),
@@ -419,6 +423,11 @@ export async function submitVersion(studio: Studio, userId: string, gameId: stri
   }
 
   const dir = buildDir(game.slug, input.version);
+  // Quét tĩnh: quảng cáo ngoài, đào coin, lừa ví, chuyển hướng, chữ spam (cả tên / mô tả game)
+  const scan = scanBuild(
+    files,
+    game.translations.flatMap((t) => [t.name, t.description ?? ""]),
+  );
   await inBatches(files, 8, (f) => store.put(`${dir}/${f.path}`, f.data, f.contentType));
 
   const version = await prisma.gameVersion.create({
@@ -432,8 +441,14 @@ export async function submitVersion(studio: Studio, userId: string, gameId: stri
       status: "PENDING_REVIEW",
       releaseNotes: input.releaseNotes,
       createdById: userId,
+      scanLevel: scan.level,
+      scanReport: scan as unknown as Prisma.InputJsonObject,
     },
   });
+  if (scan.level === "critical") {
+    const rulesHit = [...new Set(scan.findings.filter((f) => f.severity === "critical").map((f) => f.rule))].join(", ");
+    await sendTelegram(`⚠️ Bản build nguy hiểm: ${game.slug} v${input.version}\nLuật: ${rulesHit}\nĐã chặn duyệt tự động – xem trong Quản trị.`).catch(() => false);
+  }
 
   // Game nháp có bản build đầu tiên → chuyển sang chờ duyệt
   if (game.status === GameStatus.DRAFT) {
@@ -450,7 +465,14 @@ export async function submitVersion(studio: Studio, userId: string, gameId: stri
     type: "version.upload",
     userId,
     gameId: game.id,
-    data: { versionId: version.id, version: version.version, files: files.length, bytes: totalBytes, autoCover: autoCover?.path ?? null },
+    data: {
+      versionId: version.id,
+      version: version.version,
+      files: files.length,
+      bytes: totalBytes,
+      autoCover: autoCover?.path ?? null,
+      scan: scan.level,
+    },
   });
   return {
     id: version.id,
@@ -459,6 +481,7 @@ export async function submitVersion(studio: Studio, userId: string, gameId: stri
     files: files.length,
     sizeBytes: totalBytes,
     autoCover: autoCover ? { path: autoCover.path, thumbnailUrl: autoCover.url } : null,
+    scan: { level: scan.level, findings: scan.findings },
   };
 }
 

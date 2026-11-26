@@ -23,6 +23,7 @@ import { GameEvents } from "./GameEvents";
 import { UsageStats } from "./UsageStats";
 import { WebhookSettings } from "./WebhookSettings";
 import { ApiIntegration } from "./ApiIntegration";
+import { ScanBadge, type ScanFinding } from "./ScanBadge";
 
 type Version = {
   id: string;
@@ -33,6 +34,8 @@ type Version = {
   sizeBytes: number | null;
   createdAt: string;
   isCurrent: boolean;
+  scanLevel: string | null;
+  scanFindings: ScanFinding[];
 };
 
 type Game = {
@@ -288,6 +291,7 @@ function VersionList({ game, onChanged }: { game: Game; onChanged: () => void })
                     {formatBytes(v.sizeBytes)} · {date.format(new Date(v.createdAt))}
                   </span>
                 </div>
+                {v.scanLevel && v.scanLevel !== "clean" && <ScanBadge level={v.scanLevel} findings={v.scanFindings ?? []} />}
                 {v.releaseNotes && <p className="mt-1 text-sm text-muted">{v.releaseNotes}</p>}
                 {v.status === "REJECTED" && v.reviewNote && (
                   <p className="mt-1 rounded-md border border-neon-pink/40 bg-neon-pink/10 px-3 py-2 text-sm text-neon-pink">
