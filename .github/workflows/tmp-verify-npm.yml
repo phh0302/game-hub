@@ -1,0 +1,22 @@
+name: tmp-verify-npm
+on:
+  push:
+    branches: [verify-npm]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v7
+        with: { node-version: 22 }
+      - name: CLI từ npm
+        run: npx -y @monlabs/cli help | head -5
+      - name: SDK từ npm
+        run: |
+          mkdir sdk-test && cd sdk-test && npm init -y >/dev/null
+          npm i @monlabs/sdk --no-audit --no-fund
+          ls node_modules/@monlabs/sdk/dist
+          node --input-type=module -e "import { GameHub } from '@monlabs/sdk'; try { GameHub.init } catch (e) { console.log('SSR guard ok:', e.message) }"
+      - name: Project mẫu Phaser dùng gói thật
+        run: |
+          npx -y degit phh0302/game-hub/templates/phaser-vite-ts my-game
+          cd my-game && npm install --no-audit --no-fund && npm run build && ls dist
