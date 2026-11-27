@@ -17,6 +17,8 @@ export function normalizeEvents(input: unknown): GameEvent[] {
     if (!raw || typeof raw !== "object") continue;
     const name = (raw as { name?: unknown }).name;
     if (typeof name !== "string" || !EVENT_NAME.test(name)) continue;
+    // Tiền tố "hub." dành cho hub (vd lượt xem quảng cáo hub.ad.*) – game không được tự gửi
+    if (name.toLowerCase().startsWith("hub.")) continue;
     const ev: GameEvent = { name };
     const props = (raw as { props?: unknown }).props;
     if (props && typeof props === "object" && !Array.isArray(props)) {

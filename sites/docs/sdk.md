@@ -209,7 +209,14 @@ await GameHub.rooms.move({ cell: 4 }, { state: { board }, finish: winner !== nul
 
 ## Quảng cáo
 
-Hiện Game Hub **chưa bật quảng cáo** – dữ liệu `init` có `ads: { rewarded: false, interstitial: false }`, nên **ẩn nút "xem quảng cáo nhận thưởng" khi `hub.ads.rewarded` là `false`** (đừng hiện lời mời rồi để người chơi bấm mà không có gì). Gọi thử vẫn an toàn: `showRewardedAd()` trả về `{ shown: false, rewarded: false }`, `showInterstitialAd()` trả về `{ shown: false }`. Hãy thiết kế để game vẫn chơi bình thường khi không có quảng cáo – ví dụ ẩn nút "Xem quảng cáo nhận thưởng" khi `shown` là `false`.
+Hub dùng **Google H5 Games Ads** – game **không** tự nhúng mã quảng cáo (bản build có mã quảng cáo riêng sẽ bị cảnh báo khi quét). Game chỉ cần gọi SDK, hub hiện quảng cáo và báo kết quả:
+
+- `init.ads.rewarded` / `init.ads.interstitial` = `true` khi hub đang bật quảng cáo và trình duyệt không chặn. **Ẩn nút "xem quảng cáo nhận thưởng" khi là `false`.**
+- `showRewardedAd()` → `{ shown, rewarded, reason? }`: **chỉ thưởng khi `rewarded === true`** (người chơi xem hết). Bỏ ngang → `reason: "SKIPPED"`. Không có quảng cáo lúc đó → `shown: false` với `reason` là `NO_FILL`, `FREQUENCY_CAPPED`, `BLOCKED` (trình chặn quảng cáo), `TIMEOUT` hoặc `NO_ADS`.
+- `showInterstitialAd()` gọi ở chỗ chuyển màn (sau game over, qua màn). Google tự giới hạn tần suất (mặc định ≥ 2 phút / lần) nên gọi mỗi màn vẫn an toàn – phần lớn sẽ trả về `FREQUENCY_CAPPED`.
+- Trong lúc quảng cáo hiện, hub gửi `pause` rồi `resume` – tắt tiếng và dừng vòng lặp game.
+- Hub đếm lượt xem quảng cáo theo game (`hub.ad.<loại>.<trạng thái>` trong mục Sự kiện của trang Developer) – game không tự gửi được tên bắt đầu bằng `hub.`.
+- Thiết kế để game vẫn chơi bình thường khi không có quảng cáo.
 
 Nếu hub không trả lời (vd game được nhúng ở trang khác), hai hàm quảng cáo chờ tối đa **60 giây** rồi trả về `{ shown: false, rewarded: false, reason: "TIMEOUT" }` – đừng khóa giao diện trong lúc chờ. Mở file trực tiếp thì trả về ngay với `reason: "STANDALONE"`.
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { adsAvailable, loadAds, showAd } from "@/lib/ads/h5";
+import { adStatusOf } from "@/lib/ads/config";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -128,8 +130,8 @@ function GamePlayer({
       locale,
       player: user ? { displayName: displayName(user) } : null,
       canSubmitScore,
-      // Chưa có nhà cung cấp quảng cáo → game ẩn nút "xem quảng cáo nhận thưởng"
-      ads: { rewarded: false, interstitial: false },
+      // Google H5 Games Ads: chỉ bật khi đã cấu hình NEXT_PUBLIC_ADSENSE_CLIENT và trình duyệt không chặn quảng cáo
+      ads: { rewarded: adsAvailable(), interstitial: adsAvailable() },
       // GameHub.share() / GameHub.invite() mở bảng chia sẻ của hub
       social: { share: true, invite: true },
       // Phòng chơi theo lượt: GameHub.rooms.*; roomCode = mã phòng trong link mời (?room=)
@@ -377,8 +379,31 @@ function GamePlayer({
     };
   }, [room?.code, room?.finished, slug, post]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState, slug, openShare, roomAction });
-  handlers.current = { sendInit, startSession, finishSession, post, handleState, slug, openShare, roomAction };
+  // Quảng cáo theo yêu cầu game (GameHub.showRewardedAd / showInterstitial): hub hiện quảng cáo, báo game dừng
+  // (PAUSE) rồi chạy tiếp (RESUME), trả AD_RESULT và đếm lượt cho trang Developer (hub.ad.<kind>.<status>).
+  const requestAd = useCallback(
+    async (payload: Record<string, unknown>) => {
+      const requestId = typeof payload.requestId === "string" ? payload.requestId.slice(0, 40) : undefined;
+      const kind = payload.kind === "interstitial" ? "interstitial" : "rewarded";
+      const outcome = await showAd(kind, `${slug}-${kind}`, {
+        pause: () => post("PAUSE", { reason: "ad" }),
+        resume: () => post("RESUME", { reason: "ad" }),
+      });
+      post("AD_RESULT", { requestId, ...outcome });
+      if (outcome.reason !== "NO_ADS" && outcome.reason !== "BUSY") {
+        void apiFetch(`/games/${slug}/ads`, { method: "POST", json: { kind, status: adStatusOf(outcome) } }).catch(() => undefined);
+      }
+    },
+    [post, slug],
+  );
+
+  // Nạp thư viện quảng cáo sớm để quảng cáo đầu tiên không phải chờ
+  useEffect(() => {
+    loadAds();
+  }, []);
+
+  const handlers = useRef({ sendInit, startSession, finishSession, post, handleState, slug, openShare, roomAction, requestAd });
+  handlers.current = { sendInit, startSession, finishSession, post, handleState, slug, openShare, roomAction, requestAd };
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -431,8 +456,7 @@ function GamePlayer({
           break;
         }
         case "AD_REQUEST":
-          // Chưa bật quảng cáo (Phase 11)
-          h.post("AD_RESULT", { requestId: payload.requestId, shown: false, rewarded: false, reason: "NO_ADS" });
+          void h.requestAd(payload);
           break;
       }
     }

@@ -202,7 +202,14 @@ await GameHub.rooms.move({ cell: 4 }, { state: { board }, finish: winner !== nul
 
 ## Ads
 
-Game Hub **doesn't show ads yet** – the `init` data has `ads: { rewarded: false, interstitial: false }`, so **hide "watch an ad for a reward" buttons when `hub.ads.rewarded` is `false`** (don't offer something the player can't get). Calling them is still safe: `showRewardedAd()` returns `{ shown: false, rewarded: false }` and `showInterstitialAd()` returns `{ shown: false }`. Make sure the game plays normally without ads – for example, hide the "Watch an ad for a reward" button when `shown` is `false`.
+The hub uses **Google H5 Games Ads** – games **don't** embed ad code themselves (builds with their own ad code get a warning when scanned). The game calls the SDK; the hub shows the ad and reports back:
+
+- `init.ads.rewarded` / `init.ads.interstitial` are `true` when the hub has ads enabled and the browser isn't blocking them. **Hide "watch an ad for a reward" buttons when `false`.**
+- `showRewardedAd()` → `{ shown, rewarded, reason? }`: **only reward when `rewarded === true`** (watched to the end). Closed early → `reason: "SKIPPED"`. No ad right now → `shown: false` with `reason` `NO_FILL`, `FREQUENCY_CAPPED`, `BLOCKED` (ad blocker), `TIMEOUT` or `NO_ADS`.
+- Call `showInterstitialAd()` at natural breaks (after game over, between levels). Google caps the frequency (by default at most one every 2 minutes), so calling it every level is safe – most calls return `FREQUENCY_CAPPED`.
+- While an ad is on screen the hub sends `pause` then `resume` – mute and stop the game loop.
+- The hub counts ad views per game (`hub.ad.<kind>.<status>` under Events on the Developer page) – games can't send names starting with `hub.`.
+- Make sure the game plays normally without ads.
 
 If the hub doesn't reply (e.g. the game is embedded in another page), both ad functions wait up to **60 seconds** before returning `{ shown: false, rewarded: false, reason: "TIMEOUT" }` – don't lock the UI while waiting. Opened directly, they return immediately with `reason: "STANDALONE"`.
 

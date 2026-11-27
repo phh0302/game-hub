@@ -184,8 +184,10 @@
 - [x] Hỗ trợ bản build nén `.br` / `.gz` (Unity WebGL Brotli/Gzip): giải nén lúc upload, giữ tên file, Content-Type theo file bên trong, chặn bomb nén
 
 ## Phase 11 – Kiếm tiền (sau MVP)
-- [ ] Quảng cáo có thưởng / xen giữa màn qua SDK (Google H5 Games Ads)
-- [ ] Ghi nhận lượt xem quảng cáo theo game (`Event`) → chia doanh thu cho developer
+- [x] Quảng cáo có thưởng / xen giữa màn qua SDK (Google H5 Games Ads) – hub gọi `adBreak()`, gửi PAUSE/RESUME quanh quảng cáo; bật bằng `NEXT_PUBLIC_ADSENSE_CLIENT` (+ `NEXT_PUBLIC_ADS_TEST=1` để thử); `/ads.txt`, trang `/privacy` có mục quảng cáo
+- [ ] Người dùng: đăng ký AdSense + xin H5 Games Ads cho play.monlabs.fun, đặt biến môi trường trên Vercel, thêm ads.txt cho monlabs.fun, bật thông báo đồng ý (Privacy & messaging) cho EU/UK
+- [x] Ghi nhận lượt xem quảng cáo theo game: `POST /games/:slug/ads` → đếm `hub.ad.<loại>.<trạng thái>` theo ngày (mục Sự kiện trang Developer); game không tự gửi được tên `hub.*`
+- [ ] Chia doanh thu quảng cáo cho developer theo lượt xem
 - [ ] Sổ cái tiền (`LedgerEntry`), thanh toán cho developer (`Payout`)
 - [ ] Gói Premium (`Subscription`) qua MoMo / VNPay / ZaloPay hoặc Stripe
 - [ ] Giải đấu có nhà tài trợ (dùng `Leaderboard` có thời gian) – không thu phí tham gia
