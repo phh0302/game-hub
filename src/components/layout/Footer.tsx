@@ -12,6 +12,9 @@ export async function Footer() {
         <Link href="/contact" className="font-semibold text-ink hover:text-neon">
           {t("feedback")}
         </Link>
+        <Link href="/privacy" className="hover:text-neon">
+          {t("privacy")}
+        </Link>
         <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-neon">
           {CONTACT_EMAIL}
         </a>

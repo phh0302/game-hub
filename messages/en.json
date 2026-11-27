@@ -25,6 +25,7 @@
     "noGames": "No games in this category yet."
   },
   "footer": {
+    "privacy": "Privacy",
     "rights": "© {year} Game Hub. All rights reserved.",
     "feedback": "Feedback & contact"
   },
