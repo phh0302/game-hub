@@ -18,9 +18,10 @@ test("Trang stats: chỉ admin, có số liệu request, ghi bất thường khi
 
   // ── Tạo lưu lượng + 1 lần chặn IP (giả IP khác vì máy test được miễn chặn) ──
   for (let i = 0; i < 20; i++) await request.get("/api/v1/games");
-  const ip = `203.0.113.${200 + (Date.now() % 50)}`;
+  const ip = `198.51.${Math.floor(Math.random() * 250)}.${1 + Math.floor(Math.random() * 250)}`;
+  // Cửa sổ đếm dồn dập là cửa sổ cố định 10 giây: gửi > 2 × giới hạn để dù rơi vào ranh giới 2 cửa sổ vẫn chắc chắn bị chặn
   const burst = await Promise.all(
-    Array.from({ length: 160 }, () => request.get("/api/v1/health", { headers: { "x-forwarded-for": ip } })),
+    Array.from({ length: 320 }, () => request.get("/api/v1/health", { headers: { "x-forwarded-for": ip } })),
   );
   expect(burst.some((r) => r.status() === 429)).toBe(true);
 

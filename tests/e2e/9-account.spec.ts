@@ -114,6 +114,6 @@ test("Tài khoản khách → gắn / gộp vào ví; tự xóa tài khoản; ad
   const cron = await request.get("/api/cron/daily", { headers: { authorization: "Bearer e2e-cron-secret-0123456789" } });
   expect(cron.status()).toBe(200);
   expect(Object.keys(((await cron.json()) as { cleanup: object }).cleanup).sort()).toEqual(
-    ["events", "guests", "monthlyPlayers", "reports", "webhookDeliveries"],
+    ["events", "guests", "monthlyPlayers", "reports", "rooms", "roomsExpired", "webhookDeliveries"],
   );
 });

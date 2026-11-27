@@ -10,6 +10,8 @@ import {
 
 test("normalizeRoute gom id / slug", () => {
   assert.equal(normalizeRoute("/api/v1/games/2048/sessions"), "/api/v1/games/:slug/sessions");
+  assert.equal(normalizeRoute("/api/v1/games/caro/rooms/ABC234/move"), "/api/v1/games/:slug/rooms/:code/move");
+  assert.equal(normalizeRoute("/api/v1/games/caro/rooms"), "/api/v1/games/:slug/rooms");
   assert.equal(normalizeRoute("/api/v1/developer/games/cmweot7wh0001jy08lmypwoa6/keys"), "/api/v1/developer/games/:id/keys");
   assert.equal(normalizeRoute("/api/s1/players/cmabcdefghijklmnopqrstu/ban"), "/api/s1/players/:id/ban");
   assert.equal(normalizeRoute("/api/v1/me"), "/api/v1/me");
