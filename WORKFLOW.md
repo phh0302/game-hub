@@ -309,6 +309,7 @@ Chọn: chơi theo lượt + phòng chờ chạy trên hạ tầng hiện có (V
 - [x] Publish npm: @monlabs/sdk 3.3.0, @monlabs/cli 0.1.0 (27/11) – đã thử cài từ npm + build project mẫu Phaser bằng gói thật
 - [x] Project mẫu (HTML thuần, Phaser + Vite + TS, Unity WebGL) (PR #67)
 - [x] Phòng chờ + chơi theo lượt: `GameHub.rooms`, API /games/:slug/rooms, game mẫu Caro 3×3
+- [x] Sandbox giả lập phòng chơi (`src/modules/rooms/mock.ts`, cùng luật máy chủ): dev đóng vai người chơi ảo – vào phòng, đi lượt thay, rời, làm chủ phòng, mở game qua link mời
 
 ## Ngoài phạm vi (làm sau nếu cần)
 - Bạn bè, chat, thông báo · Achievement, daily quest

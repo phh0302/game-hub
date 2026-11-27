@@ -148,7 +148,7 @@ Không cần upload mỗi lần sửa: chạy game trên máy (`npm run dev`), m
 [play.monlabs.fun/developer/sandbox](https://play.monlabs.fun/developer/sandbox), dán địa chỉ (vd `http://localhost:5173`) rồi bấm **Mở**.
 
 - Game chạy trong khung **giống hệt hub** (iframe sandbox, origin `null` – lỗi `localStorage` / CORS lộ ra ngay).
-- Hub giả lập đủ SDK: điểm (`SCORE_RESULT`), lưu tiến trình, `track`, chia sẻ / mời bạn, quảng cáo thưởng / chuyển màn (đếm ngược 3 giây, có nút bỏ qua), `PAUSE` / `RESUME`.
+- Hub giả lập đủ SDK: điểm (`SCORE_RESULT`), lưu tiến trình, `track`, chia sẻ / mời bạn, quảng cáo thưởng / chuyển màn (đếm ngược 3 giây, có nút bỏ qua), `PAUSE` / `RESUME`, **phòng chơi theo lượt** (bạn đóng vai người chơi ảo ở ghế khác).
 - Bật / tắt: đã đăng nhập, được lưu điểm, có quảng cáo, chia sẻ, ngôn ngữ, số bạn đã mời – đổi là gửi lại `init` như hub thật.
 - Nhật ký từng tin nhắn + cảnh báo lỗi tích hợp thường gặp (`gameOver()` thiếu `gameStart()`, điểm không phải số nguyên, sự kiện bị bỏ…).
 - Không cần đăng nhập, không ghi gì lên máy chủ. Chrome / Firefox cho nhúng `http://localhost` vào trang https; Safari thì không.
@@ -204,7 +204,7 @@ await GameHub.rooms.move({ cell: 4 }, { state: { board }, finish: winner !== nul
 - `move(data, { next })`: `"next"` (mặc định) chuyển lượt vòng tròn, `"same"` đi tiếp, hoặc số ghế.
 - Lỗi có `err.code`: `LOGIN_REQUIRED`, `ROOM_FULL`, `ROOM_STARTED`, `NOT_YOUR_TURN`, `ROOM_CHANGED` (người khác vừa đi – chờ `room` mới rồi thử lại).
 - Hub **không kiểm tra luật chơi** – game tự kiểm nước đi hợp lệ và người thắng. Người rời phòng khi đang chơi còn 1 người → phòng kết thúc (`abandoned`).
-- Phòng không hoạt động 2 giờ thì hết hạn. Sandbox chưa giả lập phòng (`init.rooms = false`).
+- Phòng không hoạt động 2 giờ thì hết hạn. Thử trên máy bằng [Sandbox](#sandbox): phòng giả lập trong trình duyệt, bạn đóng vai **người chơi ảo** (vào phòng, đi lượt thay, rời phòng, làm chủ phòng) và mở game như khi bạn bè bấm link mời (`init.roomCode`).
 - Mẫu: game Caro 3×3 trong repo (`public/uploads/games/rooms-demo`).
 
 ## Quảng cáo

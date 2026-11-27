@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import { handleStateMessage } from "@/lib/game-state";
 import { normalizeEvents } from "@/lib/game-events";
 import { ShareSheet, type ShareOutcome, type ShareRequest } from "@/components/games/ShareSheet";
+import { MockRoomError, MockRooms, type MockRoomView } from "@/modules/rooms/mock";
+import { SandboxRooms, type BotAction } from "./SandboxRooms";
 
 const PROTOCOL = "gamehub";
 const PROTOCOL_VERSION = 1;
@@ -16,11 +18,15 @@ type Settings = {
   rewarded: boolean;
   interstitial: boolean;
   share: boolean;
+  rooms: boolean;
   locale: "vi" | "en";
   invites: number;
 };
 
-const CHECKS = ["READY", "GAME_START", "GAME_OVER", "STATE_SAVE", "STATE_LOAD", "TRACK", "SHARE", "AD_REQUEST"] as const;
+const CHECKS = ["READY", "GAME_START", "GAME_OVER", "STATE_SAVE", "STATE_LOAD", "TRACK", "SHARE", "AD_REQUEST", "ROOM"] as const;
+
+const ME = { id: "me", name: "sandbox_player" };
+const botName = (n: number, locale: string) => (locale === "en" ? `Virtual player ${n}` : `Người chơi ảo ${n}`);
 
 /** Địa chỉ game được phép thử: http(s), không chứa thông tin đăng nhập */
 export function sandboxUrl(raw: string): string | null {
@@ -37,7 +43,8 @@ export function sandboxUrl(raw: string): string | null {
 /**
  * Sandbox cho developer: chạy game từ bất kỳ địa chỉ nào (thường là http://localhost:5173 lúc đang code)
  * trong khung giống hệt hub (iframe sandbox, origin null) với hub giả lập đủ giao thức SDK:
- * INIT tùy chỉnh, điểm, lưu tiến trình, track, chia sẻ, quảng cáo, tạm dừng. Không ghi gì lên máy chủ.
+ * INIT tùy chỉnh, điểm, lưu tiến trình, track, chia sẻ, quảng cáo, tạm dừng, phòng chơi theo lượt (MockRooms –
+ * dev đóng vai người chơi ảo). Không ghi gì lên máy chủ.
  */
 export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
   const t = useTranslations("sandbox");
@@ -51,6 +58,7 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
     rewarded: true,
     interstitial: true,
     share: true,
+    rooms: true,
     locale: "vi",
     invites: 0,
   });
@@ -62,6 +70,11 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
   const ready = useRef(false);
   /** Chỉ tải game sau khi đã nghe tin nhắn – game nhỏ tải nhanh sẽ gửi READY trước khi trang kịp nghe */
   const [listening, setListening] = useState(false);
+  /** Phòng giả lập trong trình duyệt + seq gần nhất game đã biết (để ROOM_UPDATE kèm đúng các nước đi mới) */
+  const rooms = useRef(new MockRooms());
+  const gameSeq = useRef<number | null>(null);
+  const [roomView, setRoomView] = useState<MockRoomView | null>(null);
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
 
   const add = useCallback((dir: LogLine["dir"], type: string, payload?: unknown) => {
     setLog((l) =>
@@ -78,7 +91,7 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
   );
 
   const initPayload = useCallback(
-    (s: Settings) => ({
+    (s: Settings, code: string | null = null) => ({
       protocolVersion: PROTOCOL_VERSION,
       standalone: false,
       locale: s.locale,
@@ -87,12 +100,32 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
       ads: { rewarded: s.rewarded, interstitial: s.interstitial },
       social: { share: s.share, invite: s.share },
       invites: s.loggedIn ? { count: s.invites, viaGame: s.invites, invitedBy: null } : null,
+      rooms: s.rooms,
+      roomCode: s.rooms ? code : null,
     }),
     [],
   );
 
-  const ctx = useRef({ settings, url, post, add, initPayload, t });
-  ctx.current = { settings, url, post, add, initPayload, t };
+  /** Game có trong phòng (đang hoặc đã từng ngồi) → nhận ROOM_UPDATE như hub thật hỏi lại máy chủ */
+  const gameInRoom = (v: MockRoomView | null) => Boolean(v && rooms.current.room?.players.some((p) => p.id === ME.id));
+
+  /** Phòng đổi (người ảo đi, hết giờ lượt…) → cập nhật bảng + báo game */
+  const pushRoom = useCallback(() => {
+    const m = rooms.current;
+    if (!m.room) {
+      setRoomView(null);
+      return;
+    }
+    const v = m.view(ME.id, gameSeq.current ?? undefined);
+    setRoomView(v);
+    if (gameInRoom(v) && gameSeq.current !== v.seq) {
+      gameSeq.current = v.seq;
+      post("ROOM_UPDATE", { room: v });
+    }
+  }, [post]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const ctx = useRef({ settings, url, post, add, initPayload, t, inviteCode, pushRoom });
+  ctx.current = { settings, url, post, add, initPayload, t, inviteCode, pushRoom };
 
   useEffect(() => {
     function onMessage(event: MessageEvent) {
@@ -111,7 +144,7 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
       switch (msg.type) {
         case "READY":
           ready.current = true;
-          send("INIT", init(s));
+          send("INIT", init(s, ctx.current.inviteCode));
           break;
         case "GAME_START":
           if (session.current.started !== null) log("warn", tr("warn.doubleStart"));
@@ -177,6 +210,31 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
           });
           break;
         }
+        case "ROOM": {
+          // Như hub thật: create / join / leave / start / move → ROOM_RESULT; lỗi giữ nguyên mã của máy chủ
+          const requestId = typeof p.requestId === "string" ? p.requestId.slice(0, 40) : undefined;
+          const op = String(p.op ?? "");
+          const body = (p.body && typeof p.body === "object" ? p.body : {}) as Record<string, unknown>;
+          const m = rooms.current;
+          try {
+            if (!s.loggedIn) throw new MockRoomError("LOGIN_REQUIRED");
+            let room: MockRoomView;
+            if (op === "create") room = m.create(ME, body);
+            else if (op === "join") room = m.join(ME, body.code);
+            else if (op === "leave") room = m.leave(ME.id);
+            else if (op === "start") room = m.start(ME.id);
+            else if (op === "move") room = m.move(ME.id, body);
+            else throw new MockRoomError("VALIDATION_ERROR");
+            gameSeq.current = room.seq;
+            ctx.current.pushRoom();
+            send("ROOM_RESULT", { requestId, ok: true, room });
+          } catch (err) {
+            const code = err instanceof MockRoomError ? err.code : "ROOM_ERROR";
+            if (code === "ROOM_CHANGED") log("warn", tr("warn.roomChanged"));
+            send("ROOM_RESULT", { requestId, ok: false, code });
+          }
+          break;
+        }
         case "AD_REQUEST": {
           const kind = p.kind === "interstitial" ? "interstitial" : "rewarded";
           if (!(kind === "rewarded" ? s.rewarded : s.interstitial)) {
@@ -207,8 +265,55 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
 
   // Đổi thiết lập → gửi lại INIT như hub thật khi người chơi đăng nhập / đổi ngôn ngữ
   useEffect(() => {
-    if (ready.current) post("INIT", initPayload(settings));
-  }, [settings, post, initPayload]);
+    if (ready.current) post("INIT", initPayload(settings, inviteCode));
+  }, [settings, inviteCode, post, initPayload]);
+
+  // Hết giờ lượt / phòng hết hạn (máy chủ thật xử lý khi hub hỏi lại mỗi 1,5 giây)
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      if (rooms.current.tick()) pushRoom();
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [pushRoom]);
+
+  /** Dev đóng vai người chơi ảo; trả về thông báo lỗi (hoặc null) cho bảng điều khiển */
+  const botAction = (a: BotAction): string | null => {
+    const m = rooms.current;
+    const nextBot = () => {
+      const used = new Set((m.room?.players ?? []).map((p) => p.id));
+      for (let n = 1; n <= 8; n++) if (!used.has(`bot${n}`)) return { id: `bot${n}`, name: botName(n, settings.locale) };
+      return { id: "bot9", name: botName(9, settings.locale) };
+    };
+    try {
+      if (a.kind === "host") {
+        m.create({ id: "bot1", name: botName(1, settings.locale) }, { maxPlayers: 2 });
+        gameSeq.current = null;
+      } else if (a.kind === "join") m.join(nextBot(), m.room?.code);
+      else if (a.kind === "start") m.start(m.room?.players.find((p) => p.id === m.room?.hostId)?.id ?? "");
+      else if (a.kind === "leave") m.leave(a.id);
+      else if (a.kind === "move") {
+        const id = m.turnPlayerId();
+        if (!id || id === ME.id) return t("rooms.notBotTurn");
+        m.move(id, { data: a.data, state: a.state, next: a.next, finish: a.finish });
+      } else if (a.kind === "openInvite") {
+        // Như bạn bè bấm link mời ?room=MÃ: tải lại game, init.roomCode = mã phòng
+        setInviteCode(m.room?.code ?? null);
+        ready.current = false;
+        session.current = { started: null, best: null };
+        setReloadKey((k) => k + 1);
+        add("warn", t("rooms.reloadedInvite", { code: m.room?.code ?? "" }));
+        return null;
+      } else if (a.kind === "reset") {
+        m.room = null;
+        gameSeq.current = null;
+        setInviteCode(null);
+      }
+      pushRoom();
+      return null;
+    } catch (err) {
+      return err instanceof MockRoomError ? err.code : String(err);
+    }
+  };
 
   const closeShare = (outcome: ShareOutcome) => {
     if (shareReq?.requestId) post("SHARE_RESULT", { requestId: shareReq.requestId, ...outcome });
@@ -233,7 +338,7 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
   };
 
   const toggle = (key: keyof Settings) => setSettings((s) => ({ ...s, [key]: !s[key] }));
-  const Toggle = ({ k }: { k: "loggedIn" | "canSubmitScore" | "rewarded" | "interstitial" | "share" }) => (
+  const Toggle = ({ k }: { k: "loggedIn" | "canSubmitScore" | "rewarded" | "interstitial" | "share" | "rooms" }) => (
     <label className="flex items-center gap-2">
       <input type="checkbox" checked={settings[k]} onChange={() => toggle(k)} />
       {t(`settings.${k}`)}
@@ -325,6 +430,7 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
               <Toggle k="rewarded" />
               <Toggle k="interstitial" />
               <Toggle k="share" />
+              <Toggle k="rooms" />
               <label className="flex items-center gap-2">
                 {t("settings.locale")}
                 <select
@@ -349,6 +455,18 @@ export function SandboxPlayer({ initialUrl }: { initialUrl: string }) {
               </label>
             </div>
           </div>
+          {settings.rooms && (
+            <SandboxRooms
+              room={roomView}
+              bots={roomView ? rooms.current.bots() : []}
+              turnBot={(() => {
+                const id = roomView ? rooms.current.turnPlayerId() : null;
+                return id && id !== ME.id ? (rooms.current.bots().find((b) => b.id === id) ?? null) : null;
+              })()}
+              gameInRoom={gameInRoom(roomView)}
+              onAction={botAction}
+            />
+          )}
           <div className="rounded-2xl border border-line bg-surface p-4 text-sm">
             <h2 className="mb-2 font-semibold">{t("checklist")}</h2>
             <ul data-testid="sandbox-checklist" className="grid grid-cols-2 gap-1">

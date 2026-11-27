@@ -1026,7 +1026,8 @@
       "interstitial": "Có QC chuyển màn",
       "share": "Chia sẻ / mời bạn",
       "locale": "Ngôn ngữ",
-      "invites": "Số bạn đã mời"
+      "invites": "Số bạn đã mời",
+      "rooms": "Phòng chơi"
     },
     "checklist": "Game đã gọi",
     "log": "Nhật ký SDK",
@@ -1047,7 +1048,35 @@
       "badScore": "Điểm phải là số nguyên ≥ 0",
       "state": "Lưu tiến trình thất bại",
       "trackDropped": "{dropped} sự kiện bị bỏ (tên sai, quá 50 sự kiện/lần…)",
-      "url": "Địa chỉ không hợp lệ – cần http:// hoặc https://"
+      "url": "Địa chỉ không hợp lệ – cần http:// hoặc https://",
+      "roomChanged": "Phòng vừa đổi (ROOM_CHANGED) – game nên chờ sự kiện room mới rồi thử lại"
+    },
+    "rooms": {
+      "title": "Phòng chơi giả lập",
+      "empty": "Game chưa tạo phòng. Gọi GameHub.rooms.create() trong game, hoặc để người chơi ảo tạo phòng rồi thử vào bằng mã.",
+      "botHost": "Người chơi ảo tạo phòng",
+      "reset": "Xóa phòng",
+      "seat": "Ghế {seat}",
+      "host": "chủ phòng",
+      "bot": "người chơi ảo",
+      "deadline": "hết lượt lúc {time}",
+      "joinHint": "Game chưa ở trong phòng. Gọi GameHub.rooms.join(\"{code}\"), hoặc mở game như khi bạn bè bấm link mời (init.roomCode = mã phòng).",
+      "openInvite": "Mở game như link mời",
+      "botJoin": "+ Người chơi ảo vào phòng",
+      "botStart": "Bắt đầu (chủ phòng ảo)",
+      "botLeave": "{name} rời phòng",
+      "botTurn": "Lượt của {name} (ghế {seat}) – bạn đi thay",
+      "data": "Nước đi (data, JSON)",
+      "state": "Trạng thái mới (state, JSON – để trống = giữ nguyên)",
+      "next": "Lượt tiếp",
+      "finish": "Kết thúc ván",
+      "winner": "Ghế thắng",
+      "botMove": "Người chơi ảo đi",
+      "badData": "data phải là JSON hợp lệ",
+      "badState": "state phải là JSON hợp lệ",
+      "badWinner": "Ghế thắng phải là số",
+      "notBotTurn": "Không phải lượt của người chơi ảo",
+      "reloadedInvite": "Tải lại game với init.roomCode = {code}"
     }
   },
   "devTokens": {
