@@ -1026,7 +1026,8 @@
       "interstitial": "Interstitial ads",
       "share": "Share / invite",
       "locale": "Language",
-      "invites": "Friends invited"
+      "invites": "Friends invited",
+      "rooms": "Rooms"
     },
     "checklist": "Game has called",
     "log": "SDK log",
@@ -1047,7 +1048,35 @@
       "badScore": "Score must be an integer ≥ 0",
       "state": "Saving progress failed",
       "trackDropped": "{dropped} events dropped (bad name, more than 50 per call…)",
-      "url": "Invalid address – use http:// or https://"
+      "url": "Invalid address – use http:// or https://",
+      "roomChanged": "Room changed (ROOM_CHANGED) – the game should wait for the next room event and retry"
+    },
+    "rooms": {
+      "title": "Simulated rooms",
+      "empty": "The game hasn't created a room. Call GameHub.rooms.create() in the game, or let a virtual player host one and try joining by code.",
+      "botHost": "Virtual player hosts a room",
+      "reset": "Clear room",
+      "seat": "Seat {seat}",
+      "host": "host",
+      "bot": "virtual player",
+      "deadline": "turn ends at {time}",
+      "joinHint": "The game isn't in the room. Call GameHub.rooms.join(\"{code}\"), or open the game as if a friend tapped the invite link (init.roomCode = room code).",
+      "openInvite": "Open game via invite link",
+      "botJoin": "+ Virtual player joins",
+      "botStart": "Start (virtual host)",
+      "botLeave": "{name} leaves",
+      "botTurn": "{name}'s turn (seat {seat}) – you play for them",
+      "data": "Move (data, JSON)",
+      "state": "New state (state, JSON – empty = keep)",
+      "next": "Next turn",
+      "finish": "Finish game",
+      "winner": "Winning seat",
+      "botMove": "Virtual player moves",
+      "badData": "data must be valid JSON",
+      "badState": "state must be valid JSON",
+      "badWinner": "Winning seat must be a number",
+      "notBotTurn": "It's not a virtual player's turn",
+      "reloadedInvite": "Reloaded game with init.roomCode = {code}"
     }
   },
   "devTokens": {

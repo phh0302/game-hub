@@ -148,7 +148,7 @@ No need to upload after every change: run the game locally (`npm run dev`), open
 [play.monlabs.fun/developer/sandbox](https://play.monlabs.fun/developer/sandbox), paste its address (e.g. `http://localhost:5173`) and click **Open**.
 
 - The game runs in a frame **identical to the hub** (sandboxed iframe, origin `null` – `localStorage` / CORS issues show up immediately).
-- A mock hub implements the whole SDK: scores (`SCORE_RESULT`), saved progress, `track`, share / invite, rewarded / interstitial ads (3-second countdown with a skip button), `PAUSE` / `RESUME`.
+- A mock hub implements the whole SDK: scores (`SCORE_RESULT`), saved progress, `track`, share / invite, rewarded / interstitial ads (3-second countdown with a skip button), `PAUSE` / `RESUME`, **turn-based rooms** (you play the virtual players in the other seats).
 - Toggle logged in, can save scores, ads, sharing, language, friends invited – changes resend `init` like the real hub.
 - Every message is logged, with warnings for common integration mistakes (`gameOver()` without `gameStart()`, non-integer scores, dropped events…).
 - No login needed, nothing is written to the server. Chrome / Firefox allow embedding `http://localhost` in an https page; Safari doesn't.
@@ -197,7 +197,7 @@ await GameHub.rooms.move({ cell: 4 }, { state: { board }, finish: winner !== nul
 - `move(data, { next })`: `"next"` (default) passes the turn round-robin, `"same"` moves again, or a seat number.
 - Errors carry `err.code`: `LOGIN_REQUIRED`, `ROOM_FULL`, `ROOM_STARTED`, `NOT_YOUR_TURN`, `ROOM_CHANGED` (someone else just moved – wait for the new `room`, then retry).
 - The hub **does not enforce game rules** – validate moves and winners in the game. If a player leaves mid-game and one remains, the room ends (`abandoned`).
-- Rooms expire after 2 hours of inactivity. The Sandbox doesn't simulate rooms yet (`init.rooms = false`).
+- Rooms expire after 2 hours of inactivity. Test locally in the [Sandbox](#sandbox): rooms are simulated in the browser and you play the **virtual players** (join, take their turns, leave, host) and can open the game as if a friend tapped the invite link (`init.roomCode`).
 - Sample: the 3×3 tic-tac-toe game in the repo (`public/uploads/games/rooms-demo`).
 
 ## Ads
