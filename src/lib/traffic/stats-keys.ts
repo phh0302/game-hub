@@ -51,6 +51,8 @@ export function normalizeRoute(pathname: string): string {
     if (!seg) return seg;
     // /api/v1/games/<slug>/... (slug có thể là số, vd 2048)
     if (i === 4 && all[1] === "api" && all[3] === "games") return ":slug";
+    // /api/v1/games/<slug>/rooms/<mã phòng>/... → gộp mọi phòng thành 1 route
+    if (i === 6 && all[5] === "rooms" && all[3] === "games") return ":code";
     if (ID_LIKE.test(seg)) return ":id";
     return seg;
   });

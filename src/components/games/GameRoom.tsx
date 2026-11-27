@@ -520,7 +520,7 @@ function GamePlayer({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="flex flex-wrap items-start gap-2">
           <ShareButton hasScore={Boolean(lastScore)} onClick={() => openShare("share", { score: lastScore?.value ?? null })} />
-          {canSubmitScore && <InviteButton onClick={() => openShare("invite")} invited={invite?.invited ?? null} />}
+          {canSubmitScore && invite && <InviteButton onClick={() => openShare("invite")} invited={invite.invited} />}
           <ReportGameButton slug={slug} />
         </div>
         <button

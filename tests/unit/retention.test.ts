@@ -10,6 +10,7 @@ test("retentionCutoffs: các mốc tính lùi từ hôm nay", () => {
   assert.equal(days(c.events), RETENTION.eventsDays);
   assert.equal(days(c.reports), RETENTION.resolvedReportsDays);
   assert.equal(days(c.webhookDeliveries), RETENTION.webhookDeliveriesDays);
+  assert.equal(days(c.rooms), RETENTION.finishedRoomsDays);
 });
 
 test("retentionCutoffs: giữ đủ 13 tháng người chơi theo tháng (tính cả tháng hiện tại)", () => {

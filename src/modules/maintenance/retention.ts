@@ -15,6 +15,8 @@ export const RETENTION = {
   monthlyPlayersMonths: 13,
   /** Lịch sử gửi webhook */
   webhookDeliveriesDays: 30,
+  /** Phòng chơi theo lượt đã kết thúc / hết hạn (kèm nước đi) – tính từ lần thay đổi cuối */
+  finishedRoomsDays: 7,
 } as const;
 
 const DAY = 86_400_000;
@@ -27,5 +29,6 @@ export function retentionCutoffs(now = new Date()) {
     // Tháng cũ nhất còn giữ: tháng hiện tại lùi 12 tháng → giữ đủ 13 tháng
     monthlyPlayers: new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (RETENTION.monthlyPlayersMonths - 1), 1)),
     webhookDeliveries: new Date(now.getTime() - RETENTION.webhookDeliveriesDays * DAY),
+    rooms: new Date(now.getTime() - RETENTION.finishedRoomsDays * DAY),
   };
 }
