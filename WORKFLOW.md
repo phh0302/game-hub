@@ -238,6 +238,7 @@ Nguyên tắc: 1 project = 1 `Game` hiện có (dùng lại studio, bảng xếp
 - [x] Nháp điều khoản dịch vụ + chính sách dữ liệu Platform API (tài liệu "Nháp: Điều khoản dịch vụ & Chính sách dữ liệu") – chờ luật sư + 13 câu hỏi
 - [x] Người chơi tự xóa tài khoản (trang hồ sơ); admin xóa theo yêu cầu (trang Admin)
 - [x] Tự dọn dữ liệu quá hạn trong cron hằng ngày `/api/cron/daily` (mốc trong `src/modules/maintenance/retention.ts`)
+- [x] Dọn phòng chơi: phòng quá hạn (2 giờ) → FINISHED, phòng đã kết thúc quá 7 ngày bị xóa (`RETENTION.finishedRoomsDays`); route phòng gộp thành `/rooms/:code` trong bảng API chậm nhất
 - [x] Chơi khách rồi đăng nhập ví: gắn ví vào tài khoản khách / gộp điểm vào tài khoản ví đã có
 - [ ] Cam kết thời gian hoạt động (SLA) cho gói Business – cần đo uptime liên tục (dịch vụ giám sát bên ngoài) trước khi cam kết
 
